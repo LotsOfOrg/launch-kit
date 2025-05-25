@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a FastHTML toolkit called "launch-kit" for building production-ready SaaS applications with authentication, admin panels, billing, and team management. The project uses nbdev for development.
+This is a FastHTML toolkit called "launch-kit" for building production-ready SaaS applications with authentication, admin panels, billing, and team management. The project uses nbdev for development and MonsterUI as the default UI framework for beautiful, accessible components.
 
 ## Development Commands
 
@@ -54,12 +54,42 @@ nbdev_clean
 
 2. The project dependencies include:
    - `python-fasthtml`: The FastHTML framework
-   - `monsterui`: UI components library
+   - `monsterui>=1.0.20`: MonsterUI - the default UI framework for all components
 
-3. The minimum Python version is 3.9
+3. The minimum Python version is 3.10
 
 ## Important Files
 
 - `settings.ini`: Contains all nbdev configuration including library name, version, dependencies, and documentation settings
 - `nbs/index.ipynb`: The main documentation notebook that becomes README.md
 - `nbs/00_core.ipynb`: Core module implementation
+
+## MonsterUI Integration
+
+This project uses MonsterUI as the default UI framework. When developing:
+
+1. **Use MonsterUI components** instead of raw HTML:
+   - `Button` instead of `<button>`
+   - `Card` instead of `<div>` containers
+   - `Form`, `FormField`, `Input` for forms
+   - `DataTable` for tables
+   - `Alert` for notifications
+   - `Badge`, `Chip` for status indicators
+
+2. **MonsterUI patterns**:
+   - All components support HTMX attributes
+   - Built-in dark mode support
+   - Responsive by default
+   - Accessible (WCAG compliant)
+   
+3. **Example**:
+   ```python
+   # Instead of:
+   Div(H1("Title", cls="text-2xl"), Form(...))
+   
+   # Use:
+   Card(
+       PageHeader("Title"),
+       Form(FormField(Label("Email"), Input(type="email")))
+   )
+   ```
