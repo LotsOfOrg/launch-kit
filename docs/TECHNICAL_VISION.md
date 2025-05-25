@@ -268,6 +268,7 @@ assert enterprise_config.enforce_2fa == True
 #| export
 import logging
 from fasthtml.common import *
+from monsterui import *
 from .middleware import setup_middleware
 from .database import setup_database
 from .cache import setup_cache
@@ -285,11 +286,12 @@ def create_saas_app(config: SaaSConfig = None) -> FastHTML:
     if config is None:
         config = SaaSConfig(app_name="SaaS App")
     
-    # Create FastHTML app with configuration
+    # Create FastHTML app with MonsterUI integration
     app = FastHTML(
         hdrs=(
+            # MonsterUI components include all necessary styles
+            MonsterUI(),  # Initialize MonsterUI with default theme
             Meta(name="viewport", content="width=device-width, initial-scale=1"),
-            Link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"),
             Script(src="https://unpkg.com/htmx.org@1.9.10"),
             Script(src="https://unpkg.com/hyperscript.org@0.9.12"),
         ),
@@ -347,12 +349,14 @@ def create_saas_app(config: SaaSConfig = None) -> FastHTML:
         """Landing page - shows different content based on auth status"""
         if hasattr(req, 'user') and req.user:
             return RedirectResponse("/dashboard")
-        return Div(
-            H1(config.app_name, cls="text-4xl font-bold text-center mt-8"),
-            Div(
-                A("Login", href="/auth/login", cls="btn btn-primary"),
-                A("Sign Up", href="/auth/register", cls="btn btn-secondary ml-4"),
-                cls="flex justify-center mt-8"
+        return Container(
+            H1(config.app_name, cls="text-center"),
+            Flex(
+                Button("Login", href="/auth/login", variant="primary"),
+                Button("Sign Up", href="/auth/register", variant="secondary"),
+                justify="center",
+                gap=4,
+                cls="mt-8"
             )
         )
     
@@ -448,27 +452,35 @@ class AuthenticationSystem:
         
         @self.app.get("/auth/login")
         def login_page(req):
-            return Div(
-                H2("Login", cls="text-2xl font-bold mb-4"),
+            return Card(
+                H2("Login"),
                 Form(
-                    Input(type="email", name="email", placeholder="Email", required=True),
-                    Input(type="password", name="password", placeholder="Password", required=True),
-                    Div(
-                        Input(type="checkbox", name="remember_me", id="remember"),
-                        Label("Remember me", fr="remember"),
-                        cls="flex items-center mb-4"
+                    FormField(
+                        Label("Email"),
+                        Input(type="email", name="email", required=True)
                     ),
-                    Button("Login", type="submit", cls="btn btn-primary w-full"),
+                    FormField(
+                        Label("Password"),
+                        Input(type="password", name="password", required=True)
+                    ),
+                    Checkbox(
+                        name="remember_me", 
+                        label="Remember me"
+                    ),
+                    Button("Login", type="submit", variant="primary", full_width=True),
                     method="post",
                     action="/auth/login",
                     hx_post="/auth/login",
                     hx_target="#content"
                 ),
-                P(
+                Text(
                     "Don't have an account? ",
-                    A("Sign up", href="/auth/register", cls="text-blue-500"),
-                    cls="mt-4 text-center"
-                )
+                    Link("Sign up", href="/auth/register"),
+                    align="center",
+                    cls="mt-4"
+                ),
+                max_width="md",
+                mx="auto"
             )
         
         @self.app.post("/auth/login")
@@ -481,16 +493,17 @@ class AuthenticationSystem:
             # Find user and verify password
             user = self.get_user_by_email(email)
             if not user or not self.verify_password(password, user.password_hash):
-                return Div(
-                    P("Invalid email or password", cls="text-red-500"),
+                return Alert(
+                    "Invalid email or password",
+                    variant="error",
                     hx_swap_oob="true"
                 )
             
             # Check if account is locked
             if user.locked_until and user.locked_until > datetime.utcnow():
-                return Div(
-                    P(f"Account locked. Try again in {(user.locked_until - datetime.utcnow()).seconds // 60} minutes",
-                      cls="text-red-500"),
+                return Alert(
+                    f"Account locked. Try again in {(user.locked_until - datetime.utcnow()).seconds // 60} minutes",
+                    variant="warning",
                     hx_swap_oob="true"
                 )
             
@@ -556,31 +569,57 @@ class AdminDashboard:
         @admin_required  # Decorator checks is_admin=True
         def admin_dashboard(req):
             stats = self.get_dashboard_stats()
-            return AdminLayout(
-                H1("Admin Dashboard", cls="text-3xl font-bold mb-6"),
+            return DashboardLayout(
+                PageHeader("Admin Dashboard"),
                 
                 # Stats cards
-                Div(
-                    StatCard("Total Users", stats['total_users'], icon="users"),
-                    StatCard("Active Today", stats['active_today'], icon="activity"),
-                    StatCard("New This Week", stats['new_this_week'], icon="user-plus"),
-                    StatCard("Revenue MTD", f"${stats['revenue_mtd']:,.2f}", icon="dollar"),
-                    cls="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+                Grid(
+                    StatsCard(
+                        title="Total Users",
+                        value=stats['total_users'],
+                        icon="users",
+                        trend="+12%"
+                    ),
+                    StatsCard(
+                        title="Active Today",
+                        value=stats['active_today'],
+                        icon="activity",
+                        trend="+5%"
+                    ),
+                    StatsCard(
+                        title="New This Week",
+                        value=stats['new_this_week'],
+                        icon="user-plus",
+                        trend="+23%"
+                    ),
+                    StatsCard(
+                        title="Revenue MTD",
+                        value=f"${stats['revenue_mtd']:,.2f}",
+                        icon="dollar-sign",
+                        trend="+8%"
+                    ),
+                    cols=4,
+                    gap=4
                 ),
                 
-                # Charts
-                Div(
+                # Charts and activity
+                Grid(
                     Card(
-                        H3("User Growth", cls="text-xl font-semibold mb-4"),
-                        Div(id="user-growth-chart", cls="h-64"),
-                        hx_get="/admin/charts/user-growth",
-                        hx_trigger="load"
+                        CardHeader("User Growth"),
+                        Chart(
+                            id="user-growth-chart",
+                            type="line",
+                            height="300px",
+                            hx_get="/admin/charts/user-growth",
+                            hx_trigger="load"
+                        )
                     ),
                     Card(
-                        H3("Recent Activity", cls="text-xl font-semibold mb-4"),
-                        ActivityFeed(self.get_recent_activity()),
+                        CardHeader("Recent Activity"),
+                        ActivityFeed(self.get_recent_activity())
                     ),
-                    cls="grid grid-cols-1 lg:grid-cols-2 gap-6"
+                    cols=2,
+                    gap=6
                 )
             )
         
@@ -594,34 +633,35 @@ class AdminDashboard:
             
             users, total = self.get_users(search=search, status=status, page=page)
             
-            return AdminLayout(
-                H1("User Management", cls="text-3xl font-bold mb-6"),
+            return DashboardLayout(
+                PageHeader("User Management"),
                 
                 # Search and filters
-                Form(
-                    Div(
-                        Input(
-                            type="search",
-                            name="search",
-                            placeholder="Search users...",
-                            value=search,
-                            cls="w-full md:w-64"
+                Card(
+                    Form(
+                        Flex(
+                            SearchInput(
+                                name="search",
+                                placeholder="Search users...",
+                                value=search,
+                                width="256px"
+                            ),
+                            Select(
+                                Option("All Users", value="all", selected=status=="all"),
+                                Option("Active", value="active", selected=status=="active"),
+                                Option("Inactive", value="inactive", selected=status=="inactive"),
+                                Option("Admins", value="admin", selected=status=="admin"),
+                                name="status"
+                            ),
+                            Button("Search", type="submit", variant="primary"),
+                            gap=4,
+                            align="center"
                         ),
-                        Select(
-                            Option("All Users", value="all", selected=status=="all"),
-                            Option("Active", value="active", selected=status=="active"),
-                            Option("Inactive", value="inactive", selected=status=="inactive"),
-                            Option("Admins", value="admin", selected=status=="admin"),
-                            name="status",
-                            cls="ml-4"
-                        ),
-                        Button("Search", type="submit", cls="btn btn-primary ml-4"),
-                        cls="flex items-center mb-6"
-                    ),
-                    method="get",
-                    hx_get="/admin/users",
-                    hx_target="#user-table",
-                    hx_push_url="true"
+                        method="get",
+                        hx_get="/admin/users",
+                        hx_target="#user-table",
+                        hx_push_url="true"
+                    )
                 ),
                 
                 # User table
@@ -655,25 +695,29 @@ class AdminDashboard:
             Td(user.username),
             Td(user.email),
             Td(
-                Span(
+                Badge(
                     "Active" if user.is_active else "Inactive",
-                    cls=f"px-2 py-1 rounded text-sm {'bg-green-100 text-green-800' if user.is_active else 'bg-gray-100 text-gray-800'}"
+                    variant="success" if user.is_active else "neutral"
                 )
             ),
             Td(user.created_at.strftime("%Y-%m-%d")),
             Td(user.last_login.strftime("%Y-%m-%d %H:%M") if user.last_login else "Never"),
             Td(
-                Button(
-                    "Edit",
-                    hx_get=f"/admin/users/{user.id}/edit",
-                    hx_target="#modal",
-                    cls="btn btn-sm btn-secondary mr-2"
-                ),
-                Button(
-                    "Disable" if user.is_active else "Enable",
-                    hx_post=f"/admin/users/{user.id}/toggle",
-                    hx_swap="outerHTML",
-                    cls="btn btn-sm btn-warning"
+                ButtonGroup(
+                    Button(
+                        "Edit",
+                        size="sm",
+                        variant="secondary",
+                        hx_get=f"/admin/users/{user.id}/edit",
+                        hx_target="#modal"
+                    ),
+                    Button(
+                        "Disable" if user.is_active else "Enable",
+                        size="sm",
+                        variant="warning",
+                        hx_post=f"/admin/users/{user.id}/toggle",
+                        hx_swap="outerHTML"
+                    )
                 )
             )
         )
@@ -719,6 +763,7 @@ Example from a UI components notebook:
 
 #| export
 from fasthtml.common import *
+from monsterui import *
 from typing import List, Dict, Any, Optional, Callable
 
 def DataTable(
@@ -729,19 +774,19 @@ def DataTable(
     filterable: bool = True,
     selectable: bool = False
 ):
-    """Create a sortable, filterable data table with HTMX integration"""
+    """Create a sortable, filterable data table with MonsterUI components"""
     
     table_id = f"table-{id(data)}"  # Unique ID for HTMX targeting
     
-    return Div(
-        # Filter input
-        Input(
-            type="search",
-            placeholder="Filter...",
+    return Container(
+        # Filter input with MonsterUI SearchInput
+        SearchInput(
+            placeholder="Filter table...",
             hx_post=f"/tables/{table_id}/filter",
             hx_trigger="keyup changed delay:500ms",
             hx_target=f"#{table_id}",
-            cls="mb-4 w-full md:w-64"
+            width="256px",
+            cls="mb-4"
         ) if filterable else None,
         
         # Table
@@ -1046,23 +1091,180 @@ req = MockRequest(cookies={'session': 'valid_token'})
 print("✓ Decorator tests passed")
 ```
 
-#### Component Library
-```python
-from launch_kit.ui import (
-    SaaSLayout,      # Full app layout with nav
-    AuthForm,        # Login/signup forms
-    PricingTable,    # Billing tier display
-    UserTable,       # Admin user management
-    TeamSelector,    # Team switcher component
-    ApiKeyManager,   # API key CRUD UI
-)
+#### MonsterUI Component Library Integration
 
-# Pre-styled, accessible components
-form = AuthForm(
-    mode="login",
-    providers=["google", "github"],
-    on_success="/dashboard"
-)
+The toolkit leverages MonsterUI's comprehensive component library for beautiful, accessible interfaces:
+
+```python
+from launch_kit.ui import *
+from monsterui import *
+
+# Authentication Components with MonsterUI
+@component
+def SaaSAuthForm(mode="login", providers=None):
+    """Beautiful auth forms using MonsterUI components"""
+    return Card(
+        H2("Welcome Back" if mode == "login" else "Create Account"),
+        Form(
+            FormField(
+                Label("Email"),
+                Input(type="email", name="email", required=True)
+            ),
+            FormField(
+                Label("Password"),
+                Input(type="password", name="password", required=True)
+            ),
+            Checkbox(
+                name="remember",
+                label="Remember me"
+            ) if mode == "login" else None,
+            Button(
+                "Sign In" if mode == "login" else "Sign Up",
+                type="submit",
+                variant="primary",
+                full_width=True
+            ),
+            Divider("OR") if providers else None,
+            Stack(
+                *[Button(
+                    f"Continue with {provider.title()}",
+                    variant="outline",
+                    full_width=True,
+                    icon=provider,
+                    href=f"/auth/{provider}"
+                ) for provider in (providers or [])]
+            ) if providers else None
+        ),
+        max_width="sm",
+        mx="auto"
+    )
+
+# Dashboard Components
+@component 
+def SaaSDashboard(user, stats):
+    """Full dashboard layout with MonsterUI"""
+    return DashboardLayout(
+        # Sidebar navigation
+        Sidebar(
+            SidebarHeader(
+                Logo("MyApp"),
+                UserMenu(user)
+            ),
+            SidebarNav(
+                NavItem("Dashboard", href="/", icon="home"),
+                NavItem("Analytics", href="/analytics", icon="chart"),
+                NavItem("Customers", href="/customers", icon="users"),
+                NavItem("Settings", href="/settings", icon="settings")
+            )
+        ),
+        # Main content
+        MainContent(
+            PageHeader(
+                f"Welcome back, {user.name}!",
+                actions=[
+                    Button("New Project", variant="primary", icon="plus")
+                ]
+            ),
+            Grid(
+                StatsCard("Total Revenue", f"${stats.revenue:,.0f}", trend="+12%"),
+                StatsCard("Active Users", stats.users, trend="+5%"),
+                StatsCard("Conversion", f"{stats.conversion:.1f}%", trend="+2.3%"),
+                StatsCard("Churn Rate", f"{stats.churn:.1f}%", trend="-0.5%"),
+                cols=4
+            ),
+            Grid(
+                Card(
+                    CardHeader("Recent Activity"),
+                    Timeline(stats.recent_activity)
+                ),
+                Card(
+                    CardHeader("Revenue Chart"),
+                    Chart(type="area", data=stats.revenue_data)
+                ),
+                cols=2
+            )
+        )
+    )
+
+# Pricing Components
+@component
+def PricingTable(plans):
+    """Beautiful pricing table with MonsterUI"""
+    return Container(
+        H2("Choose Your Plan", align="center"),
+        Grid(
+            *[PricingCard(
+                title=plan.name,
+                price=plan.price,
+                period=plan.period,
+                features=plan.features,
+                cta=Button(
+                    "Get Started" if not plan.popular else "Start Free Trial",
+                    variant="primary" if plan.popular else "outline",
+                    full_width=True,
+                    href=f"/signup?plan={plan.id}"
+                ),
+                popular=plan.popular
+            ) for plan in plans],
+            cols=3,
+            gap=6
+        )
+    )
+
+# Form Builder Components
+@component
+def SettingsForm(user):
+    """Settings form with validation"""
+    return Form(
+        Card(
+            CardHeader("Profile Settings"),
+            Stack(
+                FormField(
+                    Label("Display Name"),
+                    Input(name="name", value=user.name, required=True)
+                ),
+                FormField(
+                    Label("Email"),
+                    Input(type="email", name="email", value=user.email, required=True)
+                ),
+                FormField(
+                    Label("Bio"),
+                    Textarea(name="bio", value=user.bio, rows=4)
+                ),
+                Flex(
+                    Button("Cancel", variant="outline"),
+                    Button("Save Changes", type="submit", variant="primary"),
+                    justify="end",
+                    gap=2
+                )
+            )
+        ),
+        hx_post="/settings/profile",
+        hx_target="#notifications"
+    )
+
+# Table Components
+@component
+def CustomerTable(customers, actions=True):
+    """Rich data table with MonsterUI"""
+    return DataTable(
+        columns=[
+            {"key": "name", "label": "Customer", "sortable": True},
+            {"key": "email", "label": "Email", "sortable": True},
+            {"key": "plan", "label": "Plan", "badge": True},
+            {"key": "mrr", "label": "MRR", "format": "currency"},
+            {"key": "status", "label": "Status", "badge": True},
+            {"key": "created", "label": "Created", "format": "date"}
+        ],
+        data=customers,
+        actions=[
+            {"label": "View", "icon": "eye", "href": "/customers/{id}"},
+            {"label": "Edit", "icon": "edit", "href": "/customers/{id}/edit"}
+        ] if actions else None,
+        selectable=True,
+        filterable=True,
+        pagination=True
+    )
 ```
 
 ### 7. Database Approach (02_database.ipynb)
@@ -1538,17 +1740,31 @@ Future modules, each developed as notebooks:
 
 ## Summary
 
-The `launch-kit` package, built with nbdev, would provide:
+The `launch-kit` package, built with nbdev and MonsterUI, provides:
 
 1. **Literate Programming**: All code developed in notebooks with inline documentation and tests
-2. **Interactive Development**: See UI components and test results directly in notebooks
-3. **Automatic Documentation**: Beautiful docs generated from notebooks
-4. **Integrated Testing**: Tests live with the code they test
-5. **FastHTML Alignment**: Following the same development methodology as FastHTML itself
+2. **Interactive Development**: See MonsterUI components and test results directly in notebooks
+3. **Beautiful UI by Default**: MonsterUI provides professional, accessible components out of the box
+4. **Automatic Documentation**: Beautiful docs generated from notebooks
+5. **Integrated Testing**: Tests live with the code they test
+6. **FastHTML + MonsterUI Alignment**: Leveraging the best of both frameworks
 
-This approach combines the best of both worlds:
-- The rapid development and excellent documentation of nbdev
-- The simplicity and power of FastHTML for web applications
+### MonsterUI Integration Benefits
+
+The integration with MonsterUI as the default UI framework provides:
+
+- **Consistent Design System**: All components follow MonsterUI's design principles
+- **Built-in Accessibility**: WCAG compliant components without extra effort
+- **Dark Mode Support**: Automatic theme switching with MonsterUI's theming system
+- **Responsive by Default**: Mobile-first components that work on all devices
+- **Rich Component Library**: From simple buttons to complex data tables and charts
+- **Minimal Code**: Create beautiful interfaces with less code than raw HTML
+- **Type Safety**: Full TypeScript support for better IDE experience
+
+This approach combines three powerful tools:
+- The rapid development and excellent documentation of **nbdev**
+- The simplicity and power of **FastHTML** for web applications
+- The beautiful, accessible components of **MonsterUI**
 - Production-ready SaaS features out of the box
 
-The result is a toolkit that not only accelerates SaaS development but also serves as a learning resource through its interactive notebooks, making it easy for developers to understand, customize, and extend.
+The result is a toolkit that not only accelerates SaaS development but also ensures professional, accessible interfaces from day one, making it easy for developers to build beautiful applications without being design experts.

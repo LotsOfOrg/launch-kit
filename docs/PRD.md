@@ -23,9 +23,10 @@
 **User Story:** As a developer, I want to create a basic SaaS app with authentication so I can focus on my business logic.
 
 **Acceptance Criteria:**
-- [ ] `create_saas_app()` function creates FastHTML app with single import:
+- [ ] `create_saas_app()` function creates FastHTML app with MonsterUI integrated:
   ```python
   from launch_kit import create_saas_app, SaaSConfig
+  # MonsterUI components are automatically available
   app = create_saas_app(SaaSConfig(app_name="MyApp"))
   ```
 - [ ] Password authentication with bcrypt hashing (cost factor 12)
@@ -38,10 +39,10 @@
   - HTTPOnly, Secure, SameSite=Lax flags
   - Session timeout configurable (default 30 days)
   - Automatic session refresh on activity
-- [ ] User dashboard at `/dashboard` with:
-  - Welcome message with username
-  - Last login timestamp
-  - Account settings link
+- [ ] User dashboard at `/dashboard` with MonsterUI components:
+  - Welcome message with username using PageHeader
+  - Last login timestamp in StatsCard
+  - Account settings link with Button component
 - [ ] SQLite database with migrations:
   - Users table with id, email, username, password_hash, email_verified, created_at
   - Sessions table with id, user_id, token, expires_at
@@ -83,11 +84,11 @@
    - "Remember me" functionality
 
 6. Create UI components in `04_ui_base.ipynb`:
-   - Base layout with navigation
-   - Form components with CSRF protection
-   - Flash message system
-   - Responsive design with Tailwind CSS
-   - Loading states and error handling
+   - Base layout with MonsterUI DashboardLayout
+   - Form components with MonsterUI's FormField and validation
+   - Alert and notification system with MonsterUI
+   - Responsive design with MonsterUI's built-in system
+   - Loading states with MonsterUI Skeleton and Spinner components
 
 7. Write tests achieving >90% coverage:
    - Unit tests for each function
@@ -113,24 +114,24 @@
   - Automatic redirect for non-admins
   - Admin middleware checks on all admin routes
 
-- [ ] User management interface with:
-  - Sortable table with columns: Username, Email, Status, Created, Last Login, Actions
-  - Quick actions: Enable/Disable, Reset Password, Make Admin
-  - Bulk actions: Export CSV, Bulk Delete, Bulk Email
-  - User detail modal with full profile and activity log
+- [ ] User management interface with MonsterUI DataTable:
+  - Sortable table with columns: Username, Email, Status (Badge), Created, Last Login, Actions
+  - Quick actions using ButtonGroup: Enable/Disable, Reset Password, Make Admin
+  - Bulk actions with Select and Button components: Export CSV, Bulk Delete, Bulk Email
+  - User detail modal using Modal component with full profile and activity log
 
-- [ ] Search and filtering capabilities:
-  - Real-time search by username/email
-  - Filters: Status (active/inactive), Verified (yes/no), Admin (yes/no)
-  - Date range filters for registration and last login
+- [ ] Search and filtering capabilities with MonsterUI:
+  - Real-time search using SearchInput component
+  - Filters using Select components: Status (active/inactive), Verified (yes/no), Admin (yes/no)
+  - Date range filters using DatePicker components
   - Results update via HTMX without page reload
 
-- [ ] Analytics dashboard showing:
-  - Total users, active today/week/month
-  - Registration chart (daily for 30 days)
-  - User retention cohort analysis
-  - Top referral sources
-  - Geographic distribution (by timezone)
+- [ ] Analytics dashboard with MonsterUI components:
+  - StatsCard components for: Total users, active today/week/month
+  - Chart component for registration trends (daily for 30 days)
+  - DataTable for user retention cohort analysis
+  - PieChart for top referral sources
+  - Map component for geographic distribution
 
 - [ ] Comprehensive audit logging:
   - Log all admin actions with timestamp, admin user, action type, target user
@@ -280,6 +281,7 @@
 
 ## Dependencies
 - FastHTML (latest)
+- MonsterUI (>=1.0.20) - Default UI framework
 - nbdev (latest)
 - fastsql and fastlite or similar ORM
 - Bcrypt for password hashing
