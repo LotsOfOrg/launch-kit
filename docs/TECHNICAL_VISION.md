@@ -168,10 +168,10 @@ if __name__ == "__main__":
 #### Unified Configuration (from 01_config.ipynb)
 ```python
 #| export
+import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
 from datetime import timedelta
-import os
 from pathlib import Path
 
 @dataclass
@@ -267,6 +267,8 @@ assert enterprise_config.enforce_2fa == True
 ```python
 #| export
 import logging
+import os
+from typing import Dict, List, Optional, Any
 from fasthtml.common import *
 from monsterui import *
 from .middleware import setup_middleware
@@ -391,6 +393,7 @@ Each section includes examples and tests demonstrating the functionality.
 #| export
 import bcrypt
 import secrets
+import os
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from dataclasses import dataclass
@@ -540,10 +543,11 @@ Examples show how to customize for different use cases.
 """
 
 #| export
+import os
+import json
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 from fasthtml.common import *
-import json
 
 class AdminDashboard:
     """
@@ -762,6 +766,7 @@ Example from a UI components notebook:
 """Let's create a reusable data table component"""
 
 #| export
+import os
 from fasthtml.common import *
 from monsterui import *
 from typing import List, Dict, Any, Optional, Callable
@@ -950,6 +955,8 @@ launch-kit deploy  # Deploy wizard
 The combination of nbdev and FastHTML creates powerful development patterns:
 ```python
 #| export
+import os
+from typing import Dict, List, Optional, Any
 from fasthtml.common import *
 from functools import wraps
 from launch_kit import get_current_user, get_team_member
@@ -1273,9 +1280,11 @@ def CustomerTable(customers, actions=True):
 Database schema and migrations are developed in notebooks with visual feedback:
 ```python
 #| export
-from launch_kit.db import Migration, Schema
-from datetime import datetime
+import os
 import sqlite3
+from typing import Dict, List, Optional, Any
+from datetime import datetime
+from launch_kit.db import Migration, Schema
 
 class AddTeamsTable(Migration):
     """Add teams table for multi-tenant support"""
@@ -1406,11 +1415,12 @@ All test utilities are demonstrated with examples that also serve as tests thems
 """
 
 #| export
+import os
 import asyncio
-from typing import Dict, Any, Optional
-from datetime import datetime
 import sqlite3
 import tempfile
+from typing import Dict, Any, Optional
+from datetime import datetime
 from contextlib import contextmanager
 
 class SaaSTestCase:
@@ -1671,8 +1681,8 @@ from launch_kit import ProductionConfig
 
 config = ProductionConfig(
     # Auto-configures from environment
-    database_url=env("DATABASE_URL"),
-    redis_url=env("REDIS_URL"),
+    database_url=os.environ.get("DATABASE_URL"),
+    redis_url=os.environ.get("REDIS_URL"),
     
     # Production defaults
     debug=False,
@@ -1680,7 +1690,7 @@ config = ProductionConfig(
     force_https=True,
     
     # Monitoring
-    sentry_dsn=env("SENTRY_DSN"),
+    sentry_dsn=os.environ.get("SENTRY_DSN"),
     metrics_enabled=True,
 )
 ```
