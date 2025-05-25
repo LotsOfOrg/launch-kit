@@ -93,3 +93,7 @@ This project uses MonsterUI as the default UI framework. When developing:
        Form(FormField(Label("Email"), Input(type="email")))
    )
    ```
+
+## Repository Information
+
+- GitHub Repository: https://github.com/LotsOfOrg/launch-kit
