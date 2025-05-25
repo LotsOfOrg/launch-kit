@@ -2,7 +2,7 @@
 
 ## Package Name: `launch-kit`
 
-A comprehensive toolkit for building production-ready SaaS applications with FastHTML, developed using nbdev for literate programming, integrated testing, and excellent documentation. This approach aligns with FastHTML's own development methodology, ensuring consistency and quality.
+A transparent, composable toolkit for building production-ready SaaS applications with FastHTML. Built using nbdev for literate programming and integrated testing, launch-kit follows MonsterUI patterns and FastHTML conventions - providing utilities that show exactly what they do, not black box abstractions. Every integration is visible, every component is composable, and every utility follows the "transparent, not magic" philosophy.
 
 ## Core Architecture
 
@@ -141,29 +141,83 @@ This notebook demonstrates setting up a basic SaaS application
 with authentication and admin panel in under 50 lines of code.
 """
 
-from launch_kit import create_saas_app, SaaSConfig
+from fasthtml.common import *
+from launch_kit.auth import auth_beforeware, setup_auth_routes
+from launch_kit.database import setup_database
+from launch_kit.admin import setup_admin_routes
 
-# Create configuration
-config = SaaSConfig(
-    app_name="My SaaS",
-    features=["auth", "admin"],
-    database_url="sqlite:///myapp.db"
+# Create YOUR FastHTML app - no magic
+app = fast_app(
+    before=auth_beforeware,  # Visible auth middleware
+    hdrs=(MonsterUI(),)      # Explicit UI
 )
 
-# Create application
-app = create_saas_app(config)
+# Set up features explicitly
+db = setup_database(app, "sqlite:///myapp.db")
+setup_auth_routes(app, db)
+setup_admin_routes(app, db)
 
-# Add custom route
-@app.get("/")
-def home(req):
-    return f"Welcome {req.user.username}!"
+# Add your custom routes
+@rt("/")
+def home(sess):
+    if sess.get('user_id'):
+        user = db.query("SELECT email FROM users WHERE id = ?", [sess['user_id']])[0]
+        return f"Welcome {user['email']}!"
+    return "Welcome! Please login."
 
 # Run the app
 if __name__ == "__main__":
-    app.run()
+    serve()  # FastHTML's serve function
 ```
 
-### 3. Key Abstractions
+### 3. Design Philosophy: Transparent Utilities
+
+The toolkit follows a "transparent, not magic" approach inspired by MonsterUI and FastHTML patterns:
+
+#### Core Principles
+1. **No wrapper functions** - Use FastHTML's `fast_app()` directly
+2. **Explicit over implicit** - All integrations are visible in your code
+3. **Composable utilities** - Small, focused functions that work together
+4. **Visible integration** - You see exactly what's added to your app
+5. **FastHTML patterns first** - Use beforeware, not decorators; use HTMX, not custom JS
+
+#### Example: Setting Up Authentication
+```python
+# BAD: Hidden magic
+app = create_saas_app(features=["auth", "admin"])  # What routes were added? What middleware?
+
+# GOOD: Transparent utilities
+from fasthtml.common import *
+from launch_kit.auth import AuthRoutes
+from launch_kit.database import database
+from monsterui import *
+
+# You create the FastHTML app
+app, rt = fast_app(
+    hdrs=(MonsterUI(),)  # Explicit UI framework
+)
+
+# You explicitly set up features
+db = database("myapp.db")
+auth = AuthRoutes(db)
+
+# You control the routes
+@rt("/auth/login")
+def login_page():
+    return auth.login_page()
+
+@rt("/auth/login", methods=["POST"])
+async def login(req, sess):
+    return await auth.login(req, sess)
+```
+
+This transparency means:
+- You understand your application's structure
+- You can debug issues easily
+- You can customize any part
+- You learn FastHTML patterns, not framework-specific magic
+
+### 4. Key Abstractions
 
 #### Unified Configuration (from 01_config.ipynb)
 ```python
@@ -263,120 +317,227 @@ enterprise_config = SaaSConfig(
 assert enterprise_config.enforce_2fa == True
 ```
 
-#### Base Application Factory (from 00_core.ipynb)
+#### Transparent Setup Utilities (from 00_core.ipynb)
 ```python
 #| export
-import logging
 import os
 from typing import Dict, List, Optional, Any
 from fasthtml.common import *
 from monsterui import *
-from .middleware import setup_middleware
-from .database import setup_database
-from .cache import setup_cache
 
-def create_saas_app(config: SaaSConfig = None) -> FastHTML:
-    """Create a FastHTML app with SaaS features enabled
+# Beforeware utilities - visible middleware for FastHTML
+def session_auth_beforeware(req, sess):
+    """Validate session tokens - transparent auth check"""
+    # This beforeware ensures session tokens are still valid
+    token = sess.get('auth_token')
+    if not token:
+        return  # No session, nothing to validate
     
-    The notebook includes detailed examples of:
-    - Basic setup with just auth
-    - Adding team management
-    - Integrating billing
-    - Full enterprise setup
-    """
-    # Use default config if none provided
-    if config is None:
-        config = SaaSConfig(app_name="SaaS App")
+    # Check if token is still valid in database
+    from .database import validate_session_token
+    if not validate_session_token(token):
+        # Invalid token, clear session
+        sess.clear()
+        return
+
+def rate_limit_beforeware(req, sess):
+    """Rate limiting beforeware - visible protection"""
+    # Check rate limits
+    from .security import check_rate_limit
+    ip = req.headers.get('X-Forwarded-For', req.client.host)
     
-    # Create FastHTML app with MonsterUI integration
-    app = FastHTML(
-        hdrs=(
-            # MonsterUI components include all necessary styles
-            MonsterUI(),  # Initialize MonsterUI with default theme
-            Meta(name="viewport", content="width=device-width, initial-scale=1"),
-            Script(src="https://unpkg.com/htmx.org@1.9.10"),
-            Script(src="https://unpkg.com/hyperscript.org@0.9.12"),
-        ),
-        ws_hdr=True,  # Enable WebSocket support
-        secret_key=config.secret_key,
-    )
+    if not check_rate_limit(ip, req.url.path):
+        return Response("Rate limit exceeded", status_code=429)
+
+def csrf_beforeware(req, sess):
+    """CSRF protection for FastHTML - explicit security"""
+    if req.method in ['POST', 'PUT', 'DELETE']:
+        token = req.headers.get('X-CSRF-Token')
+        if token != sess.get('csrf_token'):
+            return Response("CSRF validation failed", status_code=403)
+
+# Database setup - you see the connection
+def setup_database(app, database_url: str):
+    """Set up database connection - returns db object you can use"""
+    import sqlite3
+    from .models import create_tables
     
-    # Store config on app for access in routes
-    app.config = config
+    # Create connection
+    if database_url.startswith('sqlite:///'):
+        db_path = database_url.replace('sqlite:///', '')
+        db = sqlite3.connect(db_path, check_same_thread=False)
+        db.row_factory = sqlite3.Row
+    else:
+        # PostgreSQL, MySQL, etc.
+        pass
     
-    # Set up logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    logger = logging.getLogger(config.app_name)
-    app.logger = logger
+    # Create tables
+    create_tables(db)
     
-    # Core setup (always needed)
-    setup_database(app, config)
-    setup_middleware(app, config)
+    # Make db available to routes
+    app.db = db
+    return db
+
+# No route setup utilities - you control your routes directly
+# Instead, we provide route handler classes:
+
+class AuthRoutes:
+    """Authentication route handlers - you wire them up"""
+    def __init__(self, db):
+        self.db = db
     
-    if config.cache_enabled:
-        setup_cache(app, config)
-    
-    # Register enabled features
-    if config.features.get("auth"):
-        from .auth import setup_auth
-        setup_auth(app, config)
-        logger.info("Authentication system enabled")
-    
-    if config.features.get("admin"):
-        from .admin import setup_admin
-        setup_admin(app, config)
-        logger.info("Admin dashboard enabled")
-    
-    if config.features.get("teams"):
-        from .teams import setup_teams
-        setup_teams(app, config)
-        logger.info("Team management enabled")
-    
-    if config.features.get("billing"):
-        from .billing import setup_billing
-        setup_billing(app, config)
-        logger.info("Billing system enabled")
-    
-    if config.features.get("api"):
-        from .api import setup_api
-        setup_api(app, config)
-        logger.info("API management enabled")
-    
-    # Add default routes
-    @app.get("/")
-    def index(req):
-        """Landing page - shows different content based on auth status"""
-        if hasattr(req, 'user') and req.user:
-            return RedirectResponse("/dashboard")
-        return Container(
-            H1(config.app_name, cls="text-center"),
-            Flex(
-                Button("Login", href="/auth/login", variant="primary"),
-                Button("Sign Up", href="/auth/register", variant="secondary"),
-                justify="center",
-                gap=4,
-                cls="mt-8"
+    def login_page(self):
+        """GET /auth/login - Login form"""
+        return Card(
+            H2("Login"),
+            Form(
+                FormField(
+                    Label("Email"),
+                    Input(type="email", name="email", required=True)
+                ),
+                FormField(
+                    Label("Password"),
+                    Input(type="password", name="password", required=True)
+                ),
+                Button("Login", type="submit", variant="primary"),
+                method="post",
+                action="/auth/login"
             )
         )
     
-    @app.get("/health")
-    def health_check():
-        """Health check endpoint for monitoring"""
-        return {"status": "healthy", "app": config.app_name}
+    async def login(self, req, sess):
+        """POST /auth/login - Handle login"""
+        form = await req.form()
+        email = form.get("email")
+        password = form.get("password")
+        
+        # Find user
+        user = self.db.query("SELECT * FROM users WHERE email = ?", [email])
+        
+        if user and verify_password(password, user[0]['password_hash']):
+            # Store user ID in session
+            sess['user_id'] = user[0]['id']
+            return RedirectResponse("/dashboard", status_code=303)
+        
+        return Alert("Invalid credentials", variant="error")
+    
+    def logout(self, sess):
+        """GET /auth/logout - Clear session"""
+        sess.clear()
+        return RedirectResponse("/")
+
+class AdminRoutes:
+    """Admin route handlers - transparent admin panel"""
+    def __init__(self, db):
+        self.db = db
+    
+    def is_admin(self, sess):
+        """Check if current user is admin"""
+        user_id = sess.get('user_id')
+        if not user_id:
+            return False
+        
+        user = self.db.query(
+            "SELECT is_admin FROM users WHERE id = ?",
+            [user_id]
+        )
+        return user and user[0]['is_admin']
+    
+    def admin_dashboard(self, sess):
+        """GET /admin - Admin dashboard"""
+        if not self.is_admin(sess):
+            return RedirectResponse("/auth/login")
+        
+        # Get stats
+        user_count = self.db.query("SELECT COUNT(*) as count FROM users")[0]['count']
+        
+        return DashboardLayout(
+            PageHeader("Admin Dashboard"),
+            Grid(
+                StatsCard("Total Users", user_count),
+                StatsCard("Active Today", "--"),
+                cols=2
+            )
+        )
+
+# Example: Building a SaaS app with transparent utilities
+#| doc
+"""
+# Building a SaaS App - The Transparent Way
+
+No magic, no hidden behavior. You build your FastHTML app and add features explicitly:
+"""
+
+#| export
+def create_example_app():
+    """Example showing the transparent approach"""
+    # 1. Create YOUR FastHTML app - no magic factory
+    app, rt = fast_app(
+        hdrs=(MonsterUI(),)  # Explicit UI framework
+    )
+    
+    # 2. Set up database - simple and direct
+    db = database("myapp.db")
+    
+    # 3. Create route handlers (not auto-registered)
+    auth = AuthRoutes(db)
+    admin = AdminRoutes(db)
+    
+    # 4. Wire up routes explicitly - YOU control everything
+    @rt("/")
+    def home(sess):
+        if sess.get('user_id'):
+            return RedirectResponse("/dashboard")
+        return Container(
+            H1("Welcome to My SaaS"),
+            Button("Get Started", href="/auth/register")
+        )
+    
+    @rt("/dashboard")
+    def dashboard(sess):
+        if not sess.get('user_id'):
+            return RedirectResponse("/auth/login")
+        
+        # Get user from session
+        user = db.query(
+            "SELECT * FROM users WHERE id = ?",
+            [sess['user_id']]
+        )[0]
+        
+        return Container(
+            H1(f"Welcome {user['email']}!"),
+            # Your dashboard content
+        )
+    
+    # 5. Wire up auth routes - explicit, visible
+    @rt("/auth/login")
+    def login_page():
+        return auth.login_page()
+    
+    @rt("/auth/login", methods=["POST"])
+    async def login(req, sess):
+        return await auth.login(req, sess)
+    
+    @rt("/auth/logout")
+    def logout(sess):
+        return auth.logout(sess)
+    
+    # 6. Wire up admin routes - you choose which ones
+    @rt("/admin")
+    def admin_dashboard(sess):
+        return admin.admin_dashboard(sess)
     
     return app
 
-# Demonstrate with tests
+# Test the transparent approach
 #| test
-test_config = SaaSConfig(app_name="Test", features={"auth": True})
-test_app = create_saas_app(test_config)
-assert test_app is not None
+app = create_example_app()
+assert app is not None
+assert hasattr(app, 'db')  # Database is accessible
+print("✓ Transparent app creation works")
 ```
 
-### 4. Feature Modules (Developed in Notebooks)
+### 5. Feature Modules (Developed in Notebooks)
 
 Each feature module is developed in its own notebook with inline tests and examples:
 
@@ -416,23 +577,25 @@ class User:
     two_factor_secret: Optional[str] = None
 
 #| export
-class AuthenticationSystem:
+class AuthRoutes:
     """
-    Features implemented in this notebook:
-    - Session-based auth with secure cookies
+    Authentication route handlers - transparent authentication system.
+    
+    This class provides route handlers that you explicitly wire up to your app.
+    No magic, no automatic route registration - you control everything.
+    
+    Features:
+    - Session-based auth using FastHTML's session parameter
     - Password authentication with bcrypt
     - Email verification flow
     - Password reset functionality
     - Rate limiting and account lockout
     - Two-factor authentication
-    
-    See cells below for implementation details and examples.
     """
     
-    def __init__(self, app, config):
-        self.app = app
-        self.config = config
-        self.setup_routes()
+    def __init__(self, db, config=None):
+        self.db = db
+        self.config = config or {}
     
     def hash_password(self, password: str) -> str:
         """Hash password using bcrypt with cost factor 12"""
@@ -446,90 +609,250 @@ class AuthenticationSystem:
         """Create secure session token"""
         token = secrets.token_urlsafe(32)
         # Store in database with expiry
-        expires_at = datetime.utcnow() + self.config.session_lifetime
-        # Save to sessions table...
+        expires_at = datetime.utcnow() + timedelta(days=30)
+        self.db.execute(
+            "INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)",
+            (token, user_id, expires_at)
+        )
+        self.db.commit()
         return token
     
-    def setup_routes(self):
-        """Set up authentication routes"""
+    # Route handlers - to be manually registered with your app
+    
+    def login_page(self):
+        """GET /auth/login - Login page"""
+        return Card(
+            H2("Login"),
+            Form(
+                FormField(
+                    Label("Email"),
+                    Input(type="email", name="email", required=True)
+                ),
+                FormField(
+                    Label("Password"),
+                    Input(type="password", name="password", required=True)
+                ),
+                Checkbox(
+                    name="remember_me", 
+                    label="Remember me"
+                ),
+                Button("Login", type="submit", variant="primary", full_width=True),
+                method="post",
+                action="/auth/login",
+                hx_post="/auth/login",
+                hx_target="#content"
+            ),
+            Text(
+                "Don't have an account? ",
+                Link("Sign up", href="/auth/register"),
+                align="center",
+                cls="mt-4"
+            ),
+            max_width="md",
+            mx="auto"
+        )
+    
+    async def login(self, req, sess):
+        """POST /auth/login - Handle login with FastHTML session"""
+        form = await req.form()
+        email = form.get("email")
+        password = form.get("password")
+        remember = form.get("remember_me") == "on"
         
-        @self.app.get("/auth/login")
-        def login_page(req):
-            return Card(
-                H2("Login"),
-                Form(
-                    FormField(
-                        Label("Email"),
-                        Input(type="email", name="email", required=True)
-                    ),
-                    FormField(
-                        Label("Password"),
-                        Input(type="password", name="password", required=True)
-                    ),
-                    Checkbox(
-                        name="remember_me", 
-                        label="Remember me"
-                    ),
-                    Button("Login", type="submit", variant="primary", full_width=True),
-                    method="post",
-                    action="/auth/login",
-                    hx_post="/auth/login",
-                    hx_target="#content"
-                ),
-                Text(
-                    "Don't have an account? ",
-                    Link("Sign up", href="/auth/register"),
-                    align="center",
-                    cls="mt-4"
-                ),
-                max_width="md",
-                mx="auto"
+        # Find user and verify password
+        cursor = self.db.execute("SELECT * FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
+        
+        if not user or not self.verify_password(password, user['password_hash']):
+            return Alert(
+                "Invalid email or password",
+                variant="error",
+                hx_swap_oob="true"
             )
         
-        @self.app.post("/auth/login")
-        async def login(req):
-            form = await req.form()
-            email = form.get("email")
-            password = form.get("password")
-            remember = form.get("remember_me") == "on"
-            
-            # Find user and verify password
-            user = self.get_user_by_email(email)
-            if not user or not self.verify_password(password, user.password_hash):
-                return Alert(
-                    "Invalid email or password",
-                    variant="error",
-                    hx_swap_oob="true"
-                )
-            
-            # Check if account is locked
-            if user.locked_until and user.locked_until > datetime.utcnow():
-                return Alert(
-                    f"Account locked. Try again in {(user.locked_until - datetime.utcnow()).seconds // 60} minutes",
-                    variant="warning",
-                    hx_swap_oob="true"
-                )
-            
-            # Create session
-            session_token = self.create_session(user.id)
-            
-            # Set cookie with appropriate lifetime
-            lifetime = self.config.session_lifetime if remember else timedelta(hours=24)
-            req.set_cookie(
-                "session",
-                session_token,
-                max_age=int(lifetime.total_seconds()),
-                httponly=True,
-                secure=True,
-                samesite="lax"
+        # Check if account is locked
+        if user['locked_until'] and datetime.fromisoformat(user['locked_until']) > datetime.utcnow():
+            remaining = (datetime.fromisoformat(user['locked_until']) - datetime.utcnow()).seconds // 60
+            return Alert(
+                f"Account locked. Try again in {remaining} minutes",
+                variant="warning",
+                hx_swap_oob="true"
             )
-            
-            # Update last login
-            user.last_login = datetime.utcnow()
-            user.failed_login_attempts = 0
-            # Save user...
-            
-            return RedirectResponse("/dashboard", status_code=303)
+        
+        # Create session using FastHTML's session
+        token = self.create_session(user['id'])
+        sess['auth_token'] = token
+        sess['user_id'] = user['id']
+        
+        # Update last login
+        self.db.execute(
+            "UPDATE users SET last_login = ?, failed_login_attempts = 0 WHERE id = ?",
+            (datetime.utcnow(), user['id'])
+        )
+        self.db.commit()
+        
+        return RedirectResponse("/dashboard", status_code=303)
+    
+    def logout(self, sess):
+        """GET /auth/logout - Handle logout"""
+        if 'auth_token' in sess:
+            # Invalidate session in database
+            self.db.execute("DELETE FROM sessions WHERE token = ?", (sess['auth_token'],))
+            self.db.commit()
+        sess.clear()
+        return RedirectResponse("/")
+    
+    def register_page(self):
+        """GET /auth/register - Registration page"""
+        return Card(
+            H2("Create Account"),
+            Form(
+                FormField(
+                    Label("Email"),
+                    Input(type="email", name="email", required=True)
+                ),
+                FormField(
+                    Label("Username"),
+                    Input(type="text", name="username", required=True)
+                ),
+                FormField(
+                    Label("Password"),
+                    Input(type="password", name="password", required=True, 
+                          minlength="8")
+                ),
+                FormField(
+                    Label("Confirm Password"),
+                    Input(type="password", name="confirm_password", required=True)
+                ),
+                Button("Create Account", type="submit", variant="primary", full_width=True),
+                method="post",
+                action="/auth/register"
+            ),
+            Text(
+                "Already have an account? ",
+                Link("Sign in", href="/auth/login"),
+                align="center",
+                cls="mt-4"
+            ),
+            max_width="md",
+            mx="auto"
+        )
+    
+    async def register(self, req, sess):
+        """POST /auth/register - Handle registration"""
+        form = await req.form()
+        email = form.get("email")
+        username = form.get("username")
+        password = form.get("password")
+        confirm_password = form.get("confirm_password")
+        
+        if password != confirm_password:
+            return Alert("Passwords do not match", variant="error")
+        
+        # Check if user exists
+        existing = self.db.execute(
+            "SELECT id FROM users WHERE email = ? OR username = ?",
+            (email, username)
+        ).fetchone()
+        
+        if existing:
+            return Alert("Email or username already taken", variant="error")
+        
+        # Create user
+        password_hash = self.hash_password(password)
+        cursor = self.db.execute(
+            """INSERT INTO users (email, username, password_hash, created_at) 
+               VALUES (?, ?, ?, ?)""",
+            (email, username, password_hash, datetime.utcnow())
+        )
+        user_id = cursor.lastrowid
+        self.db.commit()
+        
+        # Auto-login after registration
+        token = self.create_session(user_id)
+        sess['auth_token'] = token
+        sess['user_id'] = user_id
+        
+        return RedirectResponse("/dashboard", status_code=303)
+
+# Example: How to use the transparent auth system
+#| doc
+"""
+## Using the Authentication System
+
+Here's how to add authentication to your FastHTML app - completely transparent:
+"""
+
+#| export
+def create_app_with_auth():
+    """Example showing transparent auth integration"""
+    from fasthtml.common import *
+    
+    # 1. Create YOUR app - no magic
+    app, rt = fast_app()
+    
+    # 2. Set up database
+    db = database("app.db")
+    
+    # 3. Create auth routes handler
+    auth = AuthRoutes(db, config={
+        'session_lifetime': timedelta(days=30)
+    })
+    
+    # 4. Explicitly register auth routes - you see exactly what's added
+    @rt("/auth/login")
+    def login_page():
+        return auth.login_page()
+    
+    @rt("/auth/login", methods=["POST"])
+    async def login(req, sess):
+        return await auth.login(req, sess)
+    
+    @rt("/auth/logout")
+    def logout(sess):
+        return auth.logout(sess)
+    
+    @rt("/auth/register")
+    def register_page():
+        return auth.register_page()
+    
+    @rt("/auth/register", methods=["POST"])
+    async def register(req, sess):
+        return await auth.register(req, sess)
+    
+    # 5. Add your own routes with session-based auth
+    @rt("/")
+    def home(sess):
+        if 'user_id' in sess:
+            return RedirectResponse("/dashboard")
+        return Container(
+            H1("Welcome to My SaaS"),
+            Button("Get Started", href="/auth/register", variant="primary")
+        )
+    
+    @rt("/dashboard")
+    def dashboard(sess):
+        if 'user_id' not in sess:
+            return RedirectResponse("/auth/login")
+        
+        # Get user from session
+        user = db.execute(
+            "SELECT * FROM users WHERE id = ?", 
+            (sess['user_id'],)
+        ).fetchone()
+        
+        return Container(
+            H1(f"Welcome {user['email']}!"),
+            Button("Logout", href="/auth/logout", variant="secondary")
+        )
+    
+    return app
+
+# Test the transparent approach
+#| test
+app = create_app_with_auth()
+assert app is not None
+print("✓ Transparent auth app creation works")
 ```
 
 #### Admin Module (06_admin.ipynb, 07_admin_components.ipynb)
@@ -549,137 +872,181 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 from fasthtml.common import *
 
-class AdminDashboard:
+class AdminRoutes:
     """
-    Provides:
-    - Auto-generated CRUD interfaces
+    Admin dashboard route handlers - transparent admin system.
+    
+    This class provides route handlers that you explicitly wire up to your app.
+    No automatic route registration, no hidden behavior.
+    
+    Features:
     - User management with search/filter
     - System metrics and monitoring
     - Audit logging with search
     - Customizable UI components
-    
-    Tests demonstrate various customization scenarios.
+    - Session-based admin checks
     """
     
-    def __init__(self, app, config):
-        self.app = app
-        self.config = config
-        self.setup_routes()
+    def __init__(self, db, config=None):
+        self.db = db
+        self.config = config or {}
     
-    def setup_routes(self):
-        """Configure admin routes with authentication"""
+    def is_admin(self, sess):
+        """Check if current session user is admin"""
+        if 'user_id' not in sess:
+            return False
         
-        @self.app.get("/admin")
-        @admin_required  # Decorator checks is_admin=True
-        def admin_dashboard(req):
-            stats = self.get_dashboard_stats()
-            return DashboardLayout(
-                PageHeader("Admin Dashboard"),
-                
-                # Stats cards
-                Grid(
-                    StatsCard(
-                        title="Total Users",
-                        value=stats['total_users'],
-                        icon="users",
-                        trend="+12%"
-                    ),
-                    StatsCard(
-                        title="Active Today",
-                        value=stats['active_today'],
-                        icon="activity",
-                        trend="+5%"
-                    ),
-                    StatsCard(
-                        title="New This Week",
-                        value=stats['new_this_week'],
-                        icon="user-plus",
-                        trend="+23%"
-                    ),
-                    StatsCard(
-                        title="Revenue MTD",
-                        value=f"${stats['revenue_mtd']:,.2f}",
-                        icon="dollar-sign",
-                        trend="+8%"
-                    ),
-                    cols=4,
-                    gap=4
+        user = self.db.execute(
+            "SELECT is_admin FROM users WHERE id = ?",
+            (sess['user_id'],)
+        ).fetchone()
+        
+        return user and user['is_admin']
+    
+    def get_dashboard_stats(self):
+        """Get dashboard statistics"""
+        stats = {}
+        stats['total_users'] = self.db.execute(
+            "SELECT COUNT(*) as count FROM users"
+        ).fetchone()['count']
+        
+        stats['active_today'] = self.db.execute(
+            """SELECT COUNT(*) as count FROM users 
+               WHERE last_login > datetime('now', '-1 day')"""
+        ).fetchone()['count']
+        
+        stats['new_this_week'] = self.db.execute(
+            """SELECT COUNT(*) as count FROM users 
+               WHERE created_at > datetime('now', '-7 days')"""
+        ).fetchone()['count']
+        
+        stats['revenue_mtd'] = 12450.00  # Example
+        return stats
+    
+    def get_recent_activity(self):
+        """Get recent activity log entries"""
+        return self.db.execute(
+            """SELECT * FROM activity_log 
+               ORDER BY created_at DESC LIMIT 10"""
+        ).fetchall()
+    
+    # Route handlers - to be manually registered with your app
+    
+    def admin_dashboard(self, sess):
+        """GET /admin - Admin dashboard"""
+        if not self.is_admin(sess):
+            return RedirectResponse("/auth/login")
+        
+        stats = self.get_dashboard_stats()
+        return DashboardLayout(
+            PageHeader("Admin Dashboard"),
+            
+            # Stats cards
+            Grid(
+                StatsCard(
+                    title="Total Users",
+                    value=stats['total_users'],
+                    icon="users",
+                    trend="+12%"
                 ),
-                
-                # Charts and activity
-                Grid(
-                    Card(
-                        CardHeader("User Growth"),
-                        Chart(
-                            id="user-growth-chart",
-                            type="line",
-                            height="300px",
-                            hx_get="/admin/charts/user-growth",
-                            hx_trigger="load"
-                        )
-                    ),
-                    Card(
-                        CardHeader("Recent Activity"),
-                        ActivityFeed(self.get_recent_activity())
-                    ),
-                    cols=2,
-                    gap=6
-                )
-            )
-        
-        @self.app.get("/admin/users")
-        @admin_required
-        def user_management(req):
-            # Get query parameters
-            search = req.query_params.get('search', '')
-            status = req.query_params.get('status', 'all')
-            page = int(req.query_params.get('page', 1))
+                StatsCard(
+                    title="Active Today",
+                    value=stats['active_today'],
+                    icon="activity",
+                    trend="+5%"
+                ),
+                StatsCard(
+                    title="New This Week",
+                    value=stats['new_this_week'],
+                    icon="user-plus",
+                    trend="+23%"
+                ),
+                StatsCard(
+                    title="Revenue MTD",
+                    value=f"${stats['revenue_mtd']:,.2f}",
+                    icon="dollar-sign",
+                    trend="+8%"
+                ),
+                cols=4,
+                gap=4
+            ),
             
-            users, total = self.get_users(search=search, status=status, page=page)
-            
-            return DashboardLayout(
-                PageHeader("User Management"),
-                
-                # Search and filters
+            # Charts and activity
+            Grid(
                 Card(
-                    Form(
-                        Flex(
-                            SearchInput(
-                                name="search",
-                                placeholder="Search users...",
-                                value=search,
-                                width="256px"
-                            ),
-                            Select(
-                                Option("All Users", value="all", selected=status=="all"),
-                                Option("Active", value="active", selected=status=="active"),
-                                Option("Inactive", value="inactive", selected=status=="inactive"),
-                                Option("Admins", value="admin", selected=status=="admin"),
-                                name="status"
-                            ),
-                            Button("Search", type="submit", variant="primary"),
-                            gap=4,
-                            align="center"
-                        ),
-                        method="get",
-                        hx_get="/admin/users",
-                        hx_target="#user-table",
-                        hx_push_url="true"
+                    CardHeader("User Growth"),
+                    Chart(
+                        id="user-growth-chart",
+                        type="line",
+                        height="300px",
+                        hx_get="/admin/charts/user-growth",
+                        hx_trigger="load"
                     )
                 ),
-                
-                # User table
-                Div(
-                    Table(
-                        Thead(
-                            Tr(
-                                Th("Username"),
-                                Th("Email"),
-                                Th("Status"),
-                                Th("Created"),
-                                Th("Last Login"),
-                                Th("Actions")
-                            )
+                Card(
+                    CardHeader("Recent Activity"),
+                    ActivityFeed(self.get_recent_activity())
+                ),
+                cols=2,
+                gap=6
+            )
+        )
+    
+    def user_management(self, req, sess):
+        """GET /admin/users - User management page"""
+        if not self.is_admin(sess):
+            return RedirectResponse("/auth/login")
+        
+        # Get query parameters
+        search = req.query_params.get('search', '')
+        status = req.query_params.get('status', 'all')
+        page = int(req.query_params.get('page', 1))
+        
+        users, total = self.get_users(search=search, status=status, page=page)
+        
+        return DashboardLayout(
+            PageHeader("User Management"),
+            
+            # Search and filters
+            Card(
+                Form(
+                    Flex(
+                        SearchInput(
+                            name="search",
+                            placeholder="Search users...",
+                            value=search,
+                            width="256px"
+                        ),
+                        Select(
+                            Option("All Users", value="all", selected=status=="all"),
+                            Option("Active", value="active", selected=status=="active"),
+                            Option("Inactive", value="inactive", selected=status=="inactive"),
+                            Option("Admins", value="admin", selected=status=="admin"),
+                            name="status"
+                        ),
+                        Button("Search", type="submit", variant="primary"),
+                        gap=4,
+                        align="center"
+                    ),
+                    method="get",
+                    hx_get="/admin/users",
+                    hx_target="#user-table",
+                    hx_push_url="true"
+                )
+            ),
+            
+            # User table
+            Div(
+                Table(
+                    Thead(
+                        Tr(
+                            Th("Username"),
+                            Th("Email"),
+                            Th("Status"),
+                            Th("Created"),
+                            Th("Last Login"),
+                            Th("Actions")
+                        )
                         ),
                         Tbody(
                             *[self.render_user_row(user) for user in users]
@@ -696,59 +1063,137 @@ class AdminDashboard:
     def render_user_row(self, user):
         """Render a single user row with actions"""
         return Tr(
-            Td(user.username),
-            Td(user.email),
+            Td(user['username']),
+            Td(user['email']),
             Td(
                 Badge(
-                    "Active" if user.is_active else "Inactive",
-                    variant="success" if user.is_active else "neutral"
+                    "Active" if user['is_active'] else "Inactive",
+                    variant="success" if user['is_active'] else "neutral"
                 )
             ),
-            Td(user.created_at.strftime("%Y-%m-%d")),
-            Td(user.last_login.strftime("%Y-%m-%d %H:%M") if user.last_login else "Never"),
+            Td(user['created_at'][:10]),  # YYYY-MM-DD
+            Td(user['last_login'][:16] if user['last_login'] else "Never"),  # YYYY-MM-DD HH:MM
             Td(
                 ButtonGroup(
                     Button(
                         "Edit",
                         size="sm",
                         variant="secondary",
-                        hx_get=f"/admin/users/{user.id}/edit",
+                        hx_get=f"/admin/users/{user['id']}/edit",
                         hx_target="#modal"
                     ),
                     Button(
-                        "Disable" if user.is_active else "Enable",
+                        "Disable" if user['is_active'] else "Enable",
                         size="sm",
                         variant="warning",
-                        hx_post=f"/admin/users/{user.id}/toggle",
+                        hx_post=f"/admin/users/{user['id']}/toggle",
                         hx_swap="outerHTML"
                     )
                 )
             )
         )
+    
+    def get_users(self, search='', status='all', page=1, per_page=20):
+        """Get users with filtering and pagination"""
+        # Build query based on filters
+        query = "SELECT * FROM users WHERE 1=1"
+        params = []
+        
+        if search:
+            query += " AND (email LIKE ? OR username LIKE ?)"
+            search_param = f"%{search}%"
+            params.extend([search_param, search_param])
+        
+        if status == 'active':
+            query += " AND is_active = 1"
+        elif status == 'inactive':
+            query += " AND is_active = 0"
+        elif status == 'admin':
+            query += " AND is_admin = 1"
+        
+        # Get total count
+        count_query = query.replace("SELECT *", "SELECT COUNT(*) as count")
+        total = self.db.execute(count_query, params).fetchone()['count']
+        
+        # Add pagination
+        query += f" LIMIT {per_page} OFFSET {(page - 1) * per_page}"
+        users = self.db.execute(query, params).fetchall()
+        
+        return users, total
 
-# Test rendering components
+# Example: How to use the transparent admin system
+#| doc
+"""
+## Using the Admin System
+
+Here's how to add an admin panel to your FastHTML app - completely transparent:
+"""
+
+#| export
+def create_app_with_admin():
+    """Example showing transparent admin integration"""
+    from fasthtml.common import *
+    
+    # 1. Create YOUR app
+    app, rt = fast_app()
+    
+    # 2. Set up database
+    db = database("app.db")
+    
+    # 3. Create auth and admin route handlers
+    auth = AuthRoutes(db)
+    admin = AdminRoutes(db)
+    
+    # 4. Explicitly register admin routes - you control everything
+    @rt("/admin")
+    def admin_dashboard(sess):
+        return admin.admin_dashboard(sess)
+    
+    @rt("/admin/users")
+    def user_management(req, sess):
+        return admin.user_management(req, sess)
+    
+    @rt("/admin/users/{user_id}/edit")
+    def edit_user(user_id: int, sess):
+        if not admin.is_admin(sess):
+            return Response("Unauthorized", status_code=403)
+        return admin.edit_user_form(user_id)
+    
+    @rt("/admin/users/{user_id}/toggle", methods=["POST"])
+    def toggle_user(user_id: int, sess):
+        if not admin.is_admin(sess):
+            return Response("Unauthorized", status_code=403)
+        return admin.toggle_user_status(user_id)
+    
+    # 5. Wire up authentication routes
+    @rt("/auth/login")
+    def login_page():
+        return auth.login_page()
+    
+    @rt("/auth/login", methods=["POST"])
+    async def login(req, sess):
+        return await auth.login(req, sess)
+    
+    @rt("/auth/logout")
+    def logout(sess):
+        return auth.logout(sess)
+    
+    # 6. Your app routes
+    @rt("/")
+    def home(sess):
+        return Container(
+            H1("My SaaS App"),
+            Button("Admin Panel", href="/admin") if admin.is_admin(sess) else None,
+            Button("Login", href="/auth/login") if 'user_id' not in sess else None
+        )
+    
+    return app
+
+# Test the transparent approach
 #| test
-# Create sample data
-sample_users = [
-    User(id=1, username="john_doe", email="john@example.com", 
-         password_hash="...", is_active=True, created_at=datetime(2024, 1, 1)),
-    User(id=2, username="jane_smith", email="jane@example.com",
-         password_hash="...", is_active=False, created_at=datetime(2024, 1, 2))
-]
-
-# Test admin dashboard initialization
-admin = AdminDashboard(None, SaaSConfig(app_name="Test"))
-
-# Test user row rendering
-row = admin.render_user_row(sample_users[0])
-assert "john_doe" in str(row)
-assert "Active" in str(row)
-
-# Visual test - render user table
-table = Table(
-    Tbody(*[admin.render_user_row(user) for user in sample_users])
-)
-display(table)
+app = create_app_with_admin()
+assert app is not None
+print("✓ Transparent admin app creation works")
 ```
 
 #### Interactive Development Benefits
@@ -892,7 +1337,7 @@ assert "Edit User" in table_html  # Action buttons present
 assert "Bulk Actions" in table_html  # Bulk actions present
 ```
 
-### 5. Developer Experience
+### 6. Developer Experience
 
 #### nbdev Workflow Integration
 The package leverages nbdev's features for an enhanced developer experience:
@@ -949,153 +1394,167 @@ launch-kit deploy  # Deploy wizard
 - Redis caching
 - Background jobs
 
-### 6. Integration with FastHTML
+### 7. Integration with FastHTML
 
-#### nbdev + FastHTML Synergy
-The combination of nbdev and FastHTML creates powerful development patterns:
+#### FastHTML Patterns First
+The toolkit embraces FastHTML patterns over custom abstractions:
 ```python
 #| export
 import os
 from typing import Dict, List, Optional, Any
 from fasthtml.common import *
-from functools import wraps
-from launch_kit import get_current_user, get_team_member
+from launch_kit.database import get_user_by_token
 
-def authenticated(f):
-    """Decorator to require authentication"""
-    @wraps(f)
-    async def wrapper(req, *args, **kwargs):
-        # Check session cookie
-        session_token = req.cookies.get('session')
-        if not session_token:
-            return RedirectResponse('/auth/login?next=' + req.url.path)
-        
-        # Validate session and get user
-        user = await get_current_user(session_token)
-        if not user:
-            return RedirectResponse('/auth/login?next=' + req.url.path)
-        
-        # Add user to request scope
-        req.scope['user'] = user
-        return await f(req, *args, **kwargs)
-    return wrapper
+# Direct session checks in route handlers
+def check_auth(sess):
+    """Simple auth check - transparent and debuggable"""
+    return sess.get('user_id') is not None
 
-def team_required(role: str = 'member'):
-    """Decorator to require team membership with specific role"""
-    def decorator(f):
-        @wraps(f)
-        @authenticated  # Also requires authentication
-        async def wrapper(req, *args, **kwargs):
-            team_id = kwargs.get('team_id')
-            if not team_id:
-                return HTMLResponse("Team ID required", status_code=400)
-            
-            # Check team membership
-            member = await get_team_member(req.scope['user'].id, team_id)
-            if not member:
-                return HTMLResponse("Not a team member", status_code=403)
-            
-            # Check role hierarchy
-            role_hierarchy = ['member', 'admin', 'owner']
-            if role_hierarchy.index(member.role) < role_hierarchy.index(role):
-                return HTMLResponse(f"{role} role required", status_code=403)
-            
-            # Add team to request scope
-            req.scope['team'] = member.team
-            req.scope['team_member'] = member
-            return await f(req, *args, **kwargs)
-        return wrapper
-    return decorator
+def check_admin(sess, db):
+    """Admin check - visible logic"""
+    user_id = sess.get('user_id')
+    if not user_id:
+        return False
+    user = db.query("SELECT is_admin FROM users WHERE id = ?", [user_id])
+    return user and user[0]['is_admin']
 
-def subscription_required(tier: str = 'free', feature: str = None):
-    """Decorator to require specific subscription tier or feature"""
-    def decorator(f):
-        @wraps(f)
-        async def wrapper(req, *args, **kwargs):
-            # Get team from scope (requires team_required decorator)
-            team = req.scope.get('team')
-            if not team:
-                return HTMLResponse("Team context required", status_code=400)
-            
-            # Check subscription
-            tier_hierarchy = ['free', 'starter', 'pro', 'enterprise']
-            team_tier_index = tier_hierarchy.index(team.subscription_tier)
-            required_tier_index = tier_hierarchy.index(tier)
-            
-            if team_tier_index < required_tier_index:
-                return Div(
-                    H2("Upgrade Required", cls="text-2xl font-bold mb-4"),
-                    P(f"This feature requires the {tier.title()} plan or higher."),
-                    A("Upgrade Now", href="/billing/upgrade", cls="btn btn-primary mt-4")
-                )
-            
-            # Check specific feature if provided
-            if feature and not team.has_feature(feature):
-                return HTMLResponse(f"Feature '{feature}' not available", status_code=403)
-            
-            return await f(req, *args, **kwargs)
-        return wrapper
-    return decorator
-
-# Example usage
-@app.get("/dashboard")
-@authenticated
-async def dashboard(req):
-    user = req.scope["user"]
-    return PageLayout(
-        H1(f"Welcome back, {user.username}!", cls="text-3xl font-bold mb-6"),
-        DashboardStats(user),
-        RecentActivity(user),
-        QuickActions(user),
-        title="Dashboard",
-        user=user
-    )
-
-@app.get("/team/{team_id}/settings")
-@team_required(role="admin")
-@subscription_required(tier="pro")
-async def team_settings(req, team_id: str):
-    team = req.scope["team"]
-    member = req.scope["team_member"]
+def check_team_role(sess, team_id, required_role, db):
+    """Check team membership and role"""
+    user_id = sess.get('user_id')
+    if not user_id:
+        return False
     
-    return PageLayout(
-        H1(f"{team.name} Settings", cls="text-3xl font-bold mb-6"),
-        Tabs(
-            Tab("General", TeamGeneralSettings(team)),
-            Tab("Members", TeamMemberManagement(team, member)),
-            Tab("Billing", TeamBillingSettings(team)),
-            Tab("Security", TeamSecuritySettings(team)),
-            Tab("Integrations", TeamIntegrations(team))
-        ),
-        title=f"{team.name} Settings",
-        user=req.scope["user"]
+    member = db.query(
+        "SELECT role FROM team_members WHERE user_id = ? AND team_id = ?",
+        [user_id, team_id]
     )
+    if not member:
+        return False
+    
+    role_hierarchy = ['member', 'admin', 'owner']
+    user_role_idx = role_hierarchy.index(member[0]['role'])
+    required_idx = role_hierarchy.index(required_role)
+    return user_role_idx >= required_idx
 
-# Test decorators
+def check_subscription(team_id, required_tier, db):
+    """Check if team has required subscription tier"""
+    team = db.query(
+        "SELECT subscription_tier FROM teams WHERE id = ?", 
+        [team_id]
+    )
+    if not team:
+        return False
+    
+    tier_hierarchy = ['free', 'starter', 'pro', 'enterprise']
+    team_tier_idx = tier_hierarchy.index(team[0]['subscription_tier'])
+    required_idx = tier_hierarchy.index(required_tier)
+    return team_tier_idx >= required_idx
+
+def get_team_features(team_id, db):
+    """Get list of features available to team"""
+    features = db.query(
+        """SELECT f.name 
+           FROM features f
+           JOIN plan_features pf ON f.id = pf.feature_id
+           JOIN teams t ON t.plan_id = pf.plan_id
+           WHERE t.id = ?""",
+        [team_id]
+    )
+    return [f['name'] for f in features] if features else []
+
+# Example usage - transparent authentication and authorization
+def create_dashboard_app():
+    """Example app with transparent auth and team management"""
+    from fasthtml.common import *
+    
+    # 1. Create YOUR app
+    app, rt = fast_app()
+    
+    # 2. Set up database
+    db = database("app.db")
+    
+    # 3. Dashboard route with explicit auth check
+    @rt("/dashboard")
+    def dashboard(sess):
+        # Check authentication explicitly
+        if not check_auth(sess):
+            return RedirectResponse("/auth/login?next=/dashboard")
+        
+        # Get user data
+        user_id = sess['user_id']
+        user = db.query("SELECT * FROM users WHERE id = ?", [user_id])[0]
+        
+        return PageLayout(
+            H1(f"Welcome back, {user['username']}!", cls="text-3xl font-bold mb-6"),
+            DashboardStats(user),
+            RecentActivity(user, db),
+            QuickActions(user),
+            title="Dashboard"
+        )
+    
+    # 4. Team settings with explicit role and subscription checks
+    @rt("/team/{team_id}/settings")
+    def team_settings(team_id: str, sess):
+        # Check authentication
+        if not check_auth(sess):
+            return RedirectResponse(f"/auth/login?next=/team/{team_id}/settings")
+        
+        # Check team membership and role
+        if not check_team_role(sess, team_id, 'admin', db):
+            return Response("Admin access required", status_code=403)
+        
+        # Check subscription
+        if not check_subscription(team_id, 'pro', db):
+            return Div(
+                H2("Upgrade Required", cls="text-2xl font-bold mb-4"),
+                P("This feature requires the Pro plan or higher."),
+                A("Upgrade Now", href="/billing/upgrade", cls="btn btn-primary mt-4")
+            )
+        
+        # Get team data
+        team = db.query("SELECT * FROM teams WHERE id = ?", [team_id])[0]
+        user_id = sess['user_id']
+        
+        return PageLayout(
+            H1(f"{team['name']} Settings", cls="text-3xl font-bold mb-6"),
+            Tabs(
+                Tab("General", TeamGeneralSettings(team, db)),
+                Tab("Members", TeamMemberManagement(team, user_id, db)),
+                Tab("Billing", TeamBillingSettings(team, db)),
+                Tab("Security", TeamSecuritySettings(team, db)),
+                Tab("Integrations", TeamIntegrations(team, db))
+            ),
+            title=f"{team['name']} Settings"
+        )
+    
+    return app
+
+# Test transparent auth checks
 #| test
-# Mock request object
-class MockRequest:
-    def __init__(self, cookies=None, path="/"):
-        self.cookies = cookies or {}
-        self.scope = {}
-        self.url = type('obj', (object,), {'path': path})
+# Mock session
+mock_sess = {}
 
-# Test authenticated decorator
-@authenticated
-async def protected_route(req):
-    return f"Hello {req.scope['user'].username}"
+# Test without authentication
+assert not check_auth(mock_sess)
 
-# Test without session
-req = MockRequest()
-response = await protected_route(req)
-assert isinstance(response, RedirectResponse)
-assert response.headers['location'] == '/auth/login?next=/'
+# Test with authentication
+mock_sess['user_id'] = 1
+assert check_auth(mock_sess)
 
-# Test with valid session
-req = MockRequest(cookies={'session': 'valid_token'})
-# Would need to mock get_current_user for full test
+# Mock database for admin check
+class MockDB:
+    def query(self, sql, params):
+        if "is_admin" in sql:
+            return [{'is_admin': True}]
+        return None
 
-print("✓ Decorator tests passed")
+db = MockDB()
+assert check_admin(mock_sess, db)
+
+# Test team role check
+assert not check_team_role({}, 1, 'admin', db)  # No auth
+
+print("✓ Transparent auth tests passed")
 ```
 
 #### MonsterUI Component Library Integration
@@ -1106,8 +1565,7 @@ The toolkit leverages MonsterUI's comprehensive component library for beautiful,
 from launch_kit.ui import *
 from monsterui import *
 
-# Authentication Components with MonsterUI
-@component
+# Authentication Components with MonsterUI - no decorators needed
 def SaaSAuthForm(mode="login", providers=None):
     """Beautiful auth forms using MonsterUI components"""
     return Card(
@@ -1140,14 +1598,15 @@ def SaaSAuthForm(mode="login", providers=None):
                     icon=provider,
                     href=f"/auth/{provider}"
                 ) for provider in (providers or [])]
-            ) if providers else None
+            ) if providers else None,
+            method="post",
+            action="/auth/login" if mode == "login" else "/auth/signup"
         ),
         max_width="sm",
         mx="auto"
     )
 
-# Dashboard Components
-@component 
+# Dashboard Components - simple functions, no decorators
 def SaaSDashboard(user, stats):
     """Full dashboard layout with MonsterUI"""
     return DashboardLayout(
@@ -1167,59 +1626,57 @@ def SaaSDashboard(user, stats):
         # Main content
         MainContent(
             PageHeader(
-                f"Welcome back, {user.name}!",
+                f"Welcome back, {user['name']}!",
                 actions=[
                     Button("New Project", variant="primary", icon="plus")
                 ]
             ),
             Grid(
-                StatsCard("Total Revenue", f"${stats.revenue:,.0f}", trend="+12%"),
-                StatsCard("Active Users", stats.users, trend="+5%"),
-                StatsCard("Conversion", f"{stats.conversion:.1f}%", trend="+2.3%"),
-                StatsCard("Churn Rate", f"{stats.churn:.1f}%", trend="-0.5%"),
+                StatsCard("Total Revenue", f"${stats['revenue']:,.0f}", trend="+12%"),
+                StatsCard("Active Users", stats['users'], trend="+5%"),
+                StatsCard("Conversion", f"{stats['conversion']:.1f}%", trend="+2.3%"),
+                StatsCard("Churn Rate", f"{stats['churn']:.1f}%", trend="-0.5%"),
                 cols=4
             ),
             Grid(
                 Card(
                     CardHeader("Recent Activity"),
-                    Timeline(stats.recent_activity)
+                    Timeline(stats['recent_activity'])
                 ),
                 Card(
                     CardHeader("Revenue Chart"),
-                    Chart(type="area", data=stats.revenue_data)
+                    Chart(type="area", data=stats['revenue_data'])
                 ),
                 cols=2
             )
         )
     )
 
-# Pricing Components
-@component
+# Pricing Components - no decorators needed
 def PricingTable(plans):
     """Beautiful pricing table with MonsterUI"""
     return Container(
         H2("Choose Your Plan", align="center"),
         Grid(
             *[PricingCard(
-                title=plan.name,
-                price=plan.price,
-                period=plan.period,
-                features=plan.features,
+                title=plan['name'],
+                price=plan['price'],
+                period=plan['period'],
+                features=plan['features'],
                 cta=Button(
-                    "Get Started" if not plan.popular else "Start Free Trial",
-                    variant="primary" if plan.popular else "outline",
+                    "Get Started" if not plan.get('popular') else "Start Free Trial",
+                    variant="primary" if plan.get('popular') else "outline",
                     full_width=True,
-                    href=f"/signup?plan={plan.id}"
+                    href=f"/signup?plan={plan['id']}"
                 ),
-                popular=plan.popular
+                popular=plan.get('popular', False)
             ) for plan in plans],
             cols=3,
             gap=6
         )
     )
 
-# Form Builder Components
-@component
+# Form Builder Components - simple functions
 def SettingsForm(user):
     """Settings form with validation"""
     return Form(
@@ -1228,15 +1685,15 @@ def SettingsForm(user):
             Stack(
                 FormField(
                     Label("Display Name"),
-                    Input(name="name", value=user.name, required=True)
+                    Input(name="name", value=user['name'], required=True)
                 ),
                 FormField(
                     Label("Email"),
-                    Input(type="email", name="email", value=user.email, required=True)
+                    Input(type="email", name="email", value=user['email'], required=True)
                 ),
                 FormField(
                     Label("Bio"),
-                    Textarea(name="bio", value=user.bio, rows=4)
+                    Textarea(name="bio", value=user.get('bio', ''), rows=4)
                 ),
                 Flex(
                     Button("Cancel", variant="outline"),
@@ -1250,8 +1707,7 @@ def SettingsForm(user):
         hx_target="#notifications"
     )
 
-# Table Components
-@component
+# Table Components - direct functions
 def CustomerTable(customers, actions=True):
     """Rich data table with MonsterUI"""
     return DataTable(
@@ -1274,7 +1730,7 @@ def CustomerTable(customers, actions=True):
     )
 ```
 
-### 7. Database Approach (02_database.ipynb)
+### 8. Database Approach (02_database.ipynb)
 
 #### Literate Database Development
 Database schema and migrations are developed in notebooks with visual feedback:
@@ -1399,7 +1855,7 @@ class Project(Model):
             raise ValueError("Project name is required")
 ```
 
-### 8. Testing Support (17_testing.ipynb)
+### 9. Testing Support (17_testing.ipynb)
 
 #### nbdev Testing Philosophy
 Tests are written inline with the code in notebooks, making them part of the documentation:
@@ -1438,15 +1894,12 @@ class SaaSTestCase:
         self.db_file = tempfile.NamedTemporaryFile(delete=False)
         self.db = sqlite3.connect(self.db_file.name)
         
-        # Create test app with test config
-        from launch_kit import create_saas_app, SaaSConfig
-        config = SaaSConfig(
-            app_name="Test App",
-            database_url=f"sqlite:///{self.db_file.name}",
-            secret_key="test-secret-key",
-            email_provider="console"  # Don't send real emails
-        )
-        self.app = create_saas_app(config)
+        # Create test app transparently
+        from fasthtml.common import fast_app
+        from launch_kit.database import database
+        
+        self.app, self.rt = fast_app()
+        self.test_db = database(self.db_file.name)
         
         # Run migrations
         from launch_kit.db import run_migrations
@@ -1545,19 +1998,31 @@ class SaaSTestCase:
 #| test
 def test_subscription_upgrade():
     """This test demonstrates the subscription upgrade flow"""
-    # Create test data using factories
-    user = factories.create_user()
-    team = factories.create_team(owner=user)
-    
-    # Test the upgrade process
     test_case = SaaSTestCase()
+    test_case.setup()
+    
+    # Create test data
+    user = test_case.create_user()
+    team = test_case.create_team(owner=user)
+    
+    # Log in as user
     test_case.login_as(user)
     
-    # Simulate upgrade
-    team.upgrade_subscription("pro")
+    # Simulate upgrade by updating database
+    test_case.db.execute(
+        "UPDATE teams SET subscription_tier = ? WHERE id = ?",
+        ('pro', team.id)
+    )
+    test_case.db.commit()
     
     # Verify results
-    test_case.assertSubscriptionActive(team, tier="pro")
+    result = test_case.db.execute(
+        "SELECT subscription_tier FROM teams WHERE id = ?",
+        (team.id,)
+    ).fetchone()
+    assert result[0] == 'pro'
+    
+    test_case.teardown()
     
 # Run the test
 test_subscription_upgrade()
@@ -1672,27 +2137,49 @@ results = run_notebook_tests()
 display_test_summary(results)  # Shows green checkmarks, coverage, etc.
 ```
 
-### 9. Deployment Support
+### 10. Deployment Support
 
 #### Configuration
 ```python
 # config/production.py
-from launch_kit import ProductionConfig
+import os
+from fasthtml.common import *
+from launch_kit.database import database
+from launch_kit.auth import AuthRoutes
+from launch_kit.admin import AdminRoutes
 
-config = ProductionConfig(
-    # Auto-configures from environment
-    database_url=os.environ.get("DATABASE_URL"),
-    redis_url=os.environ.get("REDIS_URL"),
+# Create production app with explicit configuration
+def create_production_app():
+    # Get configuration from environment
+    DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///prod.db")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
     
-    # Production defaults
-    debug=False,
-    secure_cookies=True,
-    force_https=True,
+    # Create app with production settings
+    app, rt = fast_app(
+        secret_key=SECRET_KEY,
+        debug=False,
+        hdrs=(MonsterUI(),)
+    )
     
-    # Monitoring
-    sentry_dsn=os.environ.get("SENTRY_DSN"),
-    metrics_enabled=True,
-)
+    # Set up database
+    db = database(DATABASE_URL)
+    
+    # Create route handlers
+    auth = AuthRoutes(db)
+    admin = AdminRoutes(db)
+    
+    # Wire up routes explicitly
+    @rt("/auth/login")
+    def login_page():
+        return auth.login_page()
+    
+    @rt("/auth/login", methods=["POST"])
+    async def login(req, sess):
+        return await auth.login(req, sess)
+    
+    # ... wire up other routes as needed
+    
+    return app
 ```
 
 #### Deployment Files
@@ -1703,7 +2190,7 @@ config = ProductionConfig(
 - Render.com blueprint
 - Fly.io configuration
 
-### 10. Documentation & Examples
+### 11. Documentation & Examples
 
 #### nbdev-Generated Documentation
 The entire documentation is generated from notebooks, ensuring it's always up-to-date:
@@ -1736,7 +2223,7 @@ Each example can be:
 2. Exported to a standalone Python app
 3. Used as a template for new projects
 
-### 11. Future Roadmap
+### 12. Future Roadmap
 
 Future modules, each developed as notebooks:
 - **Analytics Module**: User tracking, funnel analysis

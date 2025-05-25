@@ -2,7 +2,7 @@
 
 ## Product Overview
 
-**Goal:** Create a comprehensive nbdev-based toolkit that enables developers to build production-ready SaaS applications with FastHTML in under 50 lines of code.
+**Goal:** Create a comprehensive nbdev-based toolkit that provides transparent, composable utilities for building production-ready SaaS applications with FastHTML.
 
 **Target Users:**
 - Solo developers building MVPs
@@ -23,11 +23,21 @@
 **User Story:** As a developer, I want to create a basic SaaS app with authentication so I can focus on my business logic.
 
 **Acceptance Criteria:**
-- [ ] `create_saas_app()` function creates FastHTML app with MonsterUI integrated:
+- [ ] Developers create their own FastHTML app and explicitly add features:
   ```python
-  from launch_kit import create_saas_app, SaaSConfig
-  # MonsterUI components are automatically available
-  app = create_saas_app(SaaSConfig(app_name="MyApp"))
+  from fasthtml import fast_app
+  from launch_kit import setup_auth, setup_database, auth_routes
+  from monsterui import *
+  
+  # Developer owns the app creation
+  app, rt = fast_app()
+  
+  # Explicitly add the features they need
+  setup_database(app)
+  setup_auth(app)
+  
+  # Full visibility into route registration
+  auth_routes(app)
   ```
 - [ ] Password authentication with bcrypt hashing (cost factor 12)
 - [ ] User registration with email validation:
@@ -56,17 +66,17 @@
    - Set up GitHub Actions for CI/CD
    - Create development notebook template
 
-2. Create `00_core.ipynb` with base application factory:
-   - Define `create_saas_app()` function
-   - Implement feature registration system
-   - Add middleware setup (CORS, security headers)
-   - Include error handling and logging setup
+2. Create `00_core.ipynb` with transparent utility functions:
+   - Define setup utilities that enhance FastHTML apps
+   - Implement beforeware functions for authentication
+   - Add security header utilities
+   - Include error handling helpers
 
-3. Create `01_config.ipynb` with SaaSConfig class:
-   - Dataclass with type hints and defaults
-   - Environment variable loading with python-decouple
-   - Configuration validation on instantiation
-   - Feature flags dictionary with type checking
+3. Create `01_config.ipynb` with configuration utilities:
+   - Simple configuration helpers, not a monolithic class
+   - Environment variable loading utilities
+   - Configuration validation functions
+   - Transparent settings that developers control
 
 4. Create `02_database.ipynb` with schema and models:
    - SQLAlchemy or fastsql models
@@ -75,13 +85,13 @@
    - Query helper functions
    - Seed data for development
 
-5. Create `03_auth.ipynb` with complete auth system:
-   - Password hashing with bcrypt
-   - Login/logout/register routes
-   - Session management middleware
-   - Rate limiting (5 attempts per 15 minutes)
-   - Password strength validation
-   - "Remember me" functionality
+5. Create `03_auth.ipynb` with auth utilities:
+   - Password hashing utilities with bcrypt
+   - Auth route functions developers can mount
+   - Session management beforeware
+   - Rate limiting decorators
+   - Password validation helpers
+   - "Remember me" utilities
 
 6. Create UI components in `04_ui_base.ipynb`:
    - Base layout with MonsterUI DashboardLayout
@@ -152,14 +162,14 @@
   launch-kit --help     # Shows all commands
   ```
 
-- [ ] Project creation with templates:
+- [ ] Project creation with transparent templates:
   ```bash
   launch-kit new myapp --template=basic  # Creates in ./myapp/
-  # Interactive prompts for:
-  # - App name
-  # - Database (SQLite/PostgreSQL/MySQL)
-  # - Authentication providers
-  # - Initial admin email
+  # Creates a starter project showing:
+  # - How to create a FastHTML app
+  # - How to add launch-kit utilities
+  # - Example of integrating features
+  # - Full control and visibility
   ```
 
 - [ ] Template specifications:
@@ -168,8 +178,9 @@
   - **Enterprise**: +API, webhooks, multi-tenancy (< 5000 lines)
   - All templates include tests and documentation
 
-- [ ] Feature addition commands:
+- [ ] Feature addition commands (adds example code, not magic):
   ```bash
+  # These commands add example code showing how to integrate features
   launch-kit add auth --providers=google,github
   launch-kit add billing --provider=stripe --mode=subscriptions
   launch-kit add teams --features=invites,roles
