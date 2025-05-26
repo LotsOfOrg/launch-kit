@@ -12,6 +12,7 @@ This is a FastHTML toolkit called "launch-kit" for building production-ready Saa
 ```bash
 # Install in development mode
 pip install -e .
+# Use uv for python environments eg. uv pip install -e .
 ```
 
 ### Core nbdev workflow
