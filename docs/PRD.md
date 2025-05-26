@@ -1,316 +1,352 @@
-# Launch Kit PRD - FastHTML SaaS Toolkit
+# Launch Kit PRD - FastHTML SaaS Utilities
 
 ## Product Overview
 
-**Goal:** Create a comprehensive nbdev-based toolkit that enables developers to build production-ready SaaS applications with FastHTML in under 50 lines of code.
+**Vision:** Provide transparent, composable utilities that help developers build production-ready SaaS applications with FastHTML without hiding the framework or adding magic.
+
+**Philosophy:** Like MonsterUI adds UI components to FastHTML, Launch Kit adds SaaS functionality through simple utilities you can understand, customize, and control.
 
 **Target Users:**
-- Solo developers building MVPs
-- Small teams creating B2B SaaS products
-- FastHTML developers who want to skip boilerplate
+- FastHTML developers building SaaS applications
+- Teams who want SaaS features without framework lock-in
+- Developers who value transparency and control
+
+## Core Principles
+
+1. **No Magic** - Every utility is inspectable and understandable
+2. **Composable** - Import only what you need, ignore the rest
+3. **Transparent** - See exactly what's happening, no hidden behavior
+4. **FastHTML-First** - Enhance FastHTML patterns, don't replace them
+5. **Override-Friendly** - Sensible defaults with full customization
 
 ## Success Metrics
-- Developer can create authenticated SaaS app in <10 minutes
-- Package has >1000 GitHub stars within 6 months
-- 90%+ test coverage maintained
-- Documentation satisfaction >4.5/5
 
-## MVP Requirements (Phase 1)
+- Developers can add auth to FastHTML app in <5 minutes
+- 100% of utilities are self-contained and optional
+- Zero wrapper functions or framework abstractions
+- Documentation shows real FastHTML patterns throughout
+- Every utility can be customized or replaced
 
-### Epic 1: Core Foundation
-**Timeline:** Week 1-2
+## Package Structure
 
-**User Story:** As a developer, I want to create a basic SaaS app with authentication so I can focus on my business logic.
+### Phase 1: Core Authentication & Admin (Weeks 1-2)
 
-**Acceptance Criteria:**
-- [ ] `create_saas_app()` function creates FastHTML app with MonsterUI integrated:
-  ```python
-  from launch_kit import create_saas_app, SaaSConfig
-  # MonsterUI components are automatically available
-  app = create_saas_app(SaaSConfig(app_name="MyApp"))
-  ```
-- [ ] Password authentication with bcrypt hashing (cost factor 12)
-- [ ] User registration with email validation:
-  - Registration at `/auth/register`
-  - Login at `/auth/login`
-  - Logout at `/auth/logout`
-  - Email verification tokens expire in 24 hours
-- [ ] Session management using secure cookies:
-  - HTTPOnly, Secure, SameSite=Lax flags
-  - Session timeout configurable (default 30 days)
-  - Automatic session refresh on activity
-- [ ] User dashboard at `/dashboard` with MonsterUI components:
-  - Welcome message with username using PageHeader
-  - Last login timestamp in StatsCard
-  - Account settings link with Button component
-- [ ] SQLite database with migrations:
-  - Users table with id, email, username, password_hash, email_verified, created_at
-  - Sessions table with id, user_id, token, expires_at
-  - Automatic migration on app startup
-- [ ] All code in nbdev notebooks with >90% test coverage
+**Deliverables:**
+- Authentication utilities (password hashing, verification)
+- Pre-built auth routes (login, logout, register) 
+- Session-based auth beforeware
+- Admin panel utilities
+- CSRF protection
+- Basic UI components
 
-**Implementation Tasks:**
-1. Set up nbdev project structure:
-   - Initialize with `nbdev new` 
-   - Configure settings.ini with project metadata
-   - Set up GitHub Actions for CI/CD
-   - Create development notebook template
+**Structure:**
+```
+launch_kit/
+├── auth.py          # hash_password(), verify_password(), user_auth_before()
+├── auth_routes.py   # setup_auth_routes() with customizable templates
+├── permissions.py   # require_auth(), require_role() checks
+├── admin.py         # AdminPanel utilities, generate_list_view()
+├── middleware.py    # setup_csrf_protection(), RateLimiter
+├── components.py    # LoginForm, AdminTable, other UI components
+```
 
-2. Create `00_core.ipynb` with base application factory:
-   - Define `create_saas_app()` function
-   - Implement feature registration system
-   - Add middleware setup (CORS, security headers)
-   - Include error handling and logging setup
+### Phase 2: Teams & Billing (Week 3)
 
-3. Create `01_config.ipynb` with SaaSConfig class:
-   - Dataclass with type hints and defaults
-   - Environment variable loading with python-decouple
-   - Configuration validation on instantiation
-   - Feature flags dictionary with type checking
-
-4. Create `02_database.ipynb` with schema and models:
-   - SQLAlchemy or fastsql models
-   - Migration system using Alembic or custom
-   - Connection pooling configuration
-   - Query helper functions
-   - Seed data for development
-
-5. Create `03_auth.ipynb` with complete auth system:
-   - Password hashing with bcrypt
-   - Login/logout/register routes
-   - Session management middleware
-   - Rate limiting (5 attempts per 15 minutes)
-   - Password strength validation
-   - "Remember me" functionality
-
-6. Create UI components in `04_ui_base.ipynb`:
-   - Base layout with MonsterUI DashboardLayout
-   - Form components with MonsterUI's FormField and validation
-   - Alert and notification system with MonsterUI
-   - Responsive design with MonsterUI's built-in system
-   - Loading states with MonsterUI Skeleton and Spinner components
-
-7. Write tests achieving >90% coverage:
-   - Unit tests for each function
-   - Integration tests for auth flows
-   - UI component rendering tests
-   - Security tests (SQL injection, XSS)
-   - Performance benchmarks
-
-8. Generate and deploy documentation:
-   - API reference from docstrings
-   - Interactive examples
-   - Getting started guide
-   - Deploy to GitHub Pages
-
-### Epic 2: Admin Dashboard
-**Timeline:** Week 3
-
-**User Story:** As a SaaS operator, I want an admin dashboard to manage users and view analytics.
-
-**Acceptance Criteria:**
-- [ ] Admin dashboard at `/admin` with role-based access:
-  - Only users with `is_admin=True` can access
-  - Automatic redirect for non-admins
-  - Admin middleware checks on all admin routes
-
-- [ ] User management interface with MonsterUI DataTable:
-  - Sortable table with columns: Username, Email, Status (Badge), Created, Last Login, Actions
-  - Quick actions using ButtonGroup: Enable/Disable, Reset Password, Make Admin
-  - Bulk actions with Select and Button components: Export CSV, Bulk Delete, Bulk Email
-  - User detail modal using Modal component with full profile and activity log
-
-- [ ] Search and filtering capabilities with MonsterUI:
-  - Real-time search using SearchInput component
-  - Filters using Select components: Status (active/inactive), Verified (yes/no), Admin (yes/no)
-  - Date range filters using DatePicker components
-  - Results update via HTMX without page reload
-
-- [ ] Analytics dashboard with MonsterUI components:
-  - StatsCard components for: Total users, active today/week/month
-  - Chart component for registration trends (daily for 30 days)
-  - DataTable for user retention cohort analysis
-  - PieChart for top referral sources
-  - Map component for geographic distribution
-
-- [ ] Comprehensive audit logging:
-  - Log all admin actions with timestamp, admin user, action type, target user
-  - Searchable audit log interface
-  - Export audit logs for compliance
-  - Automatic cleanup of logs older than 90 days
-
-### Epic 3: CLI and Templates  
-**Timeline:** Week 4
-
-**User Story:** As a developer, I want CLI tools to scaffold new projects quickly.
-
-**Acceptance Criteria:**
-- [ ] CLI installation and commands:
-  ```bash
-  pip install launch-kit
-  launch-kit --version  # Shows version
-  launch-kit --help     # Shows all commands
-  ```
-
-- [ ] Project creation with templates:
-  ```bash
-  launch-kit new myapp --template=basic  # Creates in ./myapp/
-  # Interactive prompts for:
-  # - App name
-  # - Database (SQLite/PostgreSQL/MySQL)
-  # - Authentication providers
-  # - Initial admin email
-  ```
-
-- [ ] Template specifications:
-  - **Basic**: Auth, user dashboard, settings (< 500 lines)
-  - **Advanced**: +Teams, billing, admin panel (< 2000 lines)
-  - **Enterprise**: +API, webhooks, multi-tenancy (< 5000 lines)
-  - All templates include tests and documentation
-
-- [ ] Feature addition commands:
-  ```bash
-  launch-kit add auth --providers=google,github
-  launch-kit add billing --provider=stripe --mode=subscriptions
-  launch-kit add teams --features=invites,roles
-  launch-kit add api --features=keys,rate-limiting
-  ```
-
-- [ ] Database management:
-  ```bash
-  launch-kit db init      # Create database and tables
-  launch-kit db migrate   # Run pending migrations
-  launch-kit db rollback  # Rollback last migration
-  launch-kit db seed      # Load sample data
-  launch-kit db reset     # Drop and recreate
-  ```
-
-- [ ] Development tools:
-  ```bash
-  launch-kit dev          # Start with hot reload, opens browser
-  launch-kit dev --port=8000 --no-open  # Custom options
-  launch-kit test         # Run test suite with coverage
-  launch-kit lint         # Run code quality checks
-  ```
-
-## Phase 2: Enhanced Features
-
-### Epic 4: Team Management
-- Multi-user teams
-- Role-based permissions
-- Team switching interface
-- Invitation system
-
-### Epic 5: Billing Integration
-- Stripe integration
+**Deliverables:**
+- Team management utilities
+- Billing integration helpers (Stripe, Paddle)
 - Subscription management
-- Usage-based billing
-- Pricing table component
+- Team invitation system
 
-### Epic 6: API Management
-- API key generation
-- Rate limiting
-- API documentation
-- Webhook handling
+**Structure:**
+```
+launch_kit/
+├── teams.py         # Team model, invitation utilities
+├── billing.py       # StripeClient, subscription helpers
+├── billing_ui.py    # PricingTable, BillingSettings components
+```
+
+### Phase 3: SaaS Features (Week 4)
+
+**Deliverables:**
+- Feature flags with percentage rollouts
+- Audit logging for compliance
+- Background job queue
+- Email utilities
+- Search functionality
+- Data export (CSV/JSON)
+
+**Structure:**
+```
+launch_kit/
+├── saas_features.py # FeatureFlags, audit_log(), JobQueue
+├── search.py        # SearchIndex for full-text search
+├── exports.py       # export_to_csv(), create_export_response()
+├── api.py           # API key management, validation
+```
+
+## Key Features & Implementation
+
+### 1. Authentication System
+
+**NOT This:**
+```python
+# ❌ Hidden magic
+app = create_saas_app(features=["auth"])
+```
+
+**But This:**
+```python
+# ✅ Transparent utilities
+from fasthtml.common import *
+from launch_kit.auth import user_auth_before, hash_password
+from launch_kit.auth_routes import setup_auth_routes
+
+app, rt = fast_app()  # Standard FastHTML
+
+# Add auth beforeware
+beforeware = Beforeware(
+    user_auth_before,
+    skip=['/auth/login', '/auth/signup', '/static/.*']
+)
+
+# Add auth routes (optional - build your own if preferred)
+setup_auth_routes(rt)
+```
+
+**Key Utilities:**
+- `hash_password(password)` - Returns bcrypt hash
+- `verify_password(password, hash)` - Timing-safe verification
+- `user_auth_before(req, sess)` - Beforeware that adds user to session
+- `setup_auth_routes(rt, login_template=None)` - Optional pre-built routes
+
+### 2. Admin Panel
+
+**Utilities, not framework:**
+```python
+from launch_kit.admin import AdminPanel, setup_admin_routes
+from launch_kit.permissions import require_role
+
+# Option 1: Use pre-built admin routes
+setup_admin_routes(rt, models=[User, Team])
+
+# Option 2: Build your own with utilities
+@rt("/admin/users")
+def get(req, sess):
+    if not require_role("admin", req, sess):
+        return RedirectResponse('/auth/login')
+    
+    admin = AdminPanel()
+    return Title("Users"), admin.generate_list_view(User)
+```
+
+### 3. Feature Flags
+
+**Simple, powerful, transparent:**
+```python
+from launch_kit.saas_features import FeatureFlags
+
+flags = FeatureFlags({
+    "new_ui": {"percentage": 50},      # 50% rollout
+    "billing": True,                   # Everyone
+    "beta": {"users": [1, 2, 3]}      # Specific users
+})
+
+@rt("/")
+def get(req, sess):
+    user = sess.get('user')
+    if flags.is_enabled('new_ui', user):
+        return NewDashboard()
+    return OldDashboard()
+```
+
+### 4. CSRF Protection
+
+**Works with FastHTML forms:**
+```python
+from launch_kit.middleware import setup_csrf_protection
+
+csrf_input, verify_csrf = setup_csrf_protection(app, secret_key)
+
+# In your forms
+def LoginForm(session):
+    return Form(
+        csrf_input(session),  # Adds hidden CSRF token
+        Input(name="username"),
+        Input(name="password", type="password"),
+        Button("Login")
+    )
+```
+
+### 5. Audit Logging
+
+**For compliance and debugging:**
+```python
+from launch_kit.saas_features import audit_log
+
+@rt("/admin/delete-user/{id}")
+def post(req, sess, id: int):
+    user = sess['user']
+    audit_log(user['id'], 'delete_user', f'user:{id}', 
+              details={'ip': req.client.host})
+    # Delete user...
+```
+
+## Development Approach
+
+### nbdev-Based Development
+
+Each module developed as a notebook with:
+- Inline documentation
+- Visual examples
+- Integrated tests
+- Export markers
+
+Example notebook structure:
+```python
+#| default_exp auth
+
+#| export
+def hash_password(password: str) -> str:
+    """Hash password using bcrypt"""
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+#| test
+password = "test123!"
+hashed = hash_password(password)
+assert verify_password(password, hashed)
+```
+
+### Testing Philosophy
+
+Tests are simple and explicit:
+```python
+def test_feature_flags():
+    flags = FeatureFlags({"test": {"percentage": 100}})
+    assert flags.is_enabled("test", {"id": 1})
+    
+def test_rate_limiter():
+    limiter = RateLimiter(5, 60)
+    for _ in range(5):
+        assert limiter.is_allowed("key")
+    assert not limiter.is_allowed("key")
+```
+
+## Documentation
+
+### Examples First
+
+Every utility includes working examples:
+```python
+# Simple auth example
+from fasthtml.common import *
+from launch_kit.auth import setup_auth_routes
+
+app, rt = fast_app()
+setup_auth_routes(rt)
+serve()  # Working app with auth!
+```
+
+### Tutorial Notebooks
+
+1. **Minimal App** - Auth in 10 lines
+2. **Custom Auth** - Replace any component
+3. **Full SaaS** - All features integrated
+4. **Production Deploy** - Real-world setup
+
+## Success Criteria
+
+### Phase 1 Complete When:
+- [x] Developers can add auth without reading source code
+- [x] All utilities work independently
+- [x] No wrapper functions or hidden behavior
+- [x] Examples show real FastHTML patterns
+- [x] 90%+ test coverage
+
+### Phase 2 Complete When:
+- [x] Team management works with standard FastHTML
+- [x] Billing integration is copy-paste simple
+- [x] All UI components use HTMX properly
+- [x] Documentation includes production examples
+
+### Phase 3 Complete When:
+- [x] Feature flags enable A/B testing
+- [x] Audit logs meet compliance needs
+- [x] Search works with any FastHTML app
+- [x] All utilities are production-tested
 
 ## Technical Requirements
 
-### Development Standards
-- All code must be in nbdev notebooks
-- 90%+ test coverage required
-- All functions must have docstrings and examples
-- Documentation auto-generated from notebooks
-- Follow FastHTML conventions and patterns
-
-### Performance Requirements
-- App startup time <2 seconds:
-  - Lazy loading of optional features
-  - Precompiled templates
-  - Connection pool pre-warming
-  
-- Page load times <500ms:
-  - HTMX for partial page updates
-  - Aggressive caching headers for static assets
-  - Gzip compression enabled
-  - Database query optimization (N+1 prevention)
-  
-- Concurrent user support:
-  - Handle 1000+ concurrent connections
-  - Horizontal scaling ready with Redis sessions
-  - Database connection pooling (min=5, max=20)
-  - Rate limiting: 100 requests/minute per user
-  
-- Database optimization:
-  - Indexes on all foreign keys and commonly queried fields
-  - Query execution time logging (warn >100ms)
-  - Prepared statements for all queries
-  - Automatic EXPLAIN on slow queries in development
-
-### Security Requirements
-- OWASP Top 10 compliance:
-  - SQL injection prevention via parameterized queries
-  - XSS protection with auto-escaping templates
-  - CSRF tokens on all state-changing operations
-  - Secure authentication with timing-safe comparisons
-  - XML external entity (XXE) prevention
-  - Security headers: CSP, X-Frame-Options, X-Content-Type-Options
-  
-- Authentication security:
-  - Passwords: min 8 chars, complexity requirements
-  - Account lockout after 5 failed attempts (15 min)
-  - Password reset tokens expire in 1 hour
-  - Two-factor authentication support (TOTP)
-  
-- Session security:
-  - Cryptographically secure session tokens (32 bytes)
-  - Session fixation prevention
-  - Automatic session invalidation on password change
-  - Optional IP address validation
-  
-- Input validation:
-  - All inputs validated with pydantic models
-  - SQL injection prevention via ORM
-  - File upload restrictions (types, size)
-  - Rate limiting on all endpoints
-  
-- Data protection:
-  - Sensitive data encryption at rest
-  - HTTPS enforcement in production
-  - Security event logging
-  - Regular dependency vulnerability scanning
-
-## Dependencies
+### Dependencies
 - FastHTML (latest)
-- MonsterUI (>=1.0.20) - Default UI framework
-- nbdev (latest)
-- fastsql and fastlite or similar ORM
-- Bcrypt for password hashing
-- Click for CLI
+- bcrypt (auth)
+- python-dotenv (config)
+- stripe (optional - billing)
+- Optional: Redis for production rate limiting
 
-## Out of Scope (Future Versions)
-- Advanced analytics
-- Multi-language support
-- Mobile app integration
-- Advanced compliance features (SOC2, HIPAA)
+### Performance
+- Utilities add <10ms overhead
+- Rate limiting uses Redis in production
+- CSRF tokens are cryptographically secure
+- Password hashing uses bcrypt factor 12
+
+### Security
+- Timing-safe password comparison
+- Secure session handling
+- CSRF protection on state changes  
+- Audit logging for compliance
+- Rate limiting on all endpoints
+
+## Out of Scope
+
+These violate our transparency principle:
+- ❌ Wrapper functions hiding FastHTML
+- ❌ Magic configuration files
+- ❌ Automatic route registration
+- ❌ Framework abstractions
+- ❌ Hidden middleware chains
 
 ## Development Process
 
-### Workflow
-1. Each feature starts as a notebook exploration
-2. Code, tests, and docs developed together in notebooks
-3. Use `nbdev_preview` for live documentation updates
-4. Export to Python modules with `nbdev_export`
-5. Continuous integration with GitHub Actions
-
-### Quality Gates
-- All notebooks must run without errors
-- Tests must pass in CI
-- Documentation must build successfully
-- Code review required for all changes
-- Performance benchmarks must pass
+1. **Start with use case** - What does developer need?
+2. **Write simplest utility** - One function, one purpose
+3. **Add to notebook** - Document with examples
+4. **Test in real app** - Ensure FastHTML compatibility
+5. **Get feedback** - Is it transparent enough?
 
 ## Risk Mitigation
-- **Complexity creep:** Start with MVP, resist feature additions
-- **nbdev learning curve:** Provide comprehensive examples
-- **FastHTML compatibility:** Pin versions, test regularly
-- **Community adoption:** Focus on developer experience and docs
+
+**Risk:** Developers expect magic framework
+**Mitigation:** Clear docs showing this is utilities, not framework
+
+**Risk:** Feature creep toward abstraction
+**Mitigation:** Every PR must maintain transparency principle
+
+**Risk:** Utilities become interdependent  
+**Mitigation:** Each utility must work standalone
+
+## Success Examples
+
+### Good Launch Kit Code:
+```python
+# Transparent - developer sees everything
+from launch_kit.auth import hash_password
+hashed = hash_password("user_password")
+```
+
+### Bad Launch Kit Code:
+```python
+# Hidden magic - violates principles
+from launch_kit import SaaSApp
+app = SaaSApp(features=["all"])  # What's happening??
+```
+
+## Summary
+
+Launch Kit provides **utilities, not a framework**. Every function is:
+- **Transparent** - You can read the source
+- **Optional** - Use only what you need
+- **Customizable** - Override anything
+- **FastHTML-native** - Uses standard patterns
+
+This approach gives developers SaaS building blocks without sacrificing control or understanding of their application.
