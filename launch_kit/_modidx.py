@@ -10,5 +10,4 @@ d = { 'settings': { 'branch': 'main',
                                  'launch_kit.auth.hash_password': ('auth.html#hash_password', 'launch_kit/auth.py'),
                                  'launch_kit.auth.user_auth_before': ('auth.html#user_auth_before', 'launch_kit/auth.py'),
                                  'launch_kit.auth.verify_auth_token': ('auth.html#verify_auth_token', 'launch_kit/auth.py'),
-                                 'launch_kit.auth.verify_password': ('auth.html#verify_password', 'launch_kit/auth.py')},
-            'launch_kit.core': {'launch_kit.core.foo': ('core.html#foo', 'launch_kit/core.py')}}}
+                                 'launch_kit.auth.verify_password': ('auth.html#verify_password', 'launch_kit/auth.py')}}}
