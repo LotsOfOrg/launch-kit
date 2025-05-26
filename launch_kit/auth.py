@@ -12,7 +12,7 @@ import secrets
 from typing import Optional, Dict, Any
 from functools import wraps
 
-# %% ../nbs/00_auth.ipynb 5
+# %% ../nbs/00_auth.ipynb 6
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt with a cost factor of 12.
     
@@ -28,7 +28,7 @@ def hash_password(password: str) -> str:
     hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed.decode('utf-8')
 
-# %% ../nbs/00_auth.ipynb 6
+# %% ../nbs/00_auth.ipynb 7
 def verify_password(password: str, hashed: str) -> bool:
     """Verify a password against a bcrypt hash.
     
@@ -50,7 +50,7 @@ def verify_password(password: str, hashed: str) -> bool:
         # Invalid hash format
         return False
 
-# %% ../nbs/00_auth.ipynb 10
+# %% ../nbs/00_auth.ipynb 11
 def user_auth_before(req, sess):
     """Beforeware function to check authentication status.
     
@@ -83,7 +83,7 @@ def user_auth_before(req, sess):
         sess.pop('user', None)
         sess.pop('user_id', None)
 
-# %% ../nbs/00_auth.ipynb 11
+# %% ../nbs/00_auth.ipynb 12
 def get_user_from_session(sess) -> Optional[Dict[str, Any]]:
     """Extract user data from session.
     
@@ -97,7 +97,7 @@ def get_user_from_session(sess) -> Optional[Dict[str, Any]]:
         return sess['user']
     return None
 
-# %% ../nbs/00_auth.ipynb 13
+# %% ../nbs/00_auth.ipynb 14
 def create_auth_token(user_id: int) -> str:
     """Create a secure authentication token for a user.
     
@@ -116,7 +116,7 @@ def create_auth_token(user_id: int) -> str:
     # In a real app, you'd store: token -> user_id mapping in database
     return f"{user_id}:{token}"
 
-# %% ../nbs/00_auth.ipynb 14
+# %% ../nbs/00_auth.ipynb 15
 def verify_auth_token(token: str) -> Optional[int]:
     """Verify an authentication token and return the user ID.
     
