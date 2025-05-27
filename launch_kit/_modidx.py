@@ -10,4 +10,9 @@ d = { 'settings': { 'branch': 'main',
                                  'launch_kit.auth.hash_password': ('auth.html#hash_password', 'launch_kit/auth.py'),
                                  'launch_kit.auth.user_auth_before': ('auth.html#user_auth_before', 'launch_kit/auth.py'),
                                  'launch_kit.auth.verify_auth_token': ('auth.html#verify_auth_token', 'launch_kit/auth.py'),
-                                 'launch_kit.auth.verify_password': ('auth.html#verify_password', 'launch_kit/auth.py')}}}
+                                 'launch_kit.auth.verify_password': ('auth.html#verify_password', 'launch_kit/auth.py')},
+            'launch_kit.routes.auth': { 'launch_kit.routes.auth.login_route': ('routes_auth.html#login_route', 'launch_kit/routes/auth.py'),
+                                        'launch_kit.routes.auth.logout_route': ( 'routes_auth.html#logout_route',
+                                                                                 'launch_kit/routes/auth.py'),
+                                        'launch_kit.routes.auth.signup_route': ( 'routes_auth.html#signup_route',
+                                                                                 'launch_kit/routes/auth.py')}}}

@@ -98,3 +98,9 @@ This project uses MonsterUI as the default UI framework. When developing:
 ## Repository Information
 
 - GitHub Repository: https://github.com/LotsOfOrg/launch-kit
+
+### MCP Servers
+```bash
+# Add Puppeteer MCP server for browser automation (web scraping, testing, screenshots)
+claude mcp add puppeteer npx @modelcontextprotocol/server-puppeteer
+```
