@@ -50,16 +50,19 @@ def verify_password(password: str, hashed: str) -> bool:
         # Invalid hash format
         return False
 
-# %% ../nbs/00_auth.ipynb 11
+# %% ../nbs/00_auth.ipynb 10
 def user_auth_before(req, sess):
     """Beforeware function to check authentication status.
     
-    Checks if user is authenticated by looking for 'auth' key in session.
-    If authenticated, loads user data into the session.
+    Based on FastHTML's recommended authentication pattern.
+    Sets req.scope['auth'] for automatic injection in route handlers.
     
     Args:
         req: FastHTML request object
         sess: FastHTML session object
+        
+    Returns:
+        RedirectResponse to /login if not authenticated
         
     Usage:
         beforeware = Beforeware(
@@ -67,23 +70,12 @@ def user_auth_before(req, sess):
             skip=['/auth/login', '/auth/signup', '/static/.*']
         )
     """
-    # Check if user is authenticated
-    if 'auth' in sess and sess.get('auth'):
-        # User is authenticated, ensure user data is in session
-        if 'user' not in sess:
-            # In a real app, you'd fetch from database here
-            # For now, we'll just ensure the structure exists
-            user_id = sess.get('user_id')
-            if user_id:
-                # This is where you'd load user from database
-                # sess['user'] = get_user_by_id(user_id)
-                pass
-    else:
-        # Clear any stale user data if not authenticated
-        sess.pop('user', None)
-        sess.pop('user_id', None)
+    from fasthtml.common import RedirectResponse
+    auth = req.scope['auth'] = sess.get('auth', None)
+    if not auth: 
+        return RedirectResponse('/login', status_code=303)
 
-# %% ../nbs/00_auth.ipynb 12
+# %% ../nbs/00_auth.ipynb 11
 def get_user_from_session(sess) -> Optional[Dict[str, Any]]:
     """Extract user data from session.
     
@@ -92,6 +84,10 @@ def get_user_from_session(sess) -> Optional[Dict[str, Any]]:
         
     Returns:
         User dictionary if authenticated, None otherwise
+        
+    Note:
+        With FastHTML's authentication pattern, you can also access 
+        auth status via the 'auth' parameter in route handlers.
     """
     if sess.get('auth') and 'user' in sess:
         return sess['user']
