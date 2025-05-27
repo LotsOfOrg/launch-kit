@@ -8,5 +8,6 @@ d = { 'settings': { 'branch': 'main',
   'syms': { 'launch_kit.auth': { 'launch_kit.auth.create_auth_token': ('auth.html#create_auth_token', 'launch_kit/auth.py'),
                                  'launch_kit.auth.get_user_from_session': ('auth.html#get_user_from_session', 'launch_kit/auth.py'),
                                  'launch_kit.auth.hash_password': ('auth.html#hash_password', 'launch_kit/auth.py'),
+                                 'launch_kit.auth.user_auth_before': ('auth.html#user_auth_before', 'launch_kit/auth.py'),
                                  'launch_kit.auth.verify_auth_token': ('auth.html#verify_auth_token', 'launch_kit/auth.py'),
                                  'launch_kit.auth.verify_password': ('auth.html#verify_password', 'launch_kit/auth.py')}}}
