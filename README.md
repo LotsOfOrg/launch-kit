@@ -58,10 +58,19 @@ find package manager specific guidelines on
 
 ## How to use
 
-Fill me in please! Don’t forget code examples:
+Launch Kit provides simple, transparent utilities for building
+production-ready FastHTML applications. Here’s a quick example of using
+the authentication utilities:
 
 ``` python
-1+1
-```
+from launch_kit.auth import hash_password, verify_password
 
-    2
+# Hash a password when user signs up
+password = "secure_password123"
+hashed = hash_password(password)
+print(f"Hashed: {hashed[:20]}...")
+
+# Verify password when user logs in
+is_valid = verify_password(password, hashed)
+print(f"Valid: {is_valid}")
+```
