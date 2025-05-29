@@ -10,7 +10,7 @@ from fasthtml.common import *
 from ..auth import hash_password, verify_password
 from monsterui.all import *
 
-# %% ../../nbs/01_routes_auth.ipynb 6
+# %% ../../nbs/01_routes_auth.ipynb 9
 def login_route(app, 
                 path='/auth/login',
                 redirect_to='/',
@@ -98,7 +98,7 @@ def login_route(app,
         # GET request - show form
         return login_form(**kwargs)
 
-# %% ../../nbs/01_routes_auth.ipynb 14
+# %% ../../nbs/01_routes_auth.ipynb 19
 def signup_route(app,
                  path='/auth/signup',
                  redirect_to='/',
@@ -216,7 +216,7 @@ def signup_route(app,
         # GET request
         return signup_form(**kwargs)
 
-# %% ../../nbs/01_routes_auth.ipynb 16
+# %% ../../nbs/01_routes_auth.ipynb 24
 def logout_route(app,
                  path='/auth/logout',
                  redirect_to='/auth/login',
