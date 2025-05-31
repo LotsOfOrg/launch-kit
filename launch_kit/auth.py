@@ -4,8 +4,8 @@
 
 # %% auto 0
 __all__ = ['hash_password', 'verify_password', 'User', 'init_auth_tables', 'create_user', 'get_user_by_id', 'get_user_by_email',
-           'get_user_by_username', 'update_user', 'delete_user', 'authenticate_user', 'check_permission', 'track_login',
-           'is_username_available', 'is_email_available', 'validate_user_data', 'user_auth_before',
+           'get_user_by_username', 'update_user', 'delete_user', 'check_permission', 'authenticate_user', 'UserLogin',
+           'track_login', 'is_username_available', 'is_email_available', 'validate_user_data', 'user_auth_before',
            'get_user_from_session', 'create_auth_token', 'verify_auth_token']
 
 # %% ../nbs/00_auth.ipynb 3
@@ -19,7 +19,13 @@ from fastlite import *
 from apswutils.db import NotFoundError
 import sqlite3
 
-# %% ../nbs/00_auth.ipynb 8
+# %% ../nbs/00_auth.ipynb 4
+__all__ = ['hash_password', 'verify_password', 'User', 'init_auth_tables', 'create_user', 'get_user_by_id', 'get_user_by_email',
+           'get_user_by_username', 'update_user', 'delete_user', 'authenticate_user', 'check_permission', 'UserLogin', 'track_login',
+           'is_username_available', 'is_email_available', 'validate_user_data', 'user_auth_before',
+           'get_user_from_session', 'create_auth_token', 'verify_auth_token']
+
+# %% ../nbs/00_auth.ipynb 9
 def hash_password(password: str # The password to hash
                   ) -> str:     # The hashed password
     """Hash a password using bcrypt with a cost factor of 12.
@@ -28,7 +34,7 @@ def hash_password(password: str # The password to hash
     hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed.decode('utf-8')
 
-# %% ../nbs/00_auth.ipynb 11
+# %% ../nbs/00_auth.ipynb 12
 def verify_password(password: str, # The password to verify
                     hashed: str    # The hashed password to compare against
                     ) -> bool:     # True if password matches hash, False otherwise
@@ -43,7 +49,7 @@ def verify_password(password: str, # The password to verify
         # Invalid hash format
         return False
 
-# %% ../nbs/00_auth.ipynb 14
+# %% ../nbs/00_auth.ipynb 15
 @dataclass
 class User:
     """User model for authentication.
@@ -57,7 +63,7 @@ class User:
     updated_at: datetime = field(default_factory=datetime.utcnow) # The last update timestamp
     id: Optional[int] = None
 
-# %% ../nbs/00_auth.ipynb 15
+# %% ../nbs/00_auth.ipynb 16
 def init_auth_tables(db_path: str = 'data.db' # The path to the SQLite database file
                     ) -> Database:            # The FastHTML Database instance configured with the User table
     """Creates the users table with proper schema and indexes. Uses FastHTML's MiniDataAPI for simple, transparent database operations.
@@ -69,8 +75,12 @@ def init_auth_tables(db_path: str = 'data.db' # The path to the SQLite database 
     # Note: fastlite creates table name as 'user' (singular) by default
     users = db.create(User, pk='id')
     
+    # Create user_logins table using MiniDataAPI pattern
+    logins = db.create(UserLogin, pk='id', name='user_logins')
+    
     # Create indexes for performance
     with db.conn:
+        # User table indexes
         db.conn.execute('''
             CREATE INDEX IF NOT EXISTS idx_user_email 
             ON user(email)
@@ -87,10 +97,16 @@ def init_auth_tables(db_path: str = 'data.db' # The path to the SQLite database 
             CREATE UNIQUE INDEX IF NOT EXISTS idx_user_username_unique 
             ON user(username)
         ''')
+        
+        # User logins table index for foreign key performance
+        db.conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_user_logins_user_id 
+            ON user_logins(user_id)
+        ''')
     
     return db
 
-# %% ../nbs/00_auth.ipynb 18
+# %% ../nbs/00_auth.ipynb 19
 def create_user(db: Database,                  # The FastHTML Database instance
                 username: str,                 # The unique username
                 email: str,                    # The unique email address
@@ -117,7 +133,7 @@ def create_user(db: Database,                  # The FastHTML Database instance
     # Insert using MiniDataAPI
     return users.insert(user_data)
 
-# %% ../nbs/00_auth.ipynb 19
+# %% ../nbs/00_auth.ipynb 20
 def get_user_by_id(db: Database,                  # The FastHTML Database instance
                    user_id: int,                  # The user ID
                    table_name: str = 'user'       # The table name
@@ -130,7 +146,7 @@ def get_user_by_id(db: Database,                  # The FastHTML Database instan
     except NotFoundError:
         return None
 
-# %% ../nbs/00_auth.ipynb 20
+# %% ../nbs/00_auth.ipynb 21
 def get_user_by_email(db: Database,                  # The FastHTML Database instance
                       email: str,                    # The email address
                       table_name: str = 'user'       # The table name
@@ -141,7 +157,7 @@ def get_user_by_email(db: Database,                  # The FastHTML Database ins
     results = users(where="email = ?", where_args=[email])
     return results[0] if results else None
 
-# %% ../nbs/00_auth.ipynb 21
+# %% ../nbs/00_auth.ipynb 22
 def get_user_by_username(db: Database,                  # The FastHTML Database instance
                          username: str,                 # The username
                          table_name: str = 'user'       # The table name
@@ -152,7 +168,7 @@ def get_user_by_username(db: Database,                  # The FastHTML Database 
     results = users(where="username = ?", where_args=[username])
     return results[0] if results else None
 
-# %% ../nbs/00_auth.ipynb 22
+# %% ../nbs/00_auth.ipynb 23
 def update_user(db: Database,                          # The FastHTML Database instance
                 user_id: int,                          # The user ID
                 table_name: str = 'user',              # The table name
@@ -181,7 +197,7 @@ def update_user(db: Database,                          # The FastHTML Database i
     updated_user.update(kwargs)  # Apply updates
     return users.update(updated_user)
 
-# %% ../nbs/00_auth.ipynb 23
+# %% ../nbs/00_auth.ipynb 24
 def delete_user(db: Database,            # The FastHTML Database instance
                 user_id: int,            # The user ID
                 table_name: str = 'user' # The table name
@@ -202,7 +218,33 @@ def delete_user(db: Database,            # The FastHTML Database instance
     users.delete(user_id)
     return True
 
-# %% ../nbs/00_auth.ipynb 25
+# %% ../nbs/00_auth.ipynb 26
+def check_permission(user: User,        # The User object to check
+                     required_role: str # The required role
+                     ) -> bool:         # True if user has permission, False otherwise
+    """Check if a user has the required role or higher.
+    
+    Role hierarchy:
+    - 'admin' has all permissions
+    - 'user' has basic permissions
+    - Custom roles can be added as needed
+    """
+    # Define role hierarchy (higher number = more permissions)
+    role_hierarchy = {
+        'user': 1,
+        'admin': 2
+    }
+    
+    # Get user's role level (default to 0 if role not found)
+    user_role_level = role_hierarchy.get(user.role, 0)
+    
+    # Get required role level (default to highest if not found)
+    required_role_level = role_hierarchy.get(required_role, float('inf'))
+    
+    # User has permission if their role level is >= required level
+    return user_role_level >= required_role_level
+
+# %% ../nbs/00_auth.ipynb 28
 def authenticate_user(db: Database,                  # The FastHTML Database instance
                       username_or_email: str,        # The username or email address
                       password: str,                 # The plain text password
@@ -221,49 +263,46 @@ def authenticate_user(db: Database,                  # The FastHTML Database ins
     
     return None
 
-# %% ../nbs/00_auth.ipynb 26
-def check_permission(user: User,                  # The user object to check
-                     required_role: str = 'admin' # The required role
-                     ) -> bool:                   # True if user has permission, False otherwise
-    """Check if user has required role/permission. Simple role-based permission check. Can be extended for more complex permissions.
-    """
-    if not user or not user.is_active:
-        return False
-    
-    # Simple role hierarchy: admin > user
-    if required_role == 'user':
-        return True  # All authenticated users have 'user' permission
-    
-    return user.role == required_role
+# %% ../nbs/00_auth.ipynb 29
+@dataclass
+class UserLogin:
+    """Login tracking record for security and analytics."""
+    user_id: int
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    login_time: datetime = field(default_factory=datetime.utcnow)
+    id: Optional[int] = None
 
-# %% ../nbs/00_auth.ipynb 27
+#| export
 def track_login(db: Database, # The FastHTML Database instance
                 user_id: int, # The user ID
                 ip_address: Optional[str] = None, # The IP address of the login
                 user_agent: Optional[str] = None, # The user agent string
                 table_name: str = 'user_logins' # The table name
-                ) -> None: # The login record
-    """Track user login for security and analytics. Creates a login record with timestamp and metadata.
-    """
-    # Create login tracking table if it doesn't exist
-    db.conn.execute(f'''
-        CREATE TABLE IF NOT EXISTS {table_name} (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            ip_address TEXT,
-            user_agent TEXT,
-            FOREIGN KEY (user_id) REFERENCES user(id)
-        )
-    ''')
+                ) -> Dict[str, Any]: # The login record
+    """Track user login for security and analytics using MiniDataAPI pattern.
     
-    # Insert login record
-    db.conn.execute(f'''
-        INSERT INTO {table_name} (user_id, ip_address, user_agent)
-        VALUES (?, ?, ?)
-    ''', (user_id, ip_address, user_agent))
+    Creates a login record with timestamp and metadata. Returns the created login record.
+    """
+    # Create or get the logins table using MiniDataAPI
+    logins = db.create(UserLogin, pk='id', name=table_name)
+    
+    # Create login record
+    login_data = UserLogin(
+        user_id=user_id,
+        ip_address=ip_address,
+        user_agent=user_agent
+    )
+    
+    # Insert using MiniDataAPI
+    result = logins.insert(login_data)
+    
+    # Convert to dict if needed for consistency
+    if hasattr(result, '__dict__'):
+        return vars(result)
+    return result
 
-# %% ../nbs/00_auth.ipynb 29
+# %% ../nbs/00_auth.ipynb 32
 def is_username_available(db: Database, # The FastHTML Database instance
                           username: str, # The username to check
                           table_name: str = 'user' # The table name
@@ -272,7 +311,7 @@ def is_username_available(db: Database, # The FastHTML Database instance
     """
     return get_user_by_username(db, username, table_name) is None
 
-# %% ../nbs/00_auth.ipynb 30
+# %% ../nbs/00_auth.ipynb 33
 def is_email_available(db: Database, # The FastHTML Database instance
                        email: str, # The email address to check
                        table_name: str = 'user' # The table name
@@ -281,7 +320,7 @@ def is_email_available(db: Database, # The FastHTML Database instance
     """
     return get_user_by_email(db, email, table_name) is None
 
-# %% ../nbs/00_auth.ipynb 31
+# %% ../nbs/00_auth.ipynb 34
 def validate_user_data(username: str, # The username to validate
                        email: str, # The email address to validate
                        password: str # The password to validate
@@ -310,7 +349,7 @@ def validate_user_data(username: str, # The username to validate
     
     return errors
 
-# %% ../nbs/00_auth.ipynb 34
+# %% ../nbs/00_auth.ipynb 37
 def user_auth_before(req, # The FastHTML Request object
                      sess, # The FastHTML Session object
                      login_path='/login' # The login path
@@ -322,7 +361,7 @@ def user_auth_before(req, # The FastHTML Request object
     if not auth: 
         return RedirectResponse(login_path, status_code=303)
 
-# %% ../nbs/00_auth.ipynb 36
+# %% ../nbs/00_auth.ipynb 39
 def get_user_from_session(sess                           # The FastHTML Session object
                           ) -> Optional[Dict[str, Any]]: # The user data dict or None if not authenticated
     """Extract user data dictionary from session.
@@ -331,7 +370,7 @@ def get_user_from_session(sess                           # The FastHTML Session 
         return sess['user']
     return None
 
-# %% ../nbs/00_auth.ipynb 41
+# %% ../nbs/00_auth.ipynb 44
 def create_auth_token(user_id: int # The user ID
                       ) -> str:    # The authentication token
     """Create a secure authentication token for a user.
@@ -340,7 +379,7 @@ def create_auth_token(user_id: int # The user ID
     # In a real app, you'd store: token -> user_id mapping in database
     return f"{user_id}:{token}"
 
-# %% ../nbs/00_auth.ipynb 43
+# %% ../nbs/00_auth.ipynb 46
 def verify_auth_token(token: str # The authentication token
                       ) -> Optional[int]: # The user ID or None if invalid
     """Verify an authentication token and return the user ID.
