@@ -1,0 +1,392 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "launch-kit",
+    "section": "",
+    "text": "Launch Kit provides composable utilities for building production-ready SaaS applications with FastHTML. Following Answer.AI’s philosophy of simplicity and transparency, it offers pre-built functionality without hiding the underlying framework.\nCore Principles: - 🎯 No Magic - Everything is explicit and inspectable - 🧩 Composable - Import only what you need - 🔍 Transparent - You can see exactly what’s happening - ⚡ FastHTML-First - Enhances FastHTML, doesn’t wrap it - 🎨 Override-Friendly - Sensible defaults, full customization",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "launch-kit",
+    "section": "",
+    "text": "Launch Kit provides composable utilities for building production-ready SaaS applications with FastHTML. Following Answer.AI’s philosophy of simplicity and transparency, it offers pre-built functionality without hiding the underlying framework.\nCore Principles: - 🎯 No Magic - Everything is explicit and inspectable - 🧩 Composable - Import only what you need - 🔍 Transparent - You can see exactly what’s happening - ⚡ FastHTML-First - Enhances FastHTML, doesn’t wrap it - 🎨 Override-Friendly - Sensible defaults, full customization",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "launch-kit",
+    "section": "Installation",
+    "text": "Installation\nInstall latest from the GitHub repository:\npip install git+https://github.com/LotsOfOrg/launch-kit.git\nOr install from PyPI (when available):\npip install launch-kit\nFor development:\n# Clone the repository\ngit clone https://github.com/LotsOfOrg/launch-kit.git\ncd launch-kit\n\n# Install in development mode\npip install -e .\n\n# Install with development dependencies\npip install -e \".[dev]\"",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#quick-start",
+    "href": "index.html#quick-start",
+    "title": "launch-kit",
+    "section": "Quick Start",
+    "text": "Quick Start\n\nBasic FastHTML App with Authentication\nHere’s how to add authentication to your FastHTML app in minutes:\n\nfrom fasthtml.common import *\nfrom launch_kit.routes.auth import login_route, signup_route, logout_route\n\n# Standard FastHTML app - no wrapping!\napp, rt = fast_app()\n\n# Add authentication routes with one line each\nlogin_route(app)\nsignup_route(app) \nlogout_route(app)\n\n# Your routes - that's it!\n@rt(\"/\")\ndef get(sess):\n    user = sess.get('auth')\n    if user:\n        return Title(\"Home\"), Main(\n            H1(f\"Welcome {user['email']}!\"),\n            A(\"Logout\", href=\"/auth/logout\")\n        )\n    return Title(\"Welcome\"), Main(\n        P(\"Please \", A(\"login\", href=\"/auth/login\"), \" to continue.\")\n    )\n\nserve()\n\nThat’s it! You now have: - 📝 Beautiful login and signup forms with MonsterUI - 🔐 Secure password hashing - 🍪 Session-based authentication - 🚀 HTMX-enhanced interactions - 🎨 Fully customizable components",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#features",
+    "href": "index.html#features",
+    "title": "launch-kit",
+    "section": "Features",
+    "text": "Features\n\n🔐 Authentication Module\nCore authentication utilities and pre-built routes:\nfrom launch_kit.auth import hash_password, verify_password",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#philosophy-utilities-not-frameworks",
+    "href": "index.html#philosophy-utilities-not-frameworks",
+    "title": "launch-kit",
+    "section": "Philosophy: Utilities, Not Frameworks",
+    "text": "Philosophy: Utilities, Not Frameworks\nLaunch Kit follows Answer.AI’s principles:\n\nSimple things should be simple - login_route(app) just works\nComplex things should be possible - Override any component or behavior\nNo magic - You can read and understand every line of code\nComposable - Use only what you need, ignore the rest\nFastHTML-native - Uses standard FastHTML patterns (rt, sess, FT components)",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#advanced-example-custom-authentication",
+    "href": "index.html#advanced-example-custom-authentication",
+    "title": "launch-kit",
+    "section": "Advanced Example: Custom Authentication",
+    "text": "Advanced Example: Custom Authentication\nHere’s how to build a complete authentication system with custom logic:\n\nfrom fasthtml.common import *\nfrom launch_kit.auth import hash_password, verify_password\nfrom launch_kit.routes.auth import login_route, signup_route, logout_route\nfrom datetime import datetime\n\n# Your database setup (example with dict for simplicity)\nusers_db = {}\n\ndef authenticate_user(email, password):\n    \"\"\"Custom authentication logic\"\"\"\n    user = users_db.get(email)\n    if user and verify_password(password, user['password_hash']):\n        return {'email': email, 'name': user['name']}\n    return None\n\ndef create_user(form_data):\n    \"\"\"Custom user creation logic\"\"\"\n    email = form_data.get('email')\n    \n    # Validation\n    if form_data['password'] != form_data['password_confirm']:\n        return \"Passwords don't match\"\n    \n    if email in users_db:\n        return \"Email already registered\"\n    \n    # Create user\n    users_db[email] = {\n        'name': form_data['name'],\n        'password_hash': hash_password(form_data['password']),\n        'created_at': datetime.now()\n    }\n    \n    return {'email': email, 'name': form_data['name']}\n\n# Create app with session middleware\napp, rt = fast_app(\n    secret_key='your-secret-key',  # Required for sessions\n    pico=True  # Optional: Use Pico CSS for styling\n)\n\n# Add auth routes with custom logic\nlogin_route(app, authenticate=authenticate_user)\nsignup_route(app, create_user=create_user)\nlogout_route(app)\n\n# Protected route example\n@rt(\"/dashboard\")\ndef get(sess):\n    user = sess.get('auth')\n    if not user:\n        return RedirectResponse('/auth/login', status_code=303)\n    \n    return Title(\"Dashboard\"), Main(\n        H1(f\"Welcome to your dashboard, {user['name']}!\"),\n        P(f\"Logged in as: {user['email']}\"),\n        Button(\"Logout\", hx_get=\"/auth/logout\", hx_push_url=\"true\")\n    )\n\n# Public route\n@rt(\"/\")\ndef get():\n    return Title(\"Launch Kit Demo\"), Main(\n        H1(\"Welcome to Launch Kit\"),\n        P(\"A FastHTML toolkit for building SaaS applications\"),\n        Div(\n            A(\"Login\", href=\"/auth/login\", cls=\"button\"),\n            \" \",\n            A(\"Sign Up\", href=\"/auth/signup\", cls=\"button outline\"),\n            cls=\"grid\"\n        )\n    )\n\nserve()",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#developer-guide",
+    "href": "index.html#developer-guide",
+    "title": "launch-kit",
+    "section": "Developer Guide",
+    "text": "Developer Guide\nLaunch Kit uses nbdev for development. Here’s how to contribute:\n\nDevelopment Setup\n# Clone the repository\ngit clone https://github.com/LotsOfOrg/launch-kit.git\ncd launch-kit\n\n# Install in development mode\npip install -e .\n\n# Make changes in the notebooks under nbs/\n# The source code in launch_kit/ is auto-generated\n\n# After making changes, prepare for commit\nnbdev_prepare\n\n\nProject Structure\nlaunch-kit/\n├── nbs/                    # Development notebooks (source of truth)\n│   ├── 00_auth.ipynb      # Core authentication utilities\n│   ├── 01_routes_auth.ipynb # Authentication routes\n│   └── index.ipynb        # This file (package docs)\n├── launch_kit/            # Auto-generated Python modules\n│   ├── auth.py\n│   └── routes/\n│       └── auth.py\n└── settings.ini          # nbdev configuration\nImportant: Never edit files in launch_kit/ directly - they’re auto-generated from notebooks!",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#documentation",
+    "href": "index.html#documentation",
+    "title": "launch-kit",
+    "section": "Documentation",
+    "text": "Documentation\n\nGitHub: https://github.com/LotsOfOrg/launch-kit\nDocumentation: https://LotsOfOrg.github.io/launch-kit/\nIssues: https://github.com/LotsOfOrg/launch-kit/issues",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#license",
+    "href": "index.html#license",
+    "title": "launch-kit",
+    "section": "License",
+    "text": "License\nLicensed under the Apache License, Version 2.0. See LICENSE for details.",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "launch-kit",
+    "section": "How to use",
+    "text": "How to use\nLaunch Kit provides simple, transparent utilities for building production-ready FastHTML applications. Here’s a quick example of using the authentication utilities:\n\nfrom launch_kit.auth import hash_password, verify_password\n\n# Hash a password when user signs up\npassword = \"secure_password123\"\nhashed = hash_password(password)\nprint(f\"Hashed: {hashed[:20]}...\")\n\n# Verify password when user logs in\nis_valid = verify_password(password, hashed)\nprint(f\"Valid: {is_valid}\")",
+    "crumbs": [
+      "launch-kit"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html",
+    "href": "routes_auth.html",
+    "title": "routes.auth",
+    "section": "",
+    "text": "This module provides pre-built authentication routes that follow FastHTML patterns and the Answer.AI design philosophy:\n\nSimple by default: login_route(app) gives you a working login page\nProgressively customizable: Override forms, handlers, or paths as needed\nNo magic: All behavior is explicit and visible\nMonsterUI integration: Beautiful forms out of the box",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#overview",
+    "href": "routes_auth.html#overview",
+    "title": "routes.auth",
+    "section": "",
+    "text": "This module provides pre-built authentication routes that follow FastHTML patterns and the Answer.AI design philosophy:\n\nSimple by default: login_route(app) gives you a working login page\nProgressively customizable: Override forms, handlers, or paths as needed\nNo magic: All behavior is explicit and visible\nMonsterUI integration: Beautiful forms out of the box",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#quick-start",
+    "href": "routes_auth.html#quick-start",
+    "title": "routes.auth",
+    "section": "Quick Start",
+    "text": "Quick Start\nfrom launch_kit.routes.auth import login_route, signup_route, logout_route\n\n# Add all auth routes with defaults\nlogin_route(app)\nsignup_route(app)\nlogout_route(app)",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#component-visualization",
+    "href": "routes_auth.html#component-visualization",
+    "title": "routes.auth",
+    "section": "Component Visualization",
+    "text": "Component Visualization\nTo visualize MonsterUI components in this notebook during development, run the setup cell below. This will create a JupyUvi server that can render components with proper MonsterUI styling.\nNote: The Show function requires a running JupyUvi server. If components aren’t displaying, make sure you’ve run the setup cell and that the server is still running on port 8003.\n\n# Setup visualization for this notebook\nfrom fasthtml.jupyter import HTMX, JupyUvi\nimport uuid\n\n# Create visualization app and server\n_viz_app, _viz_rt = fast_app(hdrs=Theme.blue.headers())\n_viz_server = JupyUvi(_viz_app, port=8003)\n\ndef Show(component, height='auto'):\n    \"\"\"Display a MonsterUI component in the notebook.\"\"\"\n    path = f'/show/{uuid.uuid4().hex}'\n    \n    @_viz_app.route(path)\n    def show_component():\n        return component\n    \n    return HTMX(path, app=_viz_app, port=8003, height=height)\n\n\n# Remember to stop the server to avoid dangling thread\n_viz_server.stop()",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#login-route",
+    "href": "routes_auth.html#login-route",
+    "title": "routes.auth",
+    "section": "Login Route",
+    "text": "Login Route\n\nsource\n\nlogin_route\n\n login_route (app, path='/auth/login', redirect_to='/', login_form=None,\n              authenticate=None, session_key='auth', **kwargs)\n\n*Create a login route with customizable form and authentication.\nArgs: app: FastHTML app instance path: Route path (default: ‘/auth/login’) redirect_to: Where to redirect after successful login (default: ‘/’) login_form: Custom form component (callable returning FT) authenticate: Custom authentication function(email, password) -&gt; user_dict or None session_key: Session key for auth data (default: ‘auth’) **kwargs: Additional arguments passed to form component*\n\ndef default_login_form(error=None, **kwargs):\n    return Card(\n        H2('Login'),\n        Form(\n            LabelInput('Email', \n                      name='email', \n                      id='email', \n                      type='email', \n                      required=True, \n                      placeholder='you@example.com'),\n            LabelInput('Password', \n                      name='password', \n                      id='password', \n                      type='password', \n                      required=True),\n            Alert(error, variant='destructive') if error else None,\n            Button('Sign In', type='submit', cls='w-full'),\n            method='post',\n            cls='space-y-4'\n        ),\n        P(\n            \"Don't have an account? \",\n            A('Sign up', href='/auth/signup', cls='text-primary hover:underline'),\n            cls='text-center text-sm mt-4'\n        ),\n        cls='max-w-md mx-auto mt-8'\n    )\n\n\n# Uncomment to Visualize the default login form\n#Show(default_login_form(), height='500px')\n\n\n\nLogin Examples\n\nBasic Usage\nThe default login form includes: - Email and password fields with proper input types - MonsterUI styling with Card container - Error handling with Alert component - HTMX integration for seamless form submission - Link to signup page\n# Simple login with all defaults\nlogin_route(app)\n\n\nCustom Form Example\n\ndef branded_login_form(error=None, **kwargs):\n    return Container(\n        Card(\n            Div(\n                H1('Welcome Back!', cls='text-3xl font-bold'),\n                P('Sign in to continue to your account', cls='text-muted-foreground'),\n                cls='text-center mb-6'\n            ),\n            Form(\n                LabelInput('Email Address',\n                          name='email', \n                          type='email', \n                          required=True, \n                          placeholder='Enter your email'),\n                Div(\n                    LabelInput('Password',\n                              name='password', \n                              type='password', \n                              required=True),\n                    A('Forgot password?', href='/auth/forgot-password', \n                      cls='text-sm text-primary hover:underline mt-1 block'),\n                    cls='space-y-1'\n                ),\n                Alert(error, variant='destructive', cls='mb-4') if error else None,\n                Button('Sign In', type='submit', cls='w-full', size='lg'),\n                DividerSplit('Or'),\n                P(\n                    \"Don't have an account? \",\n                    A('Sign up', href='/auth/signup', cls='text-primary hover:underline'),\n                    cls='text-center text-sm'\n                ),\n                method='post',\n                cls='space-y-4'\n            ),\n            cls='max-w-md w-full'\n        ),\n        cls='min-h-screen flex items-center justify-center'\n    )\n\n# Use the custom form\n# login_route(app, login_form=branded_login_form)\n\n\n# Uncomment to Visualize the branded login form\n#Show(branded_login_form(), height='700px')\n\n\n\nCustom Authentication\n\n# Example with database authentication\ndef db_authenticate(email, password):\n    \"\"\"Authenticate user against database.\"\"\"\n    # This is pseudocode - implement your actual database logic\n    # user = db.query(\"SELECT * FROM users WHERE email = ?\", email)\n    # if user and verify_password(password, user['password_hash']):\n    #     return {'id': user['id'], 'email': user['email'], 'name': user['name']}\n    # return None\n    pass\n\n# login_route(app, authenticate=db_authenticate)",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#signup-route",
+    "href": "routes_auth.html#signup-route",
+    "title": "routes.auth",
+    "section": "Signup Route",
+    "text": "Signup Route\n\nsource\n\nsignup_route\n\n signup_route (app, path='/auth/signup', redirect_to='/',\n               signup_form=None, create_user=None, session_key='auth',\n               **kwargs)\n\n*Create a signup route with customizable form and user creation.\nArgs: app: FastHTML app instance path: Route path (default: ‘/auth/signup’) redirect_to: Where to redirect after successful signup (default: ‘/’) signup_form: Custom form component (callable returning FT) create_user: Custom user creation function(form_data) -&gt; user_dict or error_string session_key: Session key for auth data (default: ‘auth’) **kwargs: Additional arguments passed to form component*\nThe default signup form includes: - Name, email, password, and password confirmation fields - Form validation with error messages - Preserves form values on validation errors - HTMX integration for seamless submission - Link to login page for existing users\n\n# Visualize the default signup form\ndef default_signup_form(error=None, values=None, **kwargs):\n    values = values or {}\n    return Card(\n        H2('Create Account'),\n        Form(\n            LabelInput('Name',\n                      name='name', \n                      id='name', \n                      required=True, \n                      value=values.get('name', ''),\n                      placeholder='John Doe'),\n            LabelInput('Email',\n                      name='email', \n                      id='email', \n                      type='email', \n                      required=True,\n                      value=values.get('email', ''),\n                      placeholder='you@example.com'),\n            LabelInput('Password',\n                      name='password', \n                      id='password', \n                      type='password', \n                      required=True,\n                      placeholder='At least 8 characters'),\n            LabelInput('Confirm Password',\n                      name='password_confirm', \n                      id='password_confirm', \n                      type='password', \n                      required=True),\n            Alert(error, variant='destructive') if error else None,\n            Button('Create Account', type='submit', cls='w-full'),\n            method='post',\n            cls='space-y-4'\n        ),\n        P(\n            \"Already have an account? \",\n            A('Sign in', href='/auth/login', cls='text-primary hover:underline'),\n            cls='text-center text-sm mt-4'\n        ),\n        cls='max-w-md mx-auto mt-8'\n    )\n\n\n# Uncomment to Visualize the default signup form\n#Show(default_signup_form(), height='600px')",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#logout-route",
+    "href": "routes_auth.html#logout-route",
+    "title": "routes.auth",
+    "section": "Logout Route",
+    "text": "Logout Route\n\nsource\n\nlogout_route\n\n logout_route (app, path='/auth/logout', redirect_to='/auth/login',\n               session_key='auth', before_logout=None)\n\n*Create a logout route that clears the session.\nArgs: app: FastHTML app instance path: Route path (default: ‘/auth/logout’) redirect_to: Where to redirect after logout (default: ‘/auth/login’) session_key: Session key to clear (default: ‘auth’) before_logout: Optional callback function(session) called before logout*",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#complete-example",
+    "href": "routes_auth.html#complete-example",
+    "title": "routes.auth",
+    "section": "Complete Example",
+    "text": "Complete Example\nHere’s a complete example showing how to use all the auth routes together with custom authentication:\n\n# Example of complete auth setup\ndef setup_auth(app, db):\n    \"\"\"Setup authentication routes with database integration.\"\"\"\n    \n    def authenticate_user(email, password):\n        \"\"\"Check credentials against database.\"\"\"\n        user = db.get_user_by_email(email)\n        if user and verify_password(password, user['password_hash']):\n            return {\n                'id': user['id'],\n                'email': user['email'],\n                'name': user['name']\n            }\n        return None\n    \n    def create_new_user(form_data):\n        \"\"\"Create new user in database.\"\"\"\n        # Validation\n        if form_data['password'] != form_data['password_confirm']:\n            return \"Passwords don't match\"\n        \n        if len(form_data['password']) &lt; 8:\n            return \"Password must be at least 8 characters\"\n        \n        # Check if email exists\n        if db.get_user_by_email(form_data['email']):\n            return \"Email already registered\"\n        \n        # Create user\n        user_id = db.create_user(\n            email=form_data['email'],\n            name=form_data['name'],\n            password_hash=hash_password(form_data['password'])\n        )\n        \n        return {\n            'id': user_id,\n            'email': form_data['email'],\n            'name': form_data['name']\n        }\n    \n    # Add all routes\n    login_route(app, authenticate=authenticate_user)\n    signup_route(app, create_user=create_new_user)\n    logout_route(app)\n\n# Usage:\n# setup_auth(app, database)",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#interactive-demo",
+    "href": "routes_auth.html#interactive-demo",
+    "title": "routes.auth",
+    "section": "Interactive Demo",
+    "text": "Interactive Demo\nYou can create a working demo using JupyUvi:\n\n# Demo app with all auth routes\n# Note: This demo uses JupyUvi to run interactively in the notebook\nfrom fasthtml.jupyter import JupyUvi\n\n# Create demo app\ndemo_app, rt = fast_app(hdrs=Theme.blue.headers())\n\n# Simple in-memory user store for demo\ndemo_users = {}\n\ndef demo_authenticate(email, password):\n    \"\"\"Demo authentication.\"\"\"\n    user = demo_users.get(email)\n    if user and user['password'] == password:  # Don't do this in production!\n        return {'email': email, 'name': user['name']}\n    return None\n\ndef demo_create_user(form_data):\n    \"\"\"Demo user creation.\"\"\"\n    if form_data['password'] != form_data['password_confirm']:\n        return \"Passwords don't match\"\n    \n    if form_data['email'] in demo_users:\n        return \"Email already exists\"\n    \n    demo_users[form_data['email']] = {\n        'name': form_data['name'],\n        'password': form_data['password']  # Don't store plain passwords in production!\n    }\n    \n    return {'email': form_data['email'], 'name': form_data['name']}\n\n# Add auth routes\nlogin_route(demo_app, authenticate=demo_authenticate)\nsignup_route(demo_app, create_user=demo_create_user)\nlogout_route(demo_app)\n\n# Add a protected home page\n@demo_app.route('/')\ndef home(sess):\n    user = sess.get('auth')\n    if not user:\n        return RedirectResponse('/auth/login', status_code=303)\n    \n    return Container(\n        Card(\n            H1(f\"Welcome, {user.get('name', 'User')}!\"),\n            P(f\"You are logged in as {user['email']}\"),\n            Button('Logout', hx_get='/auth/logout', hx_push_url='true'),\n            cls='max-w-2xl mx-auto mt-8'\n        )\n    )\n\n# Run the demo server\nprint(\"Starting demo server...\")\nprint(\"\\nDemo app routes:\")\nprint(\"- http://localhost:8000/auth/login - Login page\")\nprint(\"- http://localhost:8000/auth/signup - Signup page\") \nprint(\"- http://localhost:8000/auth/logout - Logout\")\nprint(\"- http://localhost:8000/ - Protected home page\")\nprint(\"\\nTry creating an account and logging in!\")\n\n# Start the server\nserver = JupyUvi(demo_app)\n\n\n# Remember to stop the server when done:\nserver.stop()",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#advanced-customization",
+    "href": "routes_auth.html#advanced-customization",
+    "title": "routes.auth",
+    "section": "Advanced Customization",
+    "text": "Advanced Customization\n\nCustom Session Management\n\n# Use different session keys for different user types\n# login_route(app, session_key='admin_auth', path='/admin/login')\n# login_route(app, session_key='user_auth', path='/user/login')\n\n\n\nMulti-tenant Authentication\n\ndef tenant_authenticate(email, password, tenant_id=None):\n    \"\"\"Authenticate within a specific tenant.\"\"\"\n    # Your multi-tenant logic here\n    pass\n\n# Create tenant-specific login\n# login_route(app, \n#     path='/tenant/{tenant_id}/login',\n#     authenticate=lambda e, p: tenant_authenticate(e, p, req.path_params['tenant_id'])\n# )\n\n\n\nOAuth Login Form\n\ndef oauth_login_form(error=None, **kwargs):\n    \"\"\"Login form with OAuth options.\"\"\"\n    return Card(\n        H2('Sign In'),\n        Div(\n            Button(\n                UkIcon('github'), 'Continue with GitHub',\n                onclick=\"window.location.href='/auth/github'\",\n                cls='w-full mb-2'\n            ),\n            Button(\n                'Continue with Google', \n                onclick=\"window.location.href='/auth/google'\",\n                cls='w-full'\n            ),\n            cls='mb-4'\n        ),\n        DividerSplit('OR'),\n        Form(\n            # Regular email/password form\n            LabelInput('Email',\n                      name='email', \n                      type='email', \n                      required=True),\n            LabelInput('Password',\n                      name='password', \n                      type='password', \n                      required=True),\n            Alert(error, variant='destructive') if error else None,\n            Button('Sign In with Email', type='submit', cls='w-full'),\n            method='post',\n            cls='space-y-4'\n        ),\n        cls='max-w-md mx-auto mt-8'\n    )\n\n# Use OAuth-enabled form\n# login_route(app, login_form=oauth_login_form)",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#testing-auth-routes",
+    "href": "routes_auth.html#testing-auth-routes",
+    "title": "routes.auth",
+    "section": "Testing Auth Routes",
+    "text": "Testing Auth Routes\nHere’s how to test the auth routes:\n\n# Test with httpx\nimport httpx\n\ndef test_auth_flow(base_url='http://localhost:8000'):\n    \"\"\"Test the complete auth flow.\"\"\"\n    with httpx.Client(base_url=base_url, follow_redirects=True) as client:\n        # Test signup\n        response = client.post('/auth/signup', data={\n            'name': 'Test User',\n            'email': 'test@example.com',\n            'password': 'testpass123',\n            'password_confirm': 'testpass123'\n        })\n        assert response.status_code == 200\n        \n        # Test login\n        response = client.post('/auth/login', data={\n            'email': 'test@example.com',\n            'password': 'testpass123'\n        })\n        assert response.status_code == 200\n        \n        # Test protected route\n        response = client.get('/')\n        assert 'Welcome' in response.text\n        \n        # Test logout\n        response = client.get('/auth/logout')\n        assert response.url.path == '/auth/login'\n        \n    print(\"All tests passed!\")\n\n# Run tests against your app\n# test_auth_flow()\n\n\n# Uncomment to Visualize the OAuth login form\n# Show(oauth_login_form(), height='600px')",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#summary",
+    "href": "routes_auth.html#summary",
+    "title": "routes.auth",
+    "section": "Summary",
+    "text": "Summary\nThe auth routes module provides:\n\nSimple defaults - Just call login_route(app) to get started\nProgressive customization - Override any part as needed\nFastHTML patterns - Uses standard req/sess, redirects, and HTMX\nMonsterUI integration - Beautiful forms out of the box\nNo magic - All code is explicit and understandable\n\nThe routes handle both regular and HTMX requests, include CSRF protection via POST methods, and integrate seamlessly with FastHTML’s session management.",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "auth.html#quick-start",
+    "href": "auth.html#quick-start",
+    "title": "Authentication",
+    "section": "Quick Start",
+    "text": "Quick Start\nLaunch Kit’s authentication module provides everything you need to add secure authentication to your FastHTML app in minutes:\nfrom launch_kit.auth import *\nfrom fasthtml.common import *\n\n# 1. Initialize the database\ndb = init_auth_tables()  # Creates users table with indexes\n\n# 2. Create a new user\nuser = create_user(db, 'john_doe', 'john@example.com', 'secure_password123')\n\n# 3. Authenticate users during login\nuser = authenticate_user(db, 'john@example.com', 'secure_password123')\nif user:\n    sess['auth'] = True\n    sess['user'] = {'id': user['id'], 'username': user['username']}\n\n# 4. Protect routes with authentication\nbeforeware = Beforeware(user_auth_before, skip=['/login', '/signup'])\napp, rt = fast_app(before=beforeware)\n\n# 5. Use validation helpers\nif is_username_available(db, 'new_user'):\n    # Username is available for registration\n    pass\nThat’s it! Your routes are now protected and users must authenticate to access them.",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#overview",
+    "href": "auth.html#overview",
+    "title": "Authentication",
+    "section": "Overview",
+    "text": "Overview\nThis module provides comprehensive authentication features:\n\nCore Functions\n\n\n\nFunction\nPurpose\nWhen to Use\n\n\n\n\nhash_password\nSecurely hash passwords with bcrypt\nUser registration/password updates\n\n\nverify_password\nCheck if password matches hash\nUser login\n\n\nuser_auth_before\nBeforeware to protect routes\nApp initialization\n\n\nget_user_from_session\nExtract user data from session\nInside route handlers\n\n\ncreate_auth_token\nGenerate secure tokens\nRemember me/API auth\n\n\nverify_auth_token\nValidate tokens\nToken-based auth\n\n\n\n\n\nDatabase Functions\n\n\n\nFunction\nPurpose\nWhen to Use\n\n\n\n\ninit_auth_tables\nCreate database tables and indexes\nApp startup\n\n\ncreate_user\nRegister new user\nUser signup\n\n\nget_user_by_id\nFetch user by ID\nUser profile/admin\n\n\nget_user_by_email\nFetch user by email\nLogin/verification\n\n\nget_user_by_username\nFetch user by username\nLogin/profile lookup\n\n\nupdate_user\nUpdate user attributes\nProfile editing\n\n\ndelete_user\nRemove user from database\nAccount deletion\n\n\n\n\n\nHelper Functions\n\n\n\nFunction\nPurpose\nWhen to Use\n\n\n\n\nauthenticate_user\nVerify credentials and return user\nLogin endpoint\n\n\ncheck_permission\nVerify user has required role\nAccess control\n\n\ntrack_login\nRecord login events\nSecurity/analytics\n\n\nis_username_available\nCheck username uniqueness\nRegistration\n\n\nis_email_available\nCheck email uniqueness\nRegistration\n\n\nvalidate_user_data\nValidate registration data\nForm validation",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#password-hashing",
+    "href": "auth.html#password-hashing",
+    "title": "Authentication",
+    "section": "Password Hashing",
+    "text": "Password Hashing\nLaunch Kit uses bcrypt for password hashing - the industry standard for secure password storage. Our implementation uses a cost factor of 12, providing excellent security while maintaining reasonable performance (~200ms per hash on modern hardware).\n\nsource\n\nhash_password\n\n hash_password (password:str)\n\nHash a password using bcrypt with a cost factor of 12.\n\n\n\n\nType\nDetails\n\n\n\n\npassword\nstr\nThe password to hash\n\n\nReturns\nstr\nThe hashed password\n\n\n\n\n\n\n\n\n\nPassword Length Limitation\n\n\n\nbcrypt has a maximum password length of 72 bytes. Passwords longer than this are silently truncated. For applications requiring longer passwords, consider hashing with SHA-256 first:\nimport hashlib\nlong_password = \"very_long_password\" * 10\n# Hash with SHA-256 first, then bcrypt\nsha_hash = hashlib.sha256(long_password.encode()).hexdigest()\nfinal_hash = hash_password(sha_hash)\n\n\n\nsource\n\n\nverify_password\n\n verify_password (password:str, hashed:str)\n\nVerify a password against a bcrypt hash.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\npassword\nstr\nThe password to verify\n\n\nhashed\nstr\nThe hashed password to compare against\n\n\nReturns\nbool\nTrue if password matches hash, False otherwise",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#user-model",
+    "href": "auth.html#user-model",
+    "title": "Authentication",
+    "section": "User Model",
+    "text": "User Model\nLaunch Kit provides a simple, dataclass-based User model that works seamlessly with FastHTML’s MiniDataAPI.\n\nNote: While the User model is defined as a dataclass, fastlite returns query results as dictionaries for flexibility and performance. This is the expected behavior and aligns with fastlite’s design philosophy.\n\n\nsource\n\nUser\n\n User (username:str, email:str, password_hash:str, role:str='user',\n       is_active:bool=True, created_at:datetime.datetime=&lt;factory&gt;,\n       updated_at:datetime.datetime=&lt;factory&gt;, id:Optional[int]=None)\n\nUser model for authentication.\n\nsource\n\n\ninit_auth_tables\n\n init_auth_tables (db_path:str='data.db')\n\nCreates the users table with proper schema and indexes. Uses FastHTML’s MiniDataAPI for simple, transparent database operations.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb_path\nstr\ndata.db\nThe path to the SQLite database file\n\n\nReturns\nDatabase\n\nThe FastHTML Database instance configured with the User table",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#user-crud-operations",
+    "href": "auth.html#user-crud-operations",
+    "title": "Authentication",
+    "section": "User CRUD Operations",
+    "text": "User CRUD Operations\nSimple, transparent database operations following MiniDataAPI patterns:\n\nsource\n\ncreate_user\n\n create_user (db:apswutils.db.Database, username:str, email:str,\n              password:str, role:str='user', table_name:str='user')\n\nCreate a new user in the database.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nusername\nstr\n\nThe unique username\n\n\nemail\nstr\n\nThe unique email address\n\n\npassword\nstr\n\nThe plain text password\n\n\nrole\nstr\nuser\nThe user role\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe created user dict or None if user already exists\n\n\n\n\nsource\n\n\nget_user_by_id\n\n get_user_by_id (db:apswutils.db.Database, user_id:int,\n                 table_name:str='user')\n\nGet user by ID.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nuser_id\nint\n\nThe user ID\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe user dict or None if not found\n\n\n\n\nsource\n\n\nget_user_by_email\n\n get_user_by_email (db:apswutils.db.Database, email:str,\n                    table_name:str='user')\n\nGet user by email address.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nemail\nstr\n\nThe email address\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe user dict or None if not found\n\n\n\n\nsource\n\n\nget_user_by_username\n\n get_user_by_username (db:apswutils.db.Database, username:str,\n                       table_name:str='user')\n\nGet user by username.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nusername\nstr\n\nThe username\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe user dict or None if not found\n\n\n\n\nsource\n\n\nupdate_user\n\n update_user (db:apswutils.db.Database, user_id:int,\n              table_name:str='user', **kwargs)\n\nUpdate user attributes.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nuser_id\nint\n\nThe user ID\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nkwargs\nVAR_KEYWORD\n\n\n\n\nReturns\nOptional\n\nThe updated user dict or None if not found\n\n\n\n\nsource\n\n\ndelete_user\n\n delete_user (db:apswutils.db.Database, user_id:int,\n              table_name:str='user')\n\nDelete a user from the database.\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nuser_id\nint\n\nThe user ID\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nbool\n\nTrue if deleted, False if not found",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#authentication-helpers",
+    "href": "auth.html#authentication-helpers",
+    "title": "Authentication",
+    "section": "Authentication Helpers",
+    "text": "Authentication Helpers\nConvenient functions for common authentication operations:\n\nsource\n\ncheck_permission\n\n check_permission (user:__main__.User, required_role:str)\n\n*Check if a user has the required role or higher.\nRole hierarchy: - ‘admin’ has all permissions - ‘user’ has basic permissions - Custom roles can be added as needed*\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nuser\nUser\nThe User object to check\n\n\nrequired_role\nstr\nThe required role\n\n\nReturns\nbool\nTrue if user has permission, False otherwise\n\n\n\n\nsource\n\n\nauthenticate_user\n\n authenticate_user (db:apswutils.db.Database, username_or_email:str,\n                    password:str, table_name:str='user')\n\nAuthenticate a user by username/email and password.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nusername_or_email\nstr\n\nThe username or email address\n\n\npassword\nstr\n\nThe plain text password\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe authenticated user dict or None if invalid credentials\n\n\n\n\nsource\n\n\ntrack_login\n\n track_login (db:apswutils.db.Database, user_id:int,\n              ip_address:Optional[str]=None,\n              user_agent:Optional[str]=None, table_name:str='user_logins')\n\n*Track user login for security and analytics using MiniDataAPI pattern.\nCreates a login record with timestamp and metadata. Returns the created login record.*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nuser_id\nint\n\nThe user ID\n\n\nip_address\nOptional\nNone\nThe IP address of the login\n\n\nuser_agent\nOptional\nNone\nThe user agent string\n\n\ntable_name\nstr\nuser_logins\nThe table name\n\n\nReturns\nDict\n\nThe login record\n\n\n\n\nsource\n\n\nUserLogin\n\n UserLogin (user_id:int, ip_address:Optional[str]=None,\n            user_agent:Optional[str]=None,\n            login_time:datetime.datetime=&lt;factory&gt;, id:Optional[int]=None)\n\nLogin tracking record for security and analytics.\n\n\nComparison: Raw SQL vs MiniDataAPI\n\n\n\n\n\n\n\n\nAspect\nCurrent (Raw SQL)\nProposed (MiniDataAPI)\n\n\n\n\nTable Creation\nManual SQL with CREATE TABLE\ndb.create(UserLogin)\n\n\nData Insertion\nSQL INSERT with placeholders\nlogins.insert(login_data)\n\n\nReturn Value\nNone\nLogin record dict\n\n\nType Safety\nNo type hints for data\nDataclass with types\n\n\nConsistency\nDifferent from other functions\nSame pattern as User CRUD\n\n\nDatabase Portability\nSQLite-specific syntax\nWorks across databases\n\n\nForeign Keys\nDefined in CREATE TABLE\nNeed separate index creation\n\n\n\n\n\nMigration Considerations\nTo migrate existing databases: 1. The table structure created by MiniDataAPI is compatible with the existing schema 2. Foreign key constraints would need to be added separately 3. Existing data would remain intact",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#validation-helpers",
+    "href": "auth.html#validation-helpers",
+    "title": "Authentication",
+    "section": "Validation Helpers",
+    "text": "Validation Helpers\nFunctions to ensure data integrity and check uniqueness:\n\nsource\n\nis_username_available\n\n is_username_available (db:apswutils.db.Database, username:str,\n                        table_name:str='user')\n\nCheck if username is available for registration.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nusername\nstr\n\nThe username to check\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nbool\n\nTrue if username is available, False if taken\n\n\n\n\nsource\n\n\nis_email_available\n\n is_email_available (db:apswutils.db.Database, email:str,\n                     table_name:str='user')\n\nCheck if email is available for registration.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nemail\nstr\n\nThe email address to check\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nbool\n\nTrue if email is available, False if taken\n\n\n\n\nsource\n\n\nvalidate_user_data\n\n validate_user_data (username:str, email:str, password:str)\n\nValidate user registration data.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nusername\nstr\nThe username to validate\n\n\nemail\nstr\nThe email address to validate\n\n\npassword\nstr\nThe password to validate\n\n\nReturns\nList\nThe list of validation errors (empty if valid)",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#session-management",
+    "href": "auth.html#session-management",
+    "title": "Authentication",
+    "section": "Session Management",
+    "text": "Session Management\nFastHTML uses server-side sessions to maintain authentication state. Launch Kit provides utilities to make session management simple and secure.\n\nProtecting Routes with Beforeware\n\nsource\n\n\nuser_auth_before\n\n user_auth_before (req, sess, login_path='/login')\n\nBeforeware function to check authentication status.\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nreq\n\n\nThe FastHTML Request object\n\n\nsess\n\n\nThe FastHTML Session object\n\n\nlogin_path\nstr\n/login\nThe login path\n\n\n\nThe user_auth_before is based on FastHTML’s recommended authentication pattern. It sets req.scope[‘auth’] for automatic injection in route handlers.\nUsage:\nbeforeware = Beforeware(\n    user_auth_before,\n    skip=['/login', '/signup', '/static/.*']\n)\n\n# Or with a custom login path like /auth/login:\ndef auth_custom_login(req, sess):\n    return user_auth_before(req, sess, login_path='/auth/login')\n    \nbeforeware = Beforeware(\n    auth_custom_login,\n    skip=['/auth/login', '/auth/signup', '/static/.*']\n)\n\nsource\n\n\nget_user_from_session\n\n get_user_from_session (sess)\n\nExtract user data dictionary from session.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nsess\n\nThe FastHTML Session object\n\n\nReturns\nOptional\nThe user data dict or None if not authenticated\n\n\n\n\nNote: With FastHTML’s authentication pattern, you can also access auth status via the ‘auth’ parameter in route handlers.\n\n\n\nWorking with User Sessions\n\nfrom fasthtml.common import *\nfrom launch_kit.auth import user_auth_before\n\n# Configure authentication beforeware\nbeforeware = Beforeware(\n    user_auth_before,  # Uses default /login path\n    skip=[\n        '/login',      # Don't require auth for login page\n        '/signup',     # Don't require auth for signup\n        '/static/.*',  # Static files don't need auth\n        r'.*\\.css',    # CSS files\n        r'.*\\.js'      # JavaScript files\n    ]\n)\n\n# Or with custom login path:\ndef auth_custom_login(req, sess):\n    return user_auth_before(req, sess, login_path='/auth/login')\n\nbeforeware = Beforeware(\n    auth_custom_login,\n    skip=['/auth/login', '/auth/signup', '/static/.*']\n)\n\n# Create app with authentication\napp, rt = fast_app(before=beforeware)\n\n# This route is protected - redirects to login if not authenticated\n@rt('/')\ndef get(auth):  # auth is automatically injected from req.scope['auth']\n    return H1(f\"Welcome! You are {'authenticated' if auth else 'not authenticated'}\")",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#authentication-tokens",
+    "href": "auth.html#authentication-tokens",
+    "title": "Authentication",
+    "section": "Authentication Tokens",
+    "text": "Authentication Tokens\nTokens enable stateless authentication for APIs and “remember me” functionality. Launch Kit provides simple utilities for secure token generation and verification.\n\nsource\n\ncreate_auth_token\n\n create_auth_token (user_id:int)\n\nCreate a secure authentication token for a user.\n\n\n\n\nType\nDetails\n\n\n\n\nuser_id\nint\nThe user ID\n\n\nReturns\nstr\nThe authentication token\n\n\n\n\n\n\n\n\n\nToken Storage\n\n\n\nIn production, you’d store this token in your database with an expiration date and associate it with the user.\n\n\n\nsource\n\n\nverify_auth_token\n\n verify_auth_token (token:str)\n\nVerify an authentication token and return the user ID.\n\n\n\n\nType\nDetails\n\n\n\n\ntoken\nstr\nThe authentication token\n\n\nReturns\nOptional\nThe user ID or None if invalid\n\n\n\n\n\n\n\n\n\nToken Lookup\n\n\n\nIn production, you’d look up this token in your database and check expiration.",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#security-best-practices",
+    "href": "auth.html#security-best-practices",
+    "title": "Authentication",
+    "section": "Security Best Practices",
+    "text": "Security Best Practices\n\n\n\n\n\n\nCritical Security Guidelines\n\n\n\nFollowing these practices is essential for maintaining a secure authentication system.\n\n\n\n🔐 Password Security\n\n\n\nPractice\nImplementation\n\n\n\n\nMinimum Length\nEnforce 12+ characters\n\n\nComplexity\nRequire mixed case, numbers, symbols\n\n\nCommon Passwords\nCheck against haveibeenpwned.com\n\n\nPassword History\nPrevent reuse of last 5 passwords\n\n\nAccount Lockout\nLock after 5 failed attempts\n\n\n\n\n\n🍪 Session Security\n\n\n\nPractice\nImplementation\n\n\n\n\nSecure Cookies\nsecure=True, httponly=True, samesite='Lax'\n\n\nSession Timeout\n30 min idle, 12 hour absolute\n\n\nSession Rotation\nNew ID after login\n\n\nCSRF Protection\nUse CSRF tokens for state changes\n\n\n\n\n\n🎫 Token Security\n\n\n\nPractice\nImplementation\n\n\n\n\nStorage\nHash tokens before storing\n\n\nExpiration\n30 days for remember me\n\n\nRotation\nNew token on each use\n\n\nRevocation\nAllow users to revoke all tokens\n\n\n\n\n\n🌐 General Security\n\n\n\nPractice\nImplementation\n\n\n\n\nHTTPS\nEnforce TLS 1.2+ everywhere\n\n\nRate Limiting\n5 attempts per minute\n\n\nAudit Logging\nLog all auth events\n\n\n2FA\nSupport TOTP/WebAuthn",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#complete-database-example",
+    "href": "auth.html#complete-database-example",
+    "title": "Authentication",
+    "section": "Complete Database Example",
+    "text": "Complete Database Example\nHere’s how to use the User model and database functions together:\n\nfrom launch_kit.auth import *\nfrom fasthtml.common import *\n\n# Initialize database\ndb = init_auth_tables('app.db')\n\n# Create FastHTML app with auth\nbeforeware = Beforeware(\n    user_auth_before,\n    skip=['/login', '/signup', '/']\n)\napp, rt = fast_app(before=beforeware)\n\n@rt('/')\ndef get():\n    return Div(\n        H1('Welcome to Launch Kit Auth Demo'),\n        A('Sign Up', href='/signup'),\n        ' | ',\n        A('Login', href='/login')\n    )\n\n@rt('/signup')\ndef get():\n    return Div(\n        H2('Sign Up'),\n        Form(\n            Input(name='username', placeholder='Username', required=True),\n            Input(name='email', type='email', placeholder='Email', required=True),\n            Input(name='password', type='password', placeholder='Password', required=True),\n            Button('Sign Up', type='submit'),\n            method='post'\n        )\n    )\n\n@rt('/signup')\ndef post(username: str, email: str, password: str):\n    # Validate input\n    errors = validate_user_data(username, email, password)\n    if errors:\n        return Div(\n            *[P(error, style='color: red') for error in errors],\n            get()\n        )\n    \n    # Check availability\n    if not is_username_available(db, username):\n        return Div(P('Username already taken', style='color: red'), get())\n    if not is_email_available(db, email):\n        return Div(P('Email already registered', style='color: red'), get())\n    \n    # Create user\n    user = create_user(db, username, email, password)\n    if user:\n        return Redirect('/login')\n    \n    return Div(P('Registration failed', style='color: red'), get())\n\n@rt('/login')\ndef get():\n    return Div(\n        H2('Login'),\n        Form(\n            Input(name='username_or_email', placeholder='Username or Email', required=True),\n            Input(name='password', type='password', placeholder='Password', required=True),\n            Button('Login', type='submit'),\n            method='post'\n        )\n    )\n\n@rt('/login')\ndef post(username_or_email: str, password: str, sess, req):\n    # Authenticate user\n    user = authenticate_user(db, username_or_email, password)\n    \n    if user:\n        # Set session\n        sess['auth'] = True\n        sess['user'] = {'id': user['id'], 'username': user['username'], 'email': user['email']}\n        \n        # Track login (now returns a dictionary with login details)\n        ip = req.headers.get('x-forwarded-for', req.client.host)\n        user_agent = req.headers.get('user-agent')\n        login_record = track_login(db, user['id'], ip, user_agent)\n        \n        # You can use the login_record if needed, e.g. for analytics\n        # login_record contains: id, user_id, ip_address, user_agent, login_time\n        \n        return Redirect('/dashboard')\n    \n    return Div(P('Invalid credentials', style='color: red'), get())\n\n@rt('/dashboard')\ndef get(auth, sess):\n    user_data = get_user_from_session(sess)\n    if not user_data:\n        return Redirect('/login')\n    \n    return Div(\n        H2(f\"Welcome, {user_data['username']}!\"),\n        P(f\"Email: {user_data['email']}\"),\n        A('Logout', href='/logout')\n    )\n\n@rt('/logout')\ndef get(sess):\n    sess.clear()\n    return Redirect('/')",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#database-tests",
+    "href": "auth.html#database-tests",
+    "title": "Authentication",
+    "section": "Database Tests",
+    "text": "Database Tests\nTesting the User model and database operations:\n\nQuick Example\n\n\nComplete Login/Signup Example\nHere’s how to implement a complete authentication flow:\n\nfrom fasthtml.common import *\nfrom launch_kit.auth import hash_password, verify_password\n\n# Initialize FastHTML app\napp, rt = fast_app()\n\n# Simulated user database\nusers = {}\n\n@rt('/signup')\ndef post(email: str, password: str):\n    # Check if user exists\n    if email in users:\n        return \"User already exists\", 400\n    \n    # Create new user with hashed password\n    users[email] = {\n        'email': email,\n        'password': hash_password(password)\n    }\n    return \"Signup successful! Please login.\"\n\n@rt('/login') \ndef post(email: str, password: str, sess):\n    # Get user from database\n    user = users.get(email)\n    \n    if user and verify_password(password, user['password']):\n        # Set session authentication\n        sess['auth'] = True\n        sess['user_id'] = email\n        return Redirect('/')\n    \n    return \"Invalid credentials\", 401\n\n\n# User registration\nuser_password = \"MySecureP@ssw0rd!\"\nhashed_password = hash_password(user_password)\nprint(f\"Store this in database: {hashed_password[:20]}...\")\n\n# User login\nlogin_attempt = \"MySecureP@ssw0rd!\"\nif verify_password(login_attempt, hashed_password):\n    print(\"✅ Login successful!\")\nelse:\n    print(\"❌ Invalid password\")\n\n# Wrong password attempt\nif not verify_password(\"wrong_password\", hashed_password):\n    print(\"❌ Invalid credentials rejected\")\n\nStore this in database: $2b$12$Uc9STWyfe7VPm...\n✅ Login successful!\n❌ Invalid credentials rejected\n\n\n\n\nToken Usage Example\n\n\nRemember Me Implementation\nHere’s how to implement “remember me” functionality using tokens:\n\nfrom fasthtml.common import *\nfrom launch_kit.auth import *\n\n# Initialize app\napp, rt = fast_app()\n\n# Helper functions (would be in your database module)\ndef get_user_by_email(email): \n    # Fetch from database\n    pass\n\ndef store_remember_token(user_id, token, days): \n    # Store token with expiration in database\n    pass\n\ndef is_token_valid_in_db(token): \n    # Check token validity in database\n    pass\n\n@rt('/login')\ndef post(email: str, password: str, remember_me: bool, sess, resp):\n    user = get_user_by_email(email)\n    \n    if user and verify_password(password, user['password']):\n        # Set session auth\n        sess['auth'] = True\n        sess['user_id'] = user['id']\n        \n        # If remember me is checked, create a token\n        if remember_me:\n            token = create_auth_token(user['id'])\n            # Store token in database with expiration\n            store_remember_token(user['id'], token, days=30)\n            # Set cookie\n            resp.set_cookie('remember_token', token, max_age=30*24*60*60)\n        \n        return Redirect('/')\n    \n    return \"Invalid credentials\"\n\n@rt('/')\ndef get(sess, req):\n    # Check session first\n    if sess.get('auth'):\n        return \"Welcome back!\"\n    \n    # Check remember me token\n    token = req.cookies.get('remember_token')\n    if token:\n        user_id = verify_auth_token(token)\n        if user_id and is_token_valid_in_db(token):\n            # Restore session\n            sess['auth'] = True\n            sess['user_id'] = user_id\n            return \"Welcome back (remembered)!\"\n    \n    return Redirect('/login')\n\n\n# Generate a token for user 42\nuser_id = 42\ntoken = create_auth_token(user_id)\nprint(f\"Generated token: {token[:20]}...\")\n\n# Later, verify the token\nverified_user_id = verify_auth_token(token)\nif verified_user_id:\n    print(f\"✅ Valid token for user {verified_user_id}\")\nelse:\n    print(\"❌ Invalid or expired token\")\n\n# Invalid tokens return None\nassert verify_auth_token(\"tampered_token\") is None\nprint(\"❌ Tampered tokens are rejected\")\n\nGenerated token: 42:BahBYB7XQDacMaEcg...\n✅ Valid token for user 42\n❌ Tampered tokens are rejected",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#complete-example-interactive-demo",
+    "href": "auth.html#complete-example-interactive-demo",
+    "title": "Authentication",
+    "section": "Complete Example: Interactive Demo",
+    "text": "Complete Example: Interactive Demo\nHere’s a complete FastHTML application demonstrating all authentication features. Run it right here in the notebook!\n\nfrom fasthtml.common import *\nfrom launch_kit.auth import *\n\n# Simulated database\nusers_db = {'test@example.com': {'id': 1, 'email': 'test@example.com', 'password': hash_password('password123')}}\n\n# Configure authentication with custom login path\n# Create a wrapper function instead of using partial\ndef auth_with_custom_login(req, sess):\n    return user_auth_before(req, sess, login_path='/auth/login')\n\nbeforeware = Beforeware(\n    auth_with_custom_login,\n    skip=[r'/auth/.*', r'/public/.*', '/']\n)\napp, rt = fast_app(before=beforeware)\n\n# Public home page\n@rt('/')\ndef get(): \n    return Div(\n        H1('Welcome to SecureApp'),\n        P('A demo of Launch Kit authentication'),\n        A('Login', href='/auth/login', cls='button'),\n        A('Protected Area', href='/protected', cls='button')\n    )\n\n# Login page\n@rt('/auth/login')\ndef get():\n    return Div(\n        H2('Login'),\n        Form(\n            Input(name='email', type='email', placeholder='Email', required=True),\n            Input(name='password', type='password', placeholder='Password', required=True),\n            Button('Login', type='submit'),\n            method='post'\n        )\n    )\n\n# Handle login\n@rt('/auth/login')\ndef post(email: str, password: str, sess):\n    user = users_db.get(email)\n    if user and verify_password(password, user['password']):\n        sess['auth'] = True\n        sess['user'] = user\n        return Redirect('/protected')\n    return Div(P('Invalid credentials', style='color: red'), get())\n\n# Protected page\n@rt('/protected')\ndef get(auth, sess):\n    user = get_user_from_session(sess)\n    return Div(\n        H2(f\"Welcome {user['email']}!\"),\n        P('This is a protected page.'),\n        A('Logout', href='/auth/logout', cls='button')\n    )\n\n# Logout\n@rt('/auth/logout')\ndef get(sess):\n    sess.clear()\n    return Redirect('/')\n\n# Start the server in Jupyter [https://fastht.ml/docs/tutorials/jupyter_and_fasthtml.html]\nfrom fasthtml.jupyter import JupyUvi\nserver = JupyUvi(app)\nprint(\"Server running at http://localhost:8000\")\nprint(\"\\nTest credentials:\")\nprint(\"- Email: test@example.com\")\nprint(\"- Password: password123\")\n\n\n\n\n\nServer running at http://localhost:8000\n\nTest credentials:\n- Email: test@example.com\n- Password: password123\n\n\n\n# View the app right here in the notebook by uncommenting the line below\nfrom fasthtml.jupyter import HTMX\n#HTMX()\n\n\nAutomated Testing\nYou can also test the authentication flow programmatically:\n\nimport httpx\nimport asyncio\n\n# Test the authentication flow\nasync def test_auth_flow():\n    async with httpx.AsyncClient(base_url=\"http://localhost:8000\", follow_redirects=False) as client:\n        print(\"Testing authentication flow...\")\n        \n        # 1. Try protected page (should redirect)\n        resp = await client.get(\"/protected\")\n        assert resp.status_code == 303\n        assert resp.headers['location'] == '/auth/login'\n        print(\"✓ Protected page redirects to /auth/login\")\n        \n        # 2. Login with valid credentials\n        resp = await client.post(\"/auth/login\", data={\n            \"email\": \"test@example.com\",\n            \"password\": \"password123\"\n        })\n        assert resp.status_code == 303\n        assert resp.headers['location'] == '/protected'\n        print(\"✓ Login successful\")\n        \n        # 3. Access protected page\n        resp = await client.get(\"/protected\", follow_redirects=True)\n        assert \"Welcome test@example.com\" in resp.text\n        print(\"✓ Protected page accessible\")\n        \n        # 4. Logout\n        resp = await client.get(\"/auth/logout\")\n        assert resp.status_code == 303\n        print(\"✓ Logout successful\")\n        \n        print(\"\\n✅ All tests passed!\")\n\n# Run the tests\nawait test_auth_flow()\n\nTesting authentication flow...\n✓ Protected page redirects to /auth/login\n✓ Login successful\n✓ Protected page accessible\n✓ Logout successful\n\n✅ All tests passed!\n\n\n\n\nManual Testing\nYou can test the app manually in a browser by visiting: - http://localhost:8000 - Home page - http://localhost:8000/protected - Will redirect to login - http://localhost:8000/auth/login - Login with test@example.com / password123\n\n# Stop the server gracefully\n# Note: Always run this after testing to clean up otherwise there will be a dangling thread\n# https://fastht.ml/docs/tutorials/jupyter_and_fasthtml.html#graceful-shutdowns\nprint(\"Stopping server...\")\nserver.stop()\nprint(\"✓ Server stopped gracefully\")\nprint(\"\\n🎉 All tests passed! Authentication utilities are working correctly with FastHTML.\")\n\nStopping server...\n✓ Server stopped gracefully\n\n🎉 All tests passed! Authentication utilities are working correctly with FastHTML.",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#auth-tests",
+    "href": "auth.html#auth-tests",
+    "title": "Authentication",
+    "section": "Auth Tests",
+    "text": "Auth Tests",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#performance-benchmarks",
+    "href": "auth.html#performance-benchmarks",
+    "title": "Authentication",
+    "section": "Performance Benchmarks",
+    "text": "Performance Benchmarks\nUnderstanding the performance characteristics of authentication operations is crucial for capacity planning.",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#summary",
+    "href": "auth.html#summary",
+    "title": "Authentication",
+    "section": "Summary",
+    "text": "Summary\nLaunch Kit’s authentication module provides a complete, secure foundation for FastHTML applications:\n\nSimple API - Core authentication functions plus comprehensive database operations\nDatabase Integration - User model with FastHTML’s MiniDataAPI for transparent persistence\nSecure by Default - Industry-standard bcrypt hashing with sensible defaults\nFastHTML Native - Seamless integration with sessions, beforeware, and database patterns\nProduction Ready - Battle-tested patterns with comprehensive security guidelines\nFlexible - Works for both traditional web apps and API authentication\nComplete Solution - From user registration to login tracking, all in one module",
+    "crumbs": [
+      "Authentication"
+    ]
+  }
+]
