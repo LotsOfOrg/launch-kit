@@ -263,7 +263,7 @@ def track_login(db: Database, # The FastHTML Database instance
         VALUES (?, ?, ?)
     ''', (user_id, ip_address, user_agent))
 
-# %% ../nbs/00_auth.ipynb 29
+# %% ../nbs/00_auth.ipynb 33
 def is_username_available(db: Database, # The FastHTML Database instance
                           username: str, # The username to check
                           table_name: str = 'user' # The table name
@@ -272,7 +272,7 @@ def is_username_available(db: Database, # The FastHTML Database instance
     """
     return get_user_by_username(db, username, table_name) is None
 
-# %% ../nbs/00_auth.ipynb 30
+# %% ../nbs/00_auth.ipynb 34
 def is_email_available(db: Database, # The FastHTML Database instance
                        email: str, # The email address to check
                        table_name: str = 'user' # The table name
@@ -281,7 +281,7 @@ def is_email_available(db: Database, # The FastHTML Database instance
     """
     return get_user_by_email(db, email, table_name) is None
 
-# %% ../nbs/00_auth.ipynb 31
+# %% ../nbs/00_auth.ipynb 35
 def validate_user_data(username: str, # The username to validate
                        email: str, # The email address to validate
                        password: str # The password to validate
@@ -310,7 +310,7 @@ def validate_user_data(username: str, # The username to validate
     
     return errors
 
-# %% ../nbs/00_auth.ipynb 34
+# %% ../nbs/00_auth.ipynb 38
 def user_auth_before(req, # The FastHTML Request object
                      sess, # The FastHTML Session object
                      login_path='/login' # The login path
@@ -322,7 +322,7 @@ def user_auth_before(req, # The FastHTML Request object
     if not auth: 
         return RedirectResponse(login_path, status_code=303)
 
-# %% ../nbs/00_auth.ipynb 36
+# %% ../nbs/00_auth.ipynb 40
 def get_user_from_session(sess                           # The FastHTML Session object
                           ) -> Optional[Dict[str, Any]]: # The user data dict or None if not authenticated
     """Extract user data dictionary from session.
@@ -331,7 +331,7 @@ def get_user_from_session(sess                           # The FastHTML Session 
         return sess['user']
     return None
 
-# %% ../nbs/00_auth.ipynb 41
+# %% ../nbs/00_auth.ipynb 45
 def create_auth_token(user_id: int # The user ID
                       ) -> str:    # The authentication token
     """Create a secure authentication token for a user.
@@ -340,7 +340,7 @@ def create_auth_token(user_id: int # The user ID
     # In a real app, you'd store: token -> user_id mapping in database
     return f"{user_id}:{token}"
 
-# %% ../nbs/00_auth.ipynb 43
+# %% ../nbs/00_auth.ipynb 47
 def verify_auth_token(token: str # The authentication token
                       ) -> Optional[int]: # The user ID or None if invalid
     """Verify an authentication token and return the user ID.
