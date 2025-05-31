@@ -19,7 +19,7 @@ import inspect
 __all__ = ['require_auth', 'require_role', 'require_permission', 'auth_required', 'role_required', 'permission_required',
            'get_user_permissions', 'has_permission', 'check_role_hierarchy', 'register_permission', 'get_permissions_for_role',
            'set_role_permissions', 'add_role_permission', 'remove_role_permission', 'clear_permission_cache',
-           'ROLE_HIERARCHY', 'ROLE_PERMISSIONS']
+           'ROLE_HIERARCHY', 'ROLE_PERMISSIONS', 'PERMISSION_DESCRIPTIONS']
 
 # %% ../nbs/02_permissions.ipynb 9
 # Role hierarchy - higher number = more privileges
