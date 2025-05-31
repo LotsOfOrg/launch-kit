@@ -154,3 +154,6 @@ checklink/cookies.txt
 # FastHTML session keys
 *.sesskey
 .sesskey
+
+# FastHTML database
+*.db*
