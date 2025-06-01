@@ -167,14 +167,11 @@ def auth_required(func: Callable             # The route function to protect
             return "Dashboard content"
     """
     @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Find req and sess in args or kwargs
-        req, sess = _extract_req_sess(func, args, kwargs)
-        
+    def wrapper(req, sess, *args, **kwargs):
         if not require_auth(req, sess):
             return RedirectResponse('/login', status_code=303)
         
-        return func(*args, **kwargs)
+        return func(req, sess, *args, **kwargs)
     
     return wrapper
 
@@ -193,10 +190,7 @@ def role_required(role: str                   # The required role
     """
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
-            # Find req and sess in args or kwargs
-            req, sess = _extract_req_sess(func, args, kwargs)
-            
+        def wrapper(req, sess, *args, **kwargs):
             if not require_role(role, req, sess):
                 # Check if user is authenticated but lacks permission
                 if require_auth(req, sess):
@@ -207,7 +201,7 @@ def role_required(role: str                   # The required role
                 else:
                     return RedirectResponse('/login', status_code=303)
             
-            return func(*args, **kwargs)
+            return func(req, sess, *args, **kwargs)
         
         return wrapper
     
@@ -229,10 +223,7 @@ def permission_required(permission: str       # The required permission
     """
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
-            # Find req and sess in args or kwargs
-            req, sess = _extract_req_sess(func, args, kwargs)
-            
+        def wrapper(req, sess, *args, **kwargs):
             if not require_permission(permission, req, sess):
                 # Check if user is authenticated but lacks permission
                 if require_auth(req, sess):
@@ -243,52 +234,13 @@ def permission_required(permission: str       # The required permission
                 else:
                     return RedirectResponse('/login', status_code=303)
             
-            return func(*args, **kwargs)
+            return func(req, sess, *args, **kwargs)
         
         return wrapper
     
     return decorator
 
-# %% ../nbs/02_permissions.ipynb 24
-def _extract_req_sess(func: Callable,                    # The function being decorated
-                      args: tuple,                       # Positional arguments
-                      kwargs: dict                       # Keyword arguments
-                      ) -> tuple[Any, Any]:              # (req, sess) tuple
-    """Extract req and sess from function arguments.
-    
-    This helper function handles the various ways FastHTML might pass req and sess.
-    """
-    # Get function signature
-    sig = inspect.signature(func)
-    params = list(sig.parameters.keys())
-    
-    # Try to find req and sess
-    req = None
-    sess = None
-    
-    # Check kwargs first
-    if 'req' in kwargs:
-        req = kwargs['req']
-    if 'sess' in kwargs:
-        sess = kwargs['sess']
-    
-    # Then check positional args
-    if req is None and 'req' in params:
-        req_idx = params.index('req')
-        if req_idx < len(args):
-            req = args[req_idx]
-    
-    if sess is None and 'sess' in params:
-        sess_idx = params.index('sess')
-        if sess_idx < len(args):
-            sess = args[sess_idx]
-    
-    if req is None or sess is None:
-        raise ValueError("Could not find req and sess parameters in function")
-    
-    return req, sess
-
-# %% ../nbs/02_permissions.ipynb 26
+# %% ../nbs/02_permissions.ipynb 25
 def register_permission(name: str,                        # Permission identifier
                        description: Optional[str] = None  # Human-readable description
                        ) -> None:
@@ -299,20 +251,20 @@ def register_permission(name: str,                        # Permission identifie
     if description:
         PERMISSION_DESCRIPTIONS[name] = description
 
-# %% ../nbs/02_permissions.ipynb 27
+# %% ../nbs/02_permissions.ipynb 26
 def get_permissions_for_role(role: str        # The role name
                            ) -> Set[str]:     # Set of permissions
     """Get all permissions assigned to a role."""
     return ROLE_PERMISSIONS.get(role, set()).copy()
 
-# %% ../nbs/02_permissions.ipynb 28
+# %% ../nbs/02_permissions.ipynb 27
 def set_role_permissions(role: str,                              # The role name
                         permissions: Union[Set[str], List[str]]  # Permissions to assign
                         ) -> None:
     """Set permissions for a role, replacing any existing permissions."""
     ROLE_PERMISSIONS[role] = set(permissions) if isinstance(permissions, list) else permissions
 
-# %% ../nbs/02_permissions.ipynb 29
+# %% ../nbs/02_permissions.ipynb 28
 def add_role_permission(role: str,            # The role name
                        permission: str        # Permission to add
                        ) -> None:
@@ -321,7 +273,7 @@ def add_role_permission(role: str,            # The role name
         ROLE_PERMISSIONS[role] = set()
     ROLE_PERMISSIONS[role].add(permission)
 
-# %% ../nbs/02_permissions.ipynb 30
+# %% ../nbs/02_permissions.ipynb 29
 def remove_role_permission(role: str,         # The role name
                           permission: str     # Permission to remove
                           ) -> None:
@@ -329,7 +281,7 @@ def remove_role_permission(role: str,         # The role name
     if role in ROLE_PERMISSIONS:
         ROLE_PERMISSIONS[role].discard(permission)
 
-# %% ../nbs/02_permissions.ipynb 32
+# %% ../nbs/02_permissions.ipynb 31
 def clear_permission_cache(sess               # The FastHTML Session object
                          ) -> None:
     """Clear cached permissions from session.

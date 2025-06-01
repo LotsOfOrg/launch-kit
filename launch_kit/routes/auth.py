@@ -11,7 +11,7 @@ from ..auth import hash_password, verify_password
 from monsterui.all import *
 
 # %% ../../nbs/01_routes_auth.ipynb 9
-def login_route(app, 
+def login_route(rt, # FastHTML router instance
                 path='/auth/login',
                 redirect_to='/',
                 login_form=None,
@@ -20,8 +20,10 @@ def login_route(app,
                 **kwargs):
     """Create a login route with customizable form and authentication.
     
+    Following FastHTML patterns - pass the router instance, not the app.
+    
     Args:
-        app: FastHTML app instance
+        rt: FastHTML router instance (from fast_app())
         path: Route path (default: '/auth/login')
         redirect_to: Where to redirect after successful login (default: '/')
         login_form: Custom form component (callable returning FT)
@@ -72,7 +74,7 @@ def login_route(app,
                 return {'email': email, 'id': 1}
             return None
     
-    @app.route(path, methods=['GET', 'POST'])
+    @rt(path, methods=['GET', 'POST'])
     async def login(req, sess):
         # Redirect if already authenticated
         if sess.get(session_key):
@@ -99,7 +101,7 @@ def login_route(app,
         return login_form(**kwargs)
 
 # %% ../../nbs/01_routes_auth.ipynb 19
-def signup_route(app,
+def signup_route(rt, # FastHTML router instance
                  path='/auth/signup',
                  redirect_to='/',
                  signup_form=None,
@@ -108,8 +110,10 @@ def signup_route(app,
                  **kwargs):
     """Create a signup route with customizable form and user creation.
     
+    Following FastHTML patterns - pass the router instance, not the app.
+    
     Args:
-        app: FastHTML app instance
+        rt: FastHTML router instance (from fast_app())
         path: Route path (default: '/auth/signup')
         redirect_to: Where to redirect after successful signup (default: '/')
         signup_form: Custom form component (callable returning FT)
@@ -189,7 +193,7 @@ def signup_route(app,
                 'name': form_data.get('name')
             }
     
-    @app.route(path, methods=['GET', 'POST'])
+    @rt(path, methods=['GET', 'POST'])
     async def signup(req, sess):
         # Redirect if already authenticated
         if sess.get(session_key):
@@ -217,22 +221,24 @@ def signup_route(app,
         return signup_form(**kwargs)
 
 # %% ../../nbs/01_routes_auth.ipynb 24
-def logout_route(app,
+def logout_route(rt, # FastHTML router instance
                  path='/auth/logout',
                  redirect_to='/auth/login',
                  session_key='auth',
                  before_logout=None):
     """Create a logout route that clears the session.
     
+    Following FastHTML patterns - pass the router instance, not the app.
+    
     Args:
-        app: FastHTML app instance
+        rt: FastHTML router instance (from fast_app())
         path: Route path (default: '/auth/logout')
         redirect_to: Where to redirect after logout (default: '/auth/login')
         session_key: Session key to clear (default: 'auth')
         before_logout: Optional callback function(session) called before logout
     """
     
-    @app.route(path)
+    @rt(path)
     def logout(req, sess):
         # Call optional callback
         if before_logout:
