@@ -353,11 +353,17 @@ def validate_user_data(username: str, # The username to validate
 def user_auth_before(req, # The FastHTML Request object
                      sess, # The FastHTML Session object
                      login_path='/login' # The login path
-                     ): # The authenticated user dict or RedirectResponse if not authenticated
+                     ): # None or RedirectResponse if not authenticated
     """Beforeware function to check authentication status.
+    
+    Following FastHTML's standard authentication pattern:
+    - Sets req.scope['auth'] for automatic injection in route handlers
+    - Returns None if authenticated (continue processing)
+    - Returns RedirectResponse if not authenticated
     """
     from fasthtml.common import RedirectResponse
-    auth = req.scope['auth'] = sess.get('auth', None)
+    auth = sess.get('auth', None)
+    req.scope['auth'] = auth
     if not auth: 
         return RedirectResponse(login_path, status_code=303)
 
