@@ -103,4 +103,10 @@ This project uses MonsterUI as the default UI framework. When developing:
 ```bash
 # Add Puppeteer MCP server for browser automation (web scraping, testing, screenshots)
 claude mcp add puppeteer npx @modelcontextprotocol/server-puppeteer
+# Add context7 MCP server for getting up to date documentation
+claude mcp add --transport sse context7 https://mcp.context7.com/sse
 ```
+
+## Memories
+
+- Use context7 to access FastHtml and MonsterUI documentation
