@@ -110,3 +110,4 @@ claude mcp add --transport sse context7 https://mcp.context7.com/sse
 ## Memories
 
 - Use context7 to access FastHtml and MonsterUI documentation
+- Use fastai coding style which can be found [here](https://docs.fast.ai/dev/style.html)
