@@ -2,8 +2,8 @@ project:
   output-dir: _docs
 
 website:
-  title: "launch-kit"
-  site-url: "https://LotsOfOrg.github.io/launch-kit"
+  title: "ship-kit"
+  site-url: "https://LotsOfOrg.github.io/ship-kit"
   description: "A FastHTML toolkit for building production-ready SaaS applications with authentication, admin panels, billing, and team management"
   repo-branch: main
-  repo-url: "https://github.com/LotsOfOrg/launch-kit"
+  repo-url: "https://github.com/LotsOfOrg/ship-kit"
