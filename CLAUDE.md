@@ -67,33 +67,299 @@ nbdev_clean
 
 ## MonsterUI Integration
 
-This project uses MonsterUI as the default UI framework. When developing:
+This project uses MonsterUI as the default UI framework. MonsterUI provides a comprehensive set of pre-styled components that work seamlessly with FastHTML and HTMX.
 
-1. **Use MonsterUI components** instead of raw HTML:
-   - `Button` instead of `<button>`
-   - `Card` instead of `<div>` containers
-   - `Form`, `FormField`, `Input` for forms
-   - `DataTable` for tables
-   - `Alert` for notifications
-   - `Badge`, `Chip` for status indicators
+### Core Principles
+- **Minimal code**: Pre-styled components reduce boilerplate
+- **Semantic HTML**: Components generate accessible markup
+- **HTMX-ready**: All components support HTMX attributes
+- **Responsive**: Mobile-first design with Tailwind integration
+- **Theme support**: Built-in dark/light mode and color themes
 
-2. **MonsterUI patterns**:
-   - All components support HTMX attributes
-   - Built-in dark mode support
-   - Responsive by default
-   - Accessible (WCAG compliant)
-   
-3. **Example**:
-   ```python
-   # Instead of:
-   Div(H1("Title", cls="text-2xl"), Form(...))
-   
-   # Use:
-   Card(
-       PageHeader("Title"),
-       Form(FormField(Label("Email"), Input(type="email")))
-   )
-   ```
+### Component Categories
+
+#### 1. **Form Components**
+```python
+# Basic form inputs
+LabelInput("Name", id="name", placeholder="Enter name")
+LabelInput("Email", id="email", type="email", required=True)
+
+# Dropdown with search
+Select(*Options("Option 1", "Option 2"), 
+       name='choice', searchable=True, placeholder='Choose...')
+
+# Range slider
+LabelRange(label='Volume', value='50', min='0', max='100')
+
+# Complete form example
+Form(
+    LabelInput("Email", id="email", type="email"),
+    LabelInput("Password", id="password", type="password"),
+    Checkbox("Remember me", id="remember"),
+    Button("Sign In", cls=ButtonT.primary),
+    hx_post="/auth/login"
+)
+```
+
+#### 2. **Layout Components**
+```python
+# Page structure
+Container(
+    Main(
+        H1("Page Title"),
+        Grid(
+            Card("Content 1"),
+            Card("Content 2"),
+            Card("Content 3"),
+            cols_lg=3, cols_md=2  # Responsive columns
+        )
+    )
+)
+
+# Card layouts
+Card(
+    H2("Card Title"),
+    P("Card content"),
+    footer=Div(Button("Action"))
+)
+
+# Stacking utilities
+DivVStacked(*items)  # Vertical stack
+DivHStacked(*items)  # Horizontal stack
+DivCentered(content)  # Centered content
+```
+
+#### 3. **Navigation Components**
+```python
+# Responsive navbar (hamburger on mobile)
+Navbar(
+    NavContainer(
+        A("Home", href="/"),
+        A("About", href="/about"),
+        DropDownNavContainer(
+            "More",
+            A("Settings", href="/settings"),
+            A("Logout", href="/logout")
+        )
+    )
+)
+
+# Multi-step process
+Steps(
+    Step("Account", completed=True),
+    Step("Profile", active=True),
+    Step("Payment")
+)
+
+# Collapsible sections
+Accordion(
+    AccordionItem("Section 1", P("Content 1")),
+    AccordionItem("Section 2", P("Content 2"))
+)
+```
+
+#### 4. **Data Display Components**
+```python
+# Basic table
+Table(
+    Thead(Tr(Th("Name"), Th("Email"), Th("Status"))),
+    Tbody(*[Tr(Td(u.name), Td(u.email), Td(Badge(u.status))) 
+           for u in users])
+)
+
+# User avatars
+DiceBearAvatar(name="John Doe", h=32, w=32)
+
+# Status indicators
+Badge("Active", cls="badge-success")
+Chip("Tag", removable=True)
+```
+
+#### 5. **Feedback Components**
+```python
+# Modal dialogs
+Modal(
+    ModalTitle("Confirm Action"),
+    P("Are you sure you want to proceed?"),
+    ModalCloseButton("Cancel"),
+    Button("Confirm", cls=ButtonT.primary, hx_post="/confirm")
+)
+
+# Toast notifications
+Toast('Operation successful!', dur=3.0)  # Auto-dismiss after 3 seconds
+
+# Alert messages
+Alert("Important information", cls="alert-info")
+
+# Loading states
+Loading()  # Spinner
+```
+
+#### 6. **Interactive Components**
+```python
+# Buttons with variants
+Button("Primary", cls=ButtonT.primary)
+Button("Secondary", cls=ButtonT.secondary)
+Button("Danger", cls="text-destructive")
+
+# Icons
+UkIcon("home", height=20)
+UkIconLink('github', href='https://github.com/user/repo')
+
+# Lightbox for images
+Lightbox(
+    Img(src="/image1.jpg"),
+    Img(src="/image2.jpg")
+)
+```
+
+### Theme Configuration
+```python
+from monsterui.all import *
+
+# Available themes: blue, green, red, slate, stone, gray, zinc, amber
+# Enable features: highlightjs for code, katex for math
+hdrs = Theme.blue.headers(highlightjs=True, katex=True)
+app, rt = fast_app(hdrs=hdrs)
+
+# Theme customization in component
+Card(content, cls="theme-green")  # Override theme locally
+```
+
+### Common SaaS Patterns
+
+#### Authentication Pages
+```python
+@rt("/login")
+def login():
+    return Titled("Sign In",
+        Container(
+            DivCentered(
+                Card(
+                    Form(
+                        H2("Welcome Back"),
+                        LabelInput("Email", id="email", type="email"),
+                        LabelInput("Password", id="password", type="password"),
+                        DivHStacked(
+                            Checkbox("Remember me"),
+                            A("Forgot password?", href="/reset", 
+                              cls=TextPresets.muted_sm)
+                        ),
+                        Button("Sign In", cls=ButtonT.primary + " w-full"),
+                        hx_post="/auth/login"
+                    ),
+                    cls="max-w-md"
+                )
+            )
+        )
+    )
+```
+
+#### Dashboard Layout
+```python
+@rt("/dashboard")
+def dashboard():
+    return Container(
+        Grid(
+            Card(
+                H3("Total Users"),
+                P("1,234", cls="text-3xl font-bold"),
+                footer=P("+12% from last month", cls=TextPresets.muted_sm)
+            ),
+            Card(
+                H3("Revenue"),
+                P("$45,678", cls="text-3xl font-bold"),
+                footer=P("+8% from last month", cls=TextPresets.muted_sm)
+            ),
+            Card(
+                H3("Active Sessions"),
+                P("89", cls="text-3xl font-bold"),
+                footer=P("Live now", cls=TextPresets.muted_sm)
+            ),
+            cols_lg=3
+        )
+    )
+```
+
+#### Data Tables with Actions
+```python
+def user_table(users):
+    return Table(
+        Thead(
+            Tr(Th("User"), Th("Status"), Th("Actions", cls="text-right"))
+        ),
+        Tbody(*[
+            Tr(
+                Td(
+                    DivHStacked(
+                        DiceBearAvatar(u.name, h=32, w=32),
+                        Div(
+                            P(u.name),
+                            P(u.email, cls=TextPresets.muted_sm)
+                        )
+                    )
+                ),
+                Td(Badge("Active" if u.active else "Inactive",
+                         cls="badge-success" if u.active else "badge-gray")),
+                Td(
+                    DivRAligned(
+                        UkIconLink("edit", href=f"/users/{u.id}/edit"),
+                        UkIconLink("trash", hx_delete=f"/users/{u.id}",
+                                  hx_confirm="Delete this user?")
+                    )
+                )
+            ) for u in users
+        ])
+    )
+```
+
+### Best Practices
+
+1. **Component Selection**: Always prefer MonsterUI components over raw HTML elements
+2. **Responsive Design**: Use Grid with responsive column props (cols_lg, cols_md, cols_sm)
+3. **Consistent Spacing**: Use layout utilities (DivVStacked, DivHStacked) for consistent spacing
+4. **Theme Consistency**: Use ButtonT variants and TextPresets for consistent styling
+5. **Accessibility**: MonsterUI components include proper ARIA attributes by default
+6. **HTMX Integration**: Add HTMX attributes directly to MonsterUI components
+7. **Form Handling**: Use Form component with proper field grouping for better UX
+
+### Example: Complete CRUD Interface
+```python
+@rt("/items")
+def items_list():
+    items = get_items()
+    return Titled("Items",
+        Container(
+            DivHStacked(
+                H1("Items"),
+                Button("New Item", href="/items/new", cls=ButtonT.primary)
+            ),
+            Card(
+                Table(
+                    Thead(Tr(Th("Name"), Th("Status"), Th(""))),
+                    Tbody(*[
+                        Tr(
+                            Td(item.name),
+                            Td(Badge(item.status)),
+                            Td(
+                                DivRAligned(
+                                    Button("Edit", cls="btn-sm", 
+                                          href=f"/items/{item.id}/edit"),
+                                    Button("Delete", cls="btn-sm text-destructive",
+                                          hx_delete=f"/items/{item.id}",
+                                          hx_confirm="Delete this item?",
+                                          hx_target="closest tr",
+                                          hx_swap="outerHTML")
+                                )
+                            )
+                        ) for item in items
+                    ]),
+                    id="items-table"
+                )
+            )
+        )
+    )
+```
 
 ## Repository Information
 
