@@ -154,6 +154,83 @@ test_eq(message, "Hello, World!")  # This serves as both example and test
 - **Link related content**: Use doclinks to reference other parts of the codebase
 - **Export selectively**: Use `#| export` to control what gets exported to Python modules
 
+## FastHTML Development Best Practices
+
+When developing FastHTML applications in notebooks:
+
+### Application Structure
+- **Use `fast_app()`**: Initialize apps with sensible defaults for rapid development
+- **Leverage wildcard imports**: Use `from fasthtml.common import *` for concise code
+- **Organize with decorators**: Use `@rt()` decorator for clean route definitions
+- **Function-based components**: Prefer functions over classes for component definitions
+
+### Component Development
+- **Create reusable components**: Define components as functions or dataclasses
+- **Custom rendering**: Implement `__ft__()` method for custom component rendering
+- **Raw HTML handling**: Use `NotStr()` to safely include raw HTML content
+- **Type validation**: Use Python type hints for component parameter validation
+
+### Routing and Request Handling
+- **Match function names**: Name functions according to HTTP methods (get, post, etc.)
+- **Type-annotated routes**: Use type annotations for URL variable validation
+- **Middleware patterns**: Implement beforeware for authentication/authorization
+- **Async operations**: Use async functions for non-blocking I/O operations
+
+### State Management
+- **Session handling**: Use session dictionaries for lightweight state tracking
+- **Persistent data**: Implement cookies for client-side persistence
+- **User notifications**: Leverage toasts for user feedback
+- **Real-time updates**: Use SSE and WebSockets for live data
+
+### HTMX Integration
+- **Dynamic loading**: Use `hx_` attributes for partial page updates
+- **WebSocket support**: Implement `ws_send` and `ws_connect` for real-time features
+- **Progressive enhancement**: Start with server-rendered HTML, enhance with HTMX
+- **Extension usage**: Leverage HTMX extensions for advanced interactivity
+
+### Testing in Notebooks
+- **Route testing**: Use Starlette's `TestClient` for testing endpoints
+- **Component inspection**: Print rendered HTML to validate output
+- **Form validation**: Test form submissions and data transformations
+- **Event loop awareness**: Be mindful of ASGI event loop limitations in notebooks
+
+### Notebook-Specific Tips
+```python
+# Testing views in notebooks
+from starlette.testclient import TestClient
+client = TestClient(app)
+
+# Test GET requests
+response = client.get("/")
+print(response.text)
+
+# Test POST requests
+response = client.post("/submit", data={"field": "value"})
+```
+
+### Code Example Patterns
+```python
+# Component with MonsterUI and FastHTML
+def TodoItem(todo: Todo) -> FT:
+    "Render a todo item with MonsterUI components"
+    return Card(
+        Div(
+            Checkbox(checked=todo.done, 
+                    hx_patch=f"/todos/{todo.id}",
+                    hx_swap="outerHTML"),
+            todo.title,
+            cls="flex items-center gap-2"
+        ),
+        id=f"todo-{todo.id}"
+    )
+
+# Route with type validation
+@rt("/todos/{id:int}")
+async def get(id: int):
+    todo = await get_todo(id)
+    return TodoItem(todo)
+```
+
 ## Memories
 
 - Use context7 to access FastHtml and MonsterUI documentation
