@@ -12,7 +12,7 @@ from monsterui.all import *
 
 # %% ../../nbs/01_routes_auth.ipynb 9
 def login_route(rt, # FastHTML router instance
-                path='/auth/login',
+                path='/login',
                 redirect_to='/',
                 login_form=None,
                 authenticate=None,
@@ -24,7 +24,7 @@ def login_route(rt, # FastHTML router instance
     
     Args:
         rt: FastHTML router instance (from fast_app())
-        path: Route path (default: '/auth/login')
+        path: Route path (default: '/login')
         redirect_to: Where to redirect after successful login (default: '/')
         login_form: Custom form component (callable returning FT)
         authenticate: Custom authentication function(email, password) -> user_dict or None
@@ -102,7 +102,7 @@ def login_route(rt, # FastHTML router instance
 
 # %% ../../nbs/01_routes_auth.ipynb 19
 def signup_route(rt, # FastHTML router instance
-                 path='/auth/signup',
+                 path='/signup',
                  redirect_to='/',
                  signup_form=None,
                  create_user=None,
@@ -114,7 +114,7 @@ def signup_route(rt, # FastHTML router instance
     
     Args:
         rt: FastHTML router instance (from fast_app())
-        path: Route path (default: '/auth/signup')
+        path: Route path (default: '/signup')
         redirect_to: Where to redirect after successful signup (default: '/')
         signup_form: Custom form component (callable returning FT)
         create_user: Custom user creation function(form_data) -> user_dict or error_string
