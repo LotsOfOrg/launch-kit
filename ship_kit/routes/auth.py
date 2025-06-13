@@ -59,7 +59,7 @@ def login_route(rt, # FastHTML router instance
                 ),
                 P(
                     "Don't have an account? ",
-                    A('Sign up', href='/auth/signup', cls='text-primary hover:underline'),
+                    A('Sign up', href='/signup', cls='text-primary hover:underline'),
                     cls='text-center text-sm mt-4'
                 ),
                 cls='max-w-md mx-auto mt-8'
