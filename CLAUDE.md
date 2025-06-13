@@ -107,7 +107,55 @@ claude mcp add puppeteer npx @modelcontextprotocol/server-puppeteer
 claude mcp add --transport sse context7 https://mcp.context7.com/sse
 ```
 
+## nbdev Best Practices
+
+When working with notebooks in this project, follow these best practices:
+
+### Notebook Organization
+- **Start with clear titles**: Each notebook should have a descriptive title and subtitle
+- **Use H2 sections** to group related functionality (e.g., "Authentication", "User Management")
+- **Use H4 sections** to break up long explanations within a module
+- **Keep code cells short**: Demonstrate functionality immediately after defining it
+
+### Documentation & Code Style
+- **Mix code, tests, and docs**: Write documentation, code, and tests together in context
+- **Use type annotations**: Add type hints to all function parameters and return values
+- **Keep docstrings concise**: Put brief descriptions in docstrings, elaborate in markdown cells
+- **Show, don't tell**: Use executable code examples instead of static descriptions
+- **Include rich examples**: Add plots, diagrams, and visual outputs where helpful
+
+### Testing Approach
+- **Turn examples into tests**: Add assertions to your code examples
+- **Document edge cases**: Show error handling and edge cases as executable tests
+- **Use `fastcore.test`**: Leverage lightweight test utilities like `test_eq`, `test_ne`, etc.
+- **Test in context**: Write tests immediately after the code they test
+
+### Code Examples
+```python
+# Good: Executable example with assertion
+def greet(name: str) -> str:
+    "Create a greeting message"
+    return f"Hello, {name}!"
+
+# Demonstrate usage
+message = greet("World")
+test_eq(message, "Hello, World!")  # This serves as both example and test
+```
+
+### Notebook Types (Diátaxis Framework)
+- **Tutorials**: Learning-oriented, step-by-step guides for newcomers
+- **How-to guides**: Problem-oriented, practical recipes for specific tasks
+- **Explanations**: Understanding-oriented, conceptual discussions
+- **References**: Information-oriented, technical descriptions
+
+### Workflow Tips
+- **Use `@patch`**: For adding methods to existing classes across notebooks
+- **Add rich representations**: Implement `_repr_markdown_` or `__repr__` for custom classes
+- **Link related content**: Use doclinks to reference other parts of the codebase
+- **Export selectively**: Use `#| export` to control what gets exported to Python modules
+
 ## Memories
 
 - Use context7 to access FastHtml and MonsterUI documentation
 - Use fastai coding style which can be found [here](https://docs.fast.ai/dev/style.html)
+- Follow nbdev best practices from [here](https://nbdev.fast.ai/tutorials/best_practices.html)
