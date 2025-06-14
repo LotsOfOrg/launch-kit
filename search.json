@@ -1,0 +1,652 @@
+[
+  {
+    "objectID": "auth.html#quick-start",
+    "href": "auth.html#quick-start",
+    "title": "Authentication",
+    "section": "Quick Start",
+    "text": "Quick Start\nShip Kit’s authentication module provides everything you need to add secure authentication to your FastHTML app in minutes:\nfrom ship_kit.auth import *\nfrom fasthtml.common import *\n\n# 1. Initialize the database\ndb = init_auth_tables()  # Creates users table with indexes\n\n# 2. Create a new user\nuser = create_user(db, 'john_doe', 'john@example.com', 'secure_password123')\n\n# 3. Authenticate users during login\nuser = authenticate_user(db, 'john@example.com', 'secure_password123')\nif user:\n    sess['auth'] = True\n    sess['user'] = {'id': user['id'], 'username': user['username']}\n\n# 4. Protect routes with authentication\nbeforeware = Beforeware(user_auth_before, skip=['/login', '/signup'])\napp, rt = fast_app(before=beforeware)\n\n# 5. Use validation helpers\nif is_username_available(db, 'new_user'):\n    # Username is available for registration\n    pass\nThat’s it! Your routes are now protected and users must authenticate to access them.",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#overview",
+    "href": "auth.html#overview",
+    "title": "Authentication",
+    "section": "Overview",
+    "text": "Overview\nThis module provides comprehensive authentication features:\n\nCore Functions\n\n\n\nFunction\nPurpose\nWhen to Use\n\n\n\n\nhash_password\nSecurely hash passwords with bcrypt\nUser registration/password updates\n\n\nverify_password\nCheck if password matches hash\nUser login\n\n\nuser_auth_before\nBeforeware to protect routes\nApp initialization\n\n\nget_user_from_session\nExtract user data from session\nInside route handlers\n\n\ncreate_auth_token\nGenerate secure tokens\nRemember me/API auth\n\n\nverify_auth_token\nValidate tokens\nToken-based auth\n\n\n\n\n\nDatabase Functions\n\n\n\nFunction\nPurpose\nWhen to Use\n\n\n\n\ninit_auth_tables\nCreate database tables and indexes\nApp startup\n\n\ncreate_user\nRegister new user\nUser signup\n\n\nget_user_by_id\nFetch user by ID\nUser profile/admin\n\n\nget_user_by_email\nFetch user by email\nLogin/verification\n\n\nget_user_by_username\nFetch user by username\nLogin/profile lookup\n\n\nupdate_user\nUpdate user attributes\nProfile editing\n\n\ndelete_user\nRemove user from database\nAccount deletion\n\n\n\n\n\nHelper Functions\n\n\n\nFunction\nPurpose\nWhen to Use\n\n\n\n\nauthenticate_user\nVerify credentials and return user\nLogin endpoint\n\n\ncheck_permission\nVerify user has required role\nAccess control\n\n\ntrack_login\nRecord login events\nSecurity/analytics\n\n\nis_username_available\nCheck username uniqueness\nRegistration\n\n\nis_email_available\nCheck email uniqueness\nRegistration\n\n\nvalidate_user_data\nValidate registration data\nForm validation",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#password-hashing",
+    "href": "auth.html#password-hashing",
+    "title": "Authentication",
+    "section": "Password Hashing",
+    "text": "Password Hashing\nLaunch Kit uses bcrypt for password hashing - the industry standard for secure password storage. Our implementation uses a cost factor of 12, providing excellent security while maintaining reasonable performance (~200ms per hash on modern hardware).\n\nsource\n\nhash_password\n\n hash_password (password:str)\n\nHash a password using bcrypt with a cost factor of 12.\n\n\n\n\nType\nDetails\n\n\n\n\npassword\nstr\nThe password to hash\n\n\nReturns\nstr\nThe hashed password\n\n\n\n\n\n\n\n\n\nPassword Length Limitation\n\n\n\nbcrypt has a maximum password length of 72 bytes. Passwords longer than this are silently truncated. For applications requiring longer passwords, consider hashing with SHA-256 first:\nimport hashlib\nlong_password = \"very_long_password\" * 10\n# Hash with SHA-256 first, then bcrypt\nsha_hash = hashlib.sha256(long_password.encode()).hexdigest()\nfinal_hash = hash_password(sha_hash)\n\n\n\nsource\n\n\nverify_password\n\n verify_password (password:str, hashed:str)\n\nVerify a password against a bcrypt hash.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\npassword\nstr\nThe password to verify\n\n\nhashed\nstr\nThe hashed password to compare against\n\n\nReturns\nbool\nTrue if password matches hash, False otherwise",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#user-model",
+    "href": "auth.html#user-model",
+    "title": "Authentication",
+    "section": "User Model",
+    "text": "User Model\nLaunch Kit provides a simple, dataclass-based User model that works seamlessly with FastHTML’s MiniDataAPI.\n\nNote: While the User model is defined as a dataclass, fastlite returns query results as dictionaries for flexibility and performance. This is the expected behavior and aligns with fastlite’s design philosophy.\n\n\nsource\n\nUser\n\n User (username:str, email:str, password_hash:str, role:str='user',\n       is_active:bool=True, created_at:datetime.datetime=&lt;factory&gt;,\n       updated_at:datetime.datetime=&lt;factory&gt;, id:Optional[int]=None)\n\nUser model for authentication.\n\nsource\n\n\ninit_auth_tables\n\n init_auth_tables (db_path:str='data.db')\n\nCreates the users table with proper schema and indexes. Uses FastHTML’s MiniDataAPI for simple, transparent database operations.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb_path\nstr\ndata.db\nThe path to the SQLite database file\n\n\nReturns\nDatabase\n\nThe FastHTML Database instance configured with the User table",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#user-crud-operations",
+    "href": "auth.html#user-crud-operations",
+    "title": "Authentication",
+    "section": "User CRUD Operations",
+    "text": "User CRUD Operations\nSimple, transparent database operations following MiniDataAPI patterns:\n\nsource\n\ncreate_user\n\n create_user (db:apswutils.db.Database, username:str, email:str,\n              password:str, role:str='user', table_name:str='user')\n\nCreate a new user in the database.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nusername\nstr\n\nThe unique username\n\n\nemail\nstr\n\nThe unique email address\n\n\npassword\nstr\n\nThe plain text password\n\n\nrole\nstr\nuser\nThe user role\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe created user dict or None if user already exists\n\n\n\n\nsource\n\n\nget_user_by_id\n\n get_user_by_id (db:apswutils.db.Database, user_id:int,\n                 table_name:str='user')\n\nGet user by ID.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nuser_id\nint\n\nThe user ID\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe user dict or None if not found\n\n\n\n\nsource\n\n\nget_user_by_email\n\n get_user_by_email (db:apswutils.db.Database, email:str,\n                    table_name:str='user')\n\nGet user by email address.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nemail\nstr\n\nThe email address\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe user dict or None if not found\n\n\n\n\nsource\n\n\nget_user_by_username\n\n get_user_by_username (db:apswutils.db.Database, username:str,\n                       table_name:str='user')\n\nGet user by username.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nusername\nstr\n\nThe username\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe user dict or None if not found\n\n\n\n\nsource\n\n\nupdate_user\n\n update_user (db:apswutils.db.Database, user_id:int,\n              table_name:str='user', **kwargs)\n\nUpdate user attributes.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nuser_id\nint\n\nThe user ID\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nkwargs\nVAR_KEYWORD\n\n\n\n\nReturns\nOptional\n\nThe updated user dict or None if not found\n\n\n\n\nsource\n\n\ndelete_user\n\n delete_user (db:apswutils.db.Database, user_id:int,\n              table_name:str='user')\n\nDelete a user from the database.\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nuser_id\nint\n\nThe user ID\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nbool\n\nTrue if deleted, False if not found",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#authentication-helpers",
+    "href": "auth.html#authentication-helpers",
+    "title": "Authentication",
+    "section": "Authentication Helpers",
+    "text": "Authentication Helpers\nConvenient functions for common authentication operations:\n\nsource\n\ncheck_permission\n\n check_permission (user:__main__.User, required_role:str)\n\n*Check if a user has the required role or higher.\nRole hierarchy: - ‘admin’ has all permissions - ‘user’ has basic permissions - Custom roles can be added as needed*\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nuser\nUser\nThe User object to check\n\n\nrequired_role\nstr\nThe required role\n\n\nReturns\nbool\nTrue if user has permission, False otherwise\n\n\n\n\nsource\n\n\nauthenticate_user\n\n authenticate_user (db:apswutils.db.Database, username_or_email:str,\n                    password:str, table_name:str='user')\n\nAuthenticate a user by username/email and password.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nusername_or_email\nstr\n\nThe username or email address\n\n\npassword\nstr\n\nThe plain text password\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nOptional\n\nThe authenticated user dict or None if invalid credentials\n\n\n\n\nsource\n\n\ntrack_login\n\n track_login (db:apswutils.db.Database, user_id:int,\n              ip_address:Optional[str]=None,\n              user_agent:Optional[str]=None, table_name:str='user_logins')\n\n*Track user login for security and analytics using MiniDataAPI pattern.\nCreates a login record with timestamp and metadata. Returns the created login record.*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nuser_id\nint\n\nThe user ID\n\n\nip_address\nOptional\nNone\nThe IP address of the login\n\n\nuser_agent\nOptional\nNone\nThe user agent string\n\n\ntable_name\nstr\nuser_logins\nThe table name\n\n\nReturns\nDict\n\nThe login record\n\n\n\n\nsource\n\n\nUserLogin\n\n UserLogin (user_id:int, ip_address:Optional[str]=None,\n            user_agent:Optional[str]=None,\n            login_time:datetime.datetime=&lt;factory&gt;, id:Optional[int]=None)\n\nLogin tracking record for security and analytics.\n\n\nComparison: Raw SQL vs MiniDataAPI\n\n\n\n\n\n\n\n\nAspect\nCurrent (Raw SQL)\nProposed (MiniDataAPI)\n\n\n\n\nTable Creation\nManual SQL with CREATE TABLE\ndb.create(UserLogin)\n\n\nData Insertion\nSQL INSERT with placeholders\nlogins.insert(login_data)\n\n\nReturn Value\nNone\nLogin record dict\n\n\nType Safety\nNo type hints for data\nDataclass with types\n\n\nConsistency\nDifferent from other functions\nSame pattern as User CRUD\n\n\nDatabase Portability\nSQLite-specific syntax\nWorks across databases\n\n\nForeign Keys\nDefined in CREATE TABLE\nNeed separate index creation\n\n\n\n\n\nMigration Considerations\nTo migrate existing databases: 1. The table structure created by MiniDataAPI is compatible with the existing schema 2. Foreign key constraints would need to be added separately 3. Existing data would remain intact",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#validation-helpers",
+    "href": "auth.html#validation-helpers",
+    "title": "Authentication",
+    "section": "Validation Helpers",
+    "text": "Validation Helpers\nFunctions to ensure data integrity and check uniqueness:\n\nsource\n\nis_username_available\n\n is_username_available (db:apswutils.db.Database, username:str,\n                        table_name:str='user')\n\nCheck if username is available for registration.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nusername\nstr\n\nThe username to check\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nbool\n\nTrue if username is available, False if taken\n\n\n\n\nsource\n\n\nis_email_available\n\n is_email_available (db:apswutils.db.Database, email:str,\n                     table_name:str='user')\n\nCheck if email is available for registration.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndb\nDatabase\n\nThe FastHTML Database instance\n\n\nemail\nstr\n\nThe email address to check\n\n\ntable_name\nstr\nuser\nThe table name\n\n\nReturns\nbool\n\nTrue if email is available, False if taken\n\n\n\n\nsource\n\n\nvalidate_user_data\n\n validate_user_data (username:str, email:str, password:str)\n\nValidate user registration data.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nusername\nstr\nThe username to validate\n\n\nemail\nstr\nThe email address to validate\n\n\npassword\nstr\nThe password to validate\n\n\nReturns\nList\nThe list of validation errors (empty if valid)",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#session-management",
+    "href": "auth.html#session-management",
+    "title": "Authentication",
+    "section": "Session Management",
+    "text": "Session Management\nFastHTML uses server-side sessions to maintain authentication state. Launch Kit provides utilities to make session management simple and secure.\n\nProtecting Routes with Beforeware\n\nsource\n\n\nuser_auth_before\n\n user_auth_before (req, sess, login_path='/login')\n\n*Beforeware function to check authentication status.\nFollowing FastHTML’s standard authentication pattern: - Sets req.scope[‘auth’] for automatic injection in route handlers - Returns None if authenticated (continue processing) - Returns RedirectResponse if not authenticated*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nreq\n\n\nThe FastHTML Request object\n\n\nsess\n\n\nThe FastHTML Session object\n\n\nlogin_path\nstr\n/login\nThe login path\n\n\n\nThe user_auth_before follows FastHTML’s recommended authentication pattern. It sets req.scope[‘auth’] for automatic injection in route handlers.\n\n\nSession Schema\nLaunch Kit uses a consistent session schema: - sess['auth']: Boolean or auth token - indicates if user is authenticated - sess['user']: Dict with user data (id, username, email, role, etc.)\nThis separation allows flexibility while maintaining consistency:\n# During login:\nsess['auth'] = True  # or sess['auth'] = create_auth_token(user['id'])\nsess['user'] = {\n    'id': user['id'],\n    'username': user['username'],\n    'email': user['email'],\n    'role': user['role']\n}\nUsage:\nbeforeware = Beforeware(\n    user_auth_before,\n    skip=['/login', '/signup', '/static/.*']\n)\n\n# Or with a custom login path like /auth/login:\ndef auth_custom_login(req, sess):\n    return user_auth_before(req, sess, login_path='/auth/login')\n    \nbeforeware = Beforeware(\n    auth_custom_login,\n    skip=['/auth/login', '/auth/signup', '/static/.*']\n)\n\nsource\n\n\nget_user_from_session\n\n get_user_from_session (sess)\n\nExtract user data dictionary from session.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nsess\n\nThe FastHTML Session object\n\n\nReturns\nOptional\nThe user data dict or None if not authenticated\n\n\n\n\nNote: With FastHTML’s authentication pattern, you can also access auth status via the ‘auth’ parameter in route handlers.\n\n\n\nWorking with User Sessions\n\nfrom fasthtml.common import *\nfrom ship_kit.auth import user_auth_before\n\n# Configure authentication beforeware\nbeforeware = Beforeware(\n    user_auth_before,  # Uses default /login path\n    skip=[\n        '/login',      # Don't require auth for login page\n        '/signup',     # Don't require auth for signup\n        '/static/.*',  # Static files don't need auth\n        r'.*\\.css',    # CSS files\n        r'.*\\.js'      # JavaScript files\n    ]\n)\n\n# Or with custom login path:\ndef auth_custom_login(req, sess):\n    return user_auth_before(req, sess, login_path='/auth/login')\n\nbeforeware = Beforeware(\n    auth_custom_login,\n    skip=['/auth/login', '/auth/signup', '/static/.*']\n)\n\n# Create app with authentication\napp, rt = fast_app(before=beforeware)\n\n# This route is protected - redirects to login if not authenticated\n@rt('/')\ndef get(auth):  # auth is automatically injected from req.scope['auth']\n    return H1(f\"Welcome! You are {'authenticated' if auth else 'not authenticated'}\")",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#authentication-tokens",
+    "href": "auth.html#authentication-tokens",
+    "title": "Authentication",
+    "section": "Authentication Tokens",
+    "text": "Authentication Tokens\nTokens enable stateless authentication for APIs and “remember me” functionality. Launch Kit provides simple utilities for secure token generation and verification.\n\nsource\n\ncreate_auth_token\n\n create_auth_token (user_id:int)\n\nCreate a secure authentication token for a user.\n\n\n\n\nType\nDetails\n\n\n\n\nuser_id\nint\nThe user ID\n\n\nReturns\nstr\nThe authentication token\n\n\n\n\n\n\n\n\n\nToken Storage\n\n\n\nIn production, you’d store this token in your database with an expiration date and associate it with the user.\n\n\n\nsource\n\n\nverify_auth_token\n\n verify_auth_token (token:str)\n\nVerify an authentication token and return the user ID.\n\n\n\n\nType\nDetails\n\n\n\n\ntoken\nstr\nThe authentication token\n\n\nReturns\nOptional\nThe user ID or None if invalid\n\n\n\n\n\n\n\n\n\nToken Lookup\n\n\n\nIn production, you’d look up this token in your database and check expiration.",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#security-best-practices",
+    "href": "auth.html#security-best-practices",
+    "title": "Authentication",
+    "section": "Security Best Practices",
+    "text": "Security Best Practices\n\n\n\n\n\n\nCritical Security Guidelines\n\n\n\nFollowing these practices is essential for maintaining a secure authentication system.\n\n\n\n🔐 Password Security\n\n\n\nPractice\nImplementation\n\n\n\n\nMinimum Length\nEnforce 12+ characters\n\n\nComplexity\nRequire mixed case, numbers, symbols\n\n\nCommon Passwords\nCheck against haveibeenpwned.com\n\n\nPassword History\nPrevent reuse of last 5 passwords\n\n\nAccount Lockout\nLock after 5 failed attempts\n\n\n\n\n\n🍪 Session Security\n\n\n\nPractice\nImplementation\n\n\n\n\nSecure Cookies\nsecure=True, httponly=True, samesite='Lax'\n\n\nSession Timeout\n30 min idle, 12 hour absolute\n\n\nSession Rotation\nNew ID after login\n\n\nCSRF Protection\nUse CSRF tokens for state changes\n\n\n\n\n\n🎫 Token Security\n\n\n\nPractice\nImplementation\n\n\n\n\nStorage\nHash tokens before storing\n\n\nExpiration\n30 days for remember me\n\n\nRotation\nNew token on each use\n\n\nRevocation\nAllow users to revoke all tokens\n\n\n\n\n\n🌐 General Security\n\n\n\nPractice\nImplementation\n\n\n\n\nHTTPS\nEnforce TLS 1.2+ everywhere\n\n\nRate Limiting\n5 attempts per minute\n\n\nAudit Logging\nLog all auth events\n\n\n2FA\nSupport TOTP/WebAuthn",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#complete-database-example",
+    "href": "auth.html#complete-database-example",
+    "title": "Authentication",
+    "section": "Complete Database Example",
+    "text": "Complete Database Example\nHere’s how to use the User model and database functions together:\n\nfrom ship_kit.auth import *\nfrom fasthtml.common import *\n\n# Initialize database\ndb = init_auth_tables('app.db')\n\n# Create FastHTML app with auth\nbeforeware = Beforeware(\n    user_auth_before,\n    skip=['/login', '/signup', '/']\n)\napp, rt = fast_app(before=beforeware)\n\n@rt('/')\ndef get():\n    return Div(\n        H1('Welcome to Ship Kit Auth Demo'),\n        A('Sign Up', href='/signup'),\n        ' | ',\n        A('Login', href='/login')\n    )\n\n@rt('/signup')\ndef get():\n    return Div(\n        H2('Sign Up'),\n        Form(\n            Input(name='username', placeholder='Username', required=True),\n            Input(name='email', type='email', placeholder='Email', required=True),\n            Input(name='password', type='password', placeholder='Password', required=True),\n            Button('Sign Up', type='submit'),\n            method='post'\n        )\n    )\n\n@rt('/signup')\ndef post(username: str, email: str, password: str):\n    # Validate input\n    errors = validate_user_data(username, email, password)\n    if errors:\n        return Div(\n            *[P(error, style='color: red') for error in errors],\n            get()\n        )\n    \n    # Check availability\n    if not is_username_available(db, username):\n        return Div(P('Username already taken', style='color: red'), get())\n    if not is_email_available(db, email):\n        return Div(P('Email already registered', style='color: red'), get())\n    \n    # Create user\n    user = create_user(db, username, email, password)\n    if user:\n        return Redirect('/login')\n    \n    return Div(P('Registration failed', style='color: red'), get())\n\n@rt('/login')\ndef get():\n    return Div(\n        H2('Login'),\n        Form(\n            Input(name='username_or_email', placeholder='Username or Email', required=True),\n            Input(name='password', type='password', placeholder='Password', required=True),\n            Button('Login', type='submit'),\n            method='post'\n        )\n    )\n\n@rt('/login')\ndef post(username_or_email: str, password: str, sess, req):\n    # Authenticate user\n    user = authenticate_user(db, username_or_email, password)\n    \n    if user:\n        # Set session\n        sess['auth'] = True\n        sess['user'] = {'id': user['id'], 'username': user['username'], 'email': user['email']}\n        \n        # Track login (now returns a dictionary with login details)\n        ip = req.headers.get('x-forwarded-for', req.client.host)\n        user_agent = req.headers.get('user-agent')\n        login_record = track_login(db, user['id'], ip, user_agent)\n        \n        # You can use the login_record if needed, e.g. for analytics\n        # login_record contains: id, user_id, ip_address, user_agent, login_time\n        \n        return Redirect('/dashboard')\n    \n    return Div(P('Invalid credentials', style='color: red'), get())\n\n@rt('/dashboard')\ndef get(auth, sess):\n    user_data = get_user_from_session(sess)\n    if not user_data:\n        return Redirect('/login')\n    \n    return Div(\n        H2(f\"Welcome, {user_data['username']}!\"),\n        P(f\"Email: {user_data['email']}\"),\n        A('Logout', href='/logout')\n    )\n\n@rt('/logout')\ndef get(sess):\n    sess.clear()\n    return Redirect('/')",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#database-tests",
+    "href": "auth.html#database-tests",
+    "title": "Authentication",
+    "section": "Database Tests",
+    "text": "Database Tests\nTesting the User model and database operations:\n\nQuick Example\n\n\nComplete Login/Signup Example\nHere’s how to implement a complete authentication flow:\n\nfrom fasthtml.common import *\nfrom ship_kit.auth import hash_password, verify_password\n\n# Initialize FastHTML app\napp, rt = fast_app()\n\n# Simulated user database\nusers = {}\n\n@rt('/signup')\ndef post(email: str, password: str):\n    # Check if user exists\n    if email in users:\n        return \"User already exists\", 400\n    \n    # Create new user with hashed password\n    users[email] = {\n        'email': email,\n        'password': hash_password(password)\n    }\n    return \"Signup successful! Please login.\"\n\n@rt('/login') \ndef post(email: str, password: str, sess):\n    # Get user from database\n    user = users.get(email)\n    \n    if user and verify_password(password, user['password']):\n        # Set session authentication\n        sess['auth'] = True\n        sess['user_id'] = email\n        return Redirect('/')\n    \n    return \"Invalid credentials\", 401\n\n\n# User registration\nuser_password = \"MySecureP@ssw0rd!\"\nhashed_password = hash_password(user_password)\nprint(f\"Store this in database: {hashed_password[:20]}...\")\n\n# User login\nlogin_attempt = \"MySecureP@ssw0rd!\"\nif verify_password(login_attempt, hashed_password):\n    print(\"✅ Login successful!\")\nelse:\n    print(\"❌ Invalid password\")\n\n# Wrong password attempt\nif not verify_password(\"wrong_password\", hashed_password):\n    print(\"❌ Invalid credentials rejected\")\n\nStore this in database: $2b$12$J7K88iTYaU2pD...\n✅ Login successful!\n❌ Invalid credentials rejected\n\n\n\n\nToken Usage Example\n\n\nRemember Me Implementation\nHere’s how to implement “remember me” functionality using tokens:\n\nfrom fasthtml.common import *\nfrom ship_kit.auth import *\n\n# Initialize app\napp, rt = fast_app()\n\n# Helper functions (would be in your database module)\ndef get_user_by_email(email): \n    # Fetch from database\n    pass\n\ndef store_remember_token(user_id, token, days): \n    # Store token with expiration in database\n    pass\n\ndef is_token_valid_in_db(token): \n    # Check token validity in database\n    pass\n\n@rt('/login')\ndef post(email: str, password: str, remember_me: bool, sess, resp):\n    user = get_user_by_email(email)\n    \n    if user and verify_password(password, user['password']):\n        # Set session auth\n        sess['auth'] = True\n        sess['user_id'] = user['id']\n        \n        # If remember me is checked, create a token\n        if remember_me:\n            token = create_auth_token(user['id'])\n            # Store token in database with expiration\n            store_remember_token(user['id'], token, days=30)\n            # Set cookie\n            resp.set_cookie('remember_token', token, max_age=30*24*60*60)\n        \n        return Redirect('/')\n    \n    return \"Invalid credentials\"\n\n@rt('/')\ndef get(sess, req):\n    # Check session first\n    if sess.get('auth'):\n        return \"Welcome back!\"\n    \n    # Check remember me token\n    token = req.cookies.get('remember_token')\n    if token:\n        user_id = verify_auth_token(token)\n        if user_id and is_token_valid_in_db(token):\n            # Restore session\n            sess['auth'] = True\n            sess['user_id'] = user_id\n            return \"Welcome back (remembered)!\"\n    \n    return Redirect('/login')\n\n\n# Generate a token for user 42\nuser_id = 42\ntoken = create_auth_token(user_id)\nprint(f\"Generated token: {token[:20]}...\")\n\n# Later, verify the token\nverified_user_id = verify_auth_token(token)\nif verified_user_id:\n    print(f\"✅ Valid token for user {verified_user_id}\")\nelse:\n    print(\"❌ Invalid or expired token\")\n\n# Invalid tokens return None\nassert verify_auth_token(\"tampered_token\") is None\nprint(\"❌ Tampered tokens are rejected\")\n\nGenerated token: 42:l97Cko11shUwHASMC...\n✅ Valid token for user 42\n❌ Tampered tokens are rejected",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#complete-example-interactive-demo",
+    "href": "auth.html#complete-example-interactive-demo",
+    "title": "Authentication",
+    "section": "Complete Example: Interactive Demo",
+    "text": "Complete Example: Interactive Demo\nHere’s a complete FastHTML application demonstrating all authentication features. Run it right here in the notebook!\n\nfrom fasthtml.common import *\nfrom ship_kit.auth import *\n\n# Simulated database\nusers_db = {'test@example.com': {'id': 1, 'email': 'test@example.com', 'password': hash_password('password123')}}\n\n# Configure authentication with custom login path\n# Create a wrapper function instead of using partial\ndef auth_with_custom_login(req, sess):\n    return user_auth_before(req, sess, login_path='/auth/login')\n\nbeforeware = Beforeware(\n    auth_with_custom_login,\n    skip=[r'/auth/.*', r'/public/.*', '/']\n)\napp, rt = fast_app(before=beforeware)\n\n# Public home page\n@rt('/')\ndef get(): \n    return Div(\n        H1('Welcome to SecureApp'),\n        P('A demo of Ship Kit authentication'),\n        A('Login', href='/auth/login', cls='button'),\n        A('Protected Area', href='/protected', cls='button')\n    )\n\n# Login page\n@rt('/auth/login')\ndef get():\n    return Div(\n        H2('Login'),\n        Form(\n            Input(name='email', type='email', placeholder='Email', required=True),\n            Input(name='password', type='password', placeholder='Password', required=True),\n            Button('Login', type='submit'),\n            method='post'\n        )\n    )\n\n# Handle login\n@rt('/auth/login')\ndef post(email: str, password: str, sess):\n    user = users_db.get(email)\n    if user and verify_password(password, user['password']):\n        sess['auth'] = True\n        sess['user'] = user\n        return Redirect('/protected')\n    return Div(P('Invalid credentials', style='color: red'), get())\n\n# Protected page\n@rt('/protected')\ndef get(auth, sess):\n    user = get_user_from_session(sess)\n    return Div(\n        H2(f\"Welcome {user['email']}!\"),\n        P('This is a protected page.'),\n        A('Logout', href='/auth/logout', cls='button')\n    )\n\n# Logout\n@rt('/auth/logout')\ndef get(sess):\n    sess.clear()\n    return Redirect('/')\n\n# Start the server in Jupyter [https://fastht.ml/docs/tutorials/jupyter_and_fasthtml.html]\nfrom fasthtml.jupyter import JupyUvi\nserver = JupyUvi(app)\nprint(\"Server running at http://localhost:8000\")\nprint(\"\\nTest credentials:\")\nprint(\"- Email: test@example.com\")\nprint(\"- Password: password123\")\n\n\n\n\n\nServer running at http://localhost:8000\n\nTest credentials:\n- Email: test@example.com\n- Password: password123\n\n\n\n# View the app right here in the notebook by uncommenting the line below\nfrom fasthtml.jupyter import HTMX\n#HTMX()\n\n\nAutomated Testing\nYou can also test the authentication flow programmatically:\n\nimport httpx\nimport asyncio\n\n# Test the authentication flow\nasync def test_auth_flow():\n    async with httpx.AsyncClient(base_url=\"http://localhost:8000\", follow_redirects=False) as client:\n        print(\"Testing authentication flow...\")\n        \n        # 1. Try protected page (should redirect)\n        resp = await client.get(\"/protected\")\n        assert resp.status_code == 303\n        assert resp.headers['location'] == '/auth/login'\n        print(\"✓ Protected page redirects to /auth/login\")\n        \n        # 2. Login with valid credentials\n        resp = await client.post(\"/auth/login\", data={\n            \"email\": \"test@example.com\",\n            \"password\": \"password123\"\n        })\n        assert resp.status_code == 303\n        assert resp.headers['location'] == '/protected'\n        print(\"✓ Login successful\")\n        \n        # 3. Access protected page\n        resp = await client.get(\"/protected\", follow_redirects=True)\n        assert \"Welcome test@example.com\" in resp.text\n        print(\"✓ Protected page accessible\")\n        \n        # 4. Logout\n        resp = await client.get(\"/auth/logout\")\n        assert resp.status_code == 303\n        print(\"✓ Logout successful\")\n        \n        print(\"\\n✅ All tests passed!\")\n\n# Run the tests\nawait test_auth_flow()\n\nTesting authentication flow...\n✓ Protected page redirects to /auth/login\n✓ Login successful\n✓ Protected page accessible\n✓ Logout successful\n\n✅ All tests passed!\n\n\n\n\nManual Testing\nYou can test the app manually in a browser by visiting: - http://localhost:8000 - Home page - http://localhost:8000/protected - Will redirect to login - http://localhost:8000/auth/login - Login with test@example.com / password123\n\n# Stop the server gracefully\n# Note: Always run this after testing to clean up otherwise there will be a dangling thread\n# https://fastht.ml/docs/tutorials/jupyter_and_fasthtml.html#graceful-shutdowns\nprint(\"Stopping server...\")\nserver.stop()\nprint(\"✓ Server stopped gracefully\")\nprint(\"\\n🎉 All tests passed! Authentication utilities are working correctly with FastHTML.\")\n\nStopping server...\n✓ Server stopped gracefully\n\n🎉 All tests passed! Authentication utilities are working correctly with FastHTML.",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#auth-tests",
+    "href": "auth.html#auth-tests",
+    "title": "Authentication",
+    "section": "Auth Tests",
+    "text": "Auth Tests",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#performance-benchmarks",
+    "href": "auth.html#performance-benchmarks",
+    "title": "Authentication",
+    "section": "Performance Benchmarks",
+    "text": "Performance Benchmarks\nUnderstanding the performance characteristics of authentication operations is crucial for capacity planning.",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "auth.html#summary",
+    "href": "auth.html#summary",
+    "title": "Authentication",
+    "section": "Summary",
+    "text": "Summary\nShip Kit’s authentication module provides a complete, secure foundation for FastHTML applications:\n\nSimple API - Core authentication functions plus comprehensive database operations\nDatabase Integration - User model with FastHTML’s MiniDataAPI for transparent persistence\nSecure by Default - Industry-standard bcrypt hashing with sensible defaults\nFastHTML Native - Seamless integration with sessions, beforeware, and database patterns\nProduction Ready - Battle-tested patterns with comprehensive security guidelines\nFlexible - Works for both traditional web apps and API authentication\nComplete Solution - From user registration to login tracking, all in one module\n\n\nBreaking Changes in v2.0\n\nConsistent Session Schema - Always use sess['auth'] for auth status and sess['user'] for user data\nSimplified user_auth_before - Now explicitly documents return behavior and sets req.scope[‘auth’]",
+    "crumbs": [
+      "Authentication"
+    ]
+  },
+  {
+    "objectID": "admin_routes.html",
+    "href": "admin_routes.html",
+    "title": "admin_routes",
+    "section": "",
+    "text": "A simple dashboard showing all managed models with counts and links.\n\nsource\n\n\n\n admin_dashboard (rt, models, path='/admin')\n\n*Simple dashboard showing all models.\nArgs: rt: FastHTML route object models: List of tuples (name, table, model_class) path: Dashboard path (default: ‘/admin’)*",
+    "crumbs": [
+      "admin_routes"
+    ]
+  },
+  {
+    "objectID": "admin_routes.html#admin-dashboard",
+    "href": "admin_routes.html#admin-dashboard",
+    "title": "admin_routes",
+    "section": "",
+    "text": "A simple dashboard showing all managed models with counts and links.\n\nsource\n\n\n\n admin_dashboard (rt, models, path='/admin')\n\n*Simple dashboard showing all models.\nArgs: rt: FastHTML route object models: List of tuples (name, table, model_class) path: Dashboard path (default: ‘/admin’)*",
+    "crumbs": [
+      "admin_routes"
+    ]
+  },
+  {
+    "objectID": "admin_routes.html#detail-views",
+    "href": "admin_routes.html#detail-views",
+    "title": "admin_routes",
+    "section": "Detail Views",
+    "text": "Detail Views\nRead-only detail views for individual items.\n\nsource\n\nadmin_detail\n\n admin_detail (rt, name, table, model_class)\n\n*Show single item details.\nArgs: rt: FastHTML route object name: Model name (e.g., ‘product’) table: Database table model_class: Dataclass model*",
+    "crumbs": [
+      "admin_routes"
+    ]
+  },
+  {
+    "objectID": "admin_routes.html#bulk-operations",
+    "href": "admin_routes.html#bulk-operations",
+    "title": "admin_routes",
+    "section": "Bulk Operations",
+    "text": "Bulk Operations\nDelete multiple items at once.\n\nsource\n\nadmin_bulk_delete\n\n admin_bulk_delete (rt, name, table)\n\n*Delete multiple items at once.\nArgs: rt: FastHTML route object name: Model name (e.g., ‘product’) table: Database table*",
+    "crumbs": [
+      "admin_routes"
+    ]
+  },
+  {
+    "objectID": "admin_routes.html#usage-example",
+    "href": "admin_routes.html#usage-example",
+    "title": "admin_routes",
+    "section": "Usage Example",
+    "text": "Usage Example\nHere’s how to use these admin route extensions with your existing admin setup:\n\nfrom ship_kit.admin import setup_admin_routes\nfrom ship_kit.admin_routes import admin_dashboard, admin_detail, admin_bulk_delete\nfrom fasthtml.common import *\nfrom dataclasses import dataclass\nfrom typing import Optional\n\napp, rt = fast_app()\ndb = Database('app.db')\n\n# Define your models\n@dataclass\nclass Product:\n    name: str\n    price: float\n    id: Optional[int] = None\n\n@dataclass\nclass User:\n    username: str\n    email: str\n    id: Optional[int] = None\n\n# Create tables\nproducts = db.create(Product, pk='id')\nusers = db.create(User, pk='id')\n\n# Your models list\nmodels = [\n    ('products', products, Product),\n    ('users', users, User)\n]\n\n# 1. Basic CRUD (already exists)\nfor name, table, model in models:\n    setup_admin_routes(rt, name, table, model)\n\n# 2. Add dashboard\nadmin_dashboard(rt, models)\n\n# 3. Add detail views (only if needed)\nfor name, table, model in models:\n    admin_detail(rt, name, table, model)\n\n# 4. Add bulk delete (only if needed)\nfor name, table, model in models:\n    admin_bulk_delete(rt, name, table)",
+    "crumbs": [
+      "admin_routes"
+    ]
+  },
+  {
+    "objectID": "admin_routes.html#interactive-demo",
+    "href": "admin_routes.html#interactive-demo",
+    "title": "admin_routes",
+    "section": "Interactive Demo",
+    "text": "Interactive Demo\nLet’s create a demo showing the dashboard in action:\n\nfrom fasthtml.common import *\nfrom fasthtml.jupyter import JupyUvi\nfrom monsterui.all import *\nfrom dataclasses import dataclass\nfrom typing import Optional\n\n# Demo setup\ndemo_app, demo_rt = fast_app(hdrs=Theme.blue.headers())\ndemo_db = Database(\":memory:\")\n\n@dataclass\nclass DemoProduct:\n    name: str\n    price: float\n    id: Optional[int] = None\n\n@dataclass\nclass DemoUser:\n    username: str\n    email: str\n    id: Optional[int] = None\n\n# Create tables\ndemo_products = demo_db.create(DemoProduct, pk='id')\ndemo_users = demo_db.create(DemoUser, pk='id')\n\n# Add sample data\ndemo_products.insert(name=\"Widget\", price=19.99)\ndemo_products.insert(name=\"Gadget\", price=29.99)\ndemo_users.insert(username=\"alice\", email=\"alice@example.com\")\ndemo_users.insert(username=\"bob\", email=\"bob@example.com\")\n\n# Mock auth for demo - override the imported require_role\nimport ship_kit.permissions\nship_kit.permissions.require_role = lambda role, req, sess: True\n\n# Import admin functions\nfrom ship_kit.admin import setup_admin_routes\nfrom ship_kit.admin_routes import admin_dashboard, admin_detail\n\n# Set up models\nmodels = [\n    ('products', demo_products, DemoProduct),\n    ('users', demo_users, DemoUser)\n]\n\n# Add basic CRUD routes first\nfor name, table, model in models:\n    setup_admin_routes(demo_rt, name, table, model)\n\n# Add dashboard\nadmin_dashboard(demo_rt, models)\n\n# Add detail views\nfor name, table, model in models:\n    admin_detail(demo_rt, name, table, model)\n\n# Add a home route that redirects to admin\n@demo_rt('/')\ndef home():\n    return RedirectResponse('/admin', status_code=303)\n\n# Start the demo server\nprint(\"Starting admin demo server...\")\nprint(\"\\nDemo routes:\")\nprint(\"- http://localhost:8000/admin - Admin Dashboard\")\nprint(\"- http://localhost:8000/admin/products/ - Products List\")\nprint(\"- http://localhost:8000/admin/users/ - Users List\")\n\nserver = JupyUvi(demo_app)\n\nStarting admin demo server...\n\nDemo routes:\n- http://localhost:8000/admin - Admin Dashboard\n- http://localhost:8000/admin/products/ - Products List\n- http://localhost:8000/admin/users/ - Users List\n\n\n\n\n\n\n\n# Remember to stop the server when done to avoid dangling threads\nserver.stop()",
+    "crumbs": [
+      "admin_routes"
+    ]
+  },
+  {
+    "objectID": "admin.html",
+    "href": "admin.html",
+    "title": "Admin Panel",
+    "section": "",
+    "text": "__all__ = ['setup_admin_routes', 'admin_list_view', 'admin_form', 'admin_table', \n           'get_field_input', 'clean_form_data']",
+    "crumbs": [
+      "Admin Panel"
+    ]
+  },
+  {
+    "objectID": "admin.html#quick-start",
+    "href": "admin.html#quick-start",
+    "title": "Admin Panel",
+    "section": "Quick Start",
+    "text": "Quick Start\nFollowing FastHTML patterns with simple, composable utilities:\nfrom ship_kit.admin import setup_admin_routes\nfrom fasthtml.common import *\n\napp, rt = fast_app()\ndb = Database('app.db')\nproducts = db.create(Product, pk='id')\n\n# Simple setup - just pass your table and router\nsetup_admin_routes(rt, 'products', products, Product)\n\n# That's it! Routes are created at /admin/products/",
+    "crumbs": [
+      "Admin Panel"
+    ]
+  },
+  {
+    "objectID": "admin.html#core-functions",
+    "href": "admin.html#core-functions",
+    "title": "Admin Panel",
+    "section": "Core Functions",
+    "text": "Core Functions\nSimple, composable functions following FastHTML’s functional approach:\n\nsource\n\nsetup_admin_routes\n\n setup_admin_routes (rt, name:str, table, model_class:Type,\n                     path_prefix:str='/admin',\n                     auth_check:Optional[Callable]=None, per_page:int=25)\n\n*Setup admin routes for a model using standard FastHTML patterns.\nThis creates all CRUD routes following FastHTML conventions.*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nrt\n\n\nFastHTML router instance\n\n\nname\nstr\n\nModel name (e.g., ‘products’)\n\n\ntable\n\n\nMiniDataAPI table\n\n\nmodel_class\nType\n\nDataclass model\n\n\npath_prefix\nstr\n/admin\nURL prefix\n\n\nauth_check\nOptional\nNone\nAuth function\n\n\nper_page\nint\n25\nItems per page\n\n\n\n\nsource\n\n\nadmin_list_view\n\n admin_list_view (name:str, items:List, page:int, total_pages:int,\n                  search:str='', base_path:str='')\n\n*Generate admin list view with table and pagination.\nSimple, reusable component following FastHTML patterns.*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nname\nstr\n\nModel name\n\n\nitems\nList\n\nList of items\n\n\npage\nint\n\nCurrent page\n\n\ntotal_pages\nint\n\nTotal pages\n\n\nsearch\nstr\n\nSearch query\n\n\nbase_path\nstr\n\nBase URL path\n\n\nReturns\nFT\n\n\n\n\n\n\nsource\n\n\nadmin_table\n\n admin_table (items:List, base_path:str='')\n\n*Generate admin table component.\nSimple table component that works with any list of dict-like objects.*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nitems\nList\n\nList of items to display\n\n\nbase_path\nstr\n\nBase URL path for actions\n\n\nReturns\nFT\n\n\n\n\n\n\nsource\n\n\nadmin_form\n\n admin_form (model_class:Type, data:Optional[Dict]=None, action:str='',\n             title:str='Form', error:Optional[str]=None)\n\n*Generate admin form from dataclass.\nSimple form generator that creates appropriate inputs for each field type.*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nmodel_class\nType\n\nDataclass model\n\n\ndata\nOptional\nNone\nCurrent data (for editing)\n\n\naction\nstr\n\nForm action URL\n\n\ntitle\nstr\nForm\nForm title\n\n\nerror\nOptional\nNone\nError message\n\n\nReturns\nFT\n\n\n\n\n\n\nsource\n\n\nget_field_input\n\n get_field_input (name:str, field_type:Type, value:Any='')\n\n*Get appropriate input component for field type.\nSimple function that maps Python types to HTML input types.*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nname\nstr\n\nField name\n\n\nfield_type\nType\n\nField type\n\n\nvalue\nAny\n\nCurrent value\n\n\nReturns\nFT\n\n\n\n\n\n\nsource\n\n\nclean_form_data\n\n clean_form_data (model_class:Type, form_data:Dict)\n\n*Clean and convert form data to appropriate types.\nSimple type conversion from HTML form strings to Python types.*\n\n\n\n\nType\nDetails\n\n\n\n\nmodel_class\nType\nDataclass model\n\n\nform_data\nDict\nRaw form data\n\n\nReturns\nDict",
+    "crumbs": [
+      "Admin Panel"
+    ]
+  },
+  {
+    "objectID": "admin.html#helper-functions",
+    "href": "admin.html#helper-functions",
+    "title": "Admin Panel",
+    "section": "Helper Functions",
+    "text": "Helper Functions",
+    "crumbs": [
+      "Admin Panel"
+    ]
+  },
+  {
+    "objectID": "admin.html#usage-examples",
+    "href": "admin.html#usage-examples",
+    "title": "Admin Panel",
+    "section": "Usage Examples",
+    "text": "Usage Examples\n\nSimple Setup\n\nfrom fasthtml.common import *\nfrom ship_kit.admin import setup_admin_routes\nfrom dataclasses import dataclass\nfrom typing import Optional\n\n# Standard FastHTML setup\napp, rt = fast_app()\ndb = Database('app.db')\n\n@dataclass\nclass Product:\n    name: str\n    price: float\n    category: str\n    is_active: bool = True\n    id: Optional[int] = None\n\nproducts = db.create(Product, pk='id')\n\n# One line setup\nsetup_admin_routes(rt, 'products', products, Product)\n\n# That's it! Routes created:\n# /admin/products/ - list view\n# /admin/products/new - create form\n# /admin/products/{id}/edit - edit form\n# /admin/products/{id}/delete - delete handler\n\n\n\nCustom Components\n\n# Use individual components for custom layouts\nfrom ship_kit.admin import admin_table, admin_form, get_field_input\n\n@rt('/custom-admin')\ndef custom_admin(req, sess):\n    products = products_table()  # Your table\n    \n    return Container(\n        H1(\"Custom Admin Dashboard\"),\n        admin_table(products, '/admin/products')\n    )\n\n@rt('/custom-form')\ndef custom_form(req, sess):\n    return admin_form(Product, action='/save-product', title='Add Product')\n\n\n# Setup admin for multiple models\n@dataclass\nclass Category:\n    name: str\n    description: str = \"\"\n    id: Optional[int] = None\n\n@dataclass\nclass Order:\n    customer_email: str\n    total: float\n    status: str = \"pending\"\n    created_at: datetime = field(default_factory=datetime.utcnow)\n    id: Optional[int] = None\n\n# Create tables\ncategories = db.create(Category, pk='id')\norders = db.create(Order, pk='id')\n\n# Setup admin routes for each\nsetup_admin_routes(rt, 'products', products, Product)\nsetup_admin_routes(rt, 'categories', categories, Category)\nsetup_admin_routes(rt, 'orders', orders, Order)\n\n# Create admin dashboard\n@rt('/admin')\ndef admin_dashboard(req, sess):\n    return Container(\n        H1(\"Admin Dashboard\", cls=\"text-3xl font-bold mb-6\"),\n        Grid(\n            Card(H3(\"Products\"), A(\"Manage →\", href=\"/admin/products/\")),\n            Card(H3(\"Categories\"), A(\"Manage →\", href=\"/admin/categories/\")),\n            Card(H3(\"Orders\"), A(\"Manage →\", href=\"/admin/orders/\")),\n            cols=3\n        )\n    )",
+    "crumbs": [
+      "Admin Panel"
+    ]
+  },
+  {
+    "objectID": "admin.html#tests",
+    "href": "admin.html#tests",
+    "title": "Admin Panel",
+    "section": "Tests",
+    "text": "Tests\nLet’s test all the admin functionality to ensure it works correctly:\n\nTest Setup\n\n# Create test database and models for testing\nfrom tempfile import NamedTemporaryFile\nimport os\n\n# Create a temporary database for testing\ntemp_db = NamedTemporaryFile(delete=False, suffix='.db')\ntest_db_path = temp_db.name\ntemp_db.close()\n\n# Initialize test database\ntest_db = Database(test_db_path)\n\n# Define test models\n@dataclass\nclass TestProduct:\n    name: str\n    price: float\n    description: str = \"\"\n    is_active: bool = True\n    created_at: datetime = field(default_factory=datetime.utcnow)\n    id: Optional[int] = None\n\n@dataclass  \nclass TestUser:\n    username: str\n    email: str\n    role: str = \"user\"\n    is_active: bool = True\n    id: Optional[int] = None\n\n# Create tables\ntest_products = test_db.create(TestProduct, pk='id')\ntest_users = test_db.create(TestUser, pk='id')\n\n# Insert test data\ntest_products.insert(TestProduct(name=\"Widget\", price=19.99, description=\"A useful widget\"))\ntest_products.insert(TestProduct(name=\"Gadget\", price=29.99, description=\"An amazing gadget\", is_active=False))\ntest_products.insert(TestProduct(name=\"Doohickey\", price=9.99))\n\ntest_users.insert(TestUser(username=\"alice\", email=\"alice@example.com\", role=\"admin\"))\ntest_users.insert(TestUser(username=\"bob\", email=\"bob@example.com\"))\n\nprint(f\"Test database created with {len(test_products())} products and {len(test_users())} users\")\n\nTest database created with 3 products and 2 users\n\n\n\n\nTest Form Data Cleaning\n\n# Test clean_form_data function\ntest_form_data = {\n    'name': 'Test Product',\n    'price': '49.99',\n    'description': 'A test product',\n    'is_active': 'true',\n    'created_at': '2024-01-01T10:00'\n}\n\ncleaned = clean_form_data(TestProduct, test_form_data)\n\n# Test type conversions\nassert cleaned['name'] == 'Test Product'\nassert cleaned['price'] == 49.99\nassert isinstance(cleaned['price'], float)\nassert cleaned['is_active'] == True\nassert isinstance(cleaned['is_active'], bool)\nassert isinstance(cleaned['created_at'], datetime)\n\n# Test empty values\ntest_form_data_empty = {\n    'name': 'Product',\n    'price': '10.0',\n    'description': '',  # Empty string should become None or default\n    'is_active': ''    # Empty string for bool\n}\n\ncleaned_empty = clean_form_data(TestProduct, test_form_data_empty)\nassert cleaned_empty['description'] == \"\"  # Default value\nassert 'is_active' not in cleaned_empty or cleaned_empty['is_active'] == True  # Default value\n\nprint(\"✓ Form data cleaning tests passed\")\n\n✓ Form data cleaning tests passed\n\n\n\n\nTest Field Input Generation\n\n# Test get_field_input for different field types\nfrom typing import Optional\n\n# Test text input\ntext_input = get_field_input('name', str, 'Test Name')\nassert isinstance(text_input, FT)\nassert 'Test Name' in str(text_input)\n\n# Test number input\nnumber_input = get_field_input('price', float, 19.99)\nassert isinstance(number_input, FT)\nassert '19.99' in str(number_input)\nassert 'type=\"number\"' in str(number_input)\n\n# Test boolean checkbox\nbool_input = get_field_input('is_active', bool, True)\nassert isinstance(bool_input, FT)\nassert 'checkbox' in str(bool_input)\nassert 'checked' in str(bool_input)\n\n# Test datetime input\ndt = datetime(2024, 1, 1, 10, 30)\ndatetime_input = get_field_input('created_at', datetime, dt)\nassert isinstance(datetime_input, FT)\nassert 'datetime-local' in str(datetime_input)\nassert '2024-01-01T10:30' in str(datetime_input)\n\n# Test textarea for description fields\ntextarea_input = get_field_input('description', str, 'Long text')\nassert isinstance(textarea_input, FT)\nassert 'textarea' in str(textarea_input).lower()\nassert 'Long text' in str(textarea_input)\n\n# Test Optional types\noptional_input = get_field_input('optional_field', Optional[str], 'Value')\nassert isinstance(optional_input, FT)\n\nprint(\"✓ Field input generation tests passed\")\n\n✓ Field input generation tests passed\n\n\n\n\nTest Admin Table Generation\n\n# Test admin_table function\nproducts = test_products()\ntable_html = admin_table(products, '/admin/products')\n\n# Convert to string for testing\ntable_str = str(table_html)\n\n# Check table structure\nassert 'table' in table_str.lower()\nassert 'thead' in table_str.lower()\nassert 'tbody' in table_str.lower()\n\n# Check headers are present (excluding id)\nassert 'Name' in table_str\nassert 'Price' in table_str\nassert 'Description' in table_str\nassert 'Is Active' in table_str\nassert 'Actions' in table_str\n\n# Check data is present\nassert 'Widget' in table_str\nassert '19.99' in table_str\nassert 'Gadget' in table_str\n\n# Check action buttons\nassert '/admin/products/1/edit' in table_str\nassert '/admin/products/1/delete' in table_str\nassert 'hx-post' in table_str\nassert 'hx-confirm' in table_str\n\n# Test empty table\nempty_table = admin_table([], '/admin/products')\nempty_str = str(empty_table)\nassert 'No items found' in empty_str\n\nprint(\"✓ Admin table generation tests passed\")\n\n✓ Admin table generation tests passed\n\n\n\n\nTest Admin Form Generation\n\n# Test admin_form for create (no data)\ncreate_form = admin_form(TestProduct, None, '/admin/products/new', 'New Product')\ncreate_str = str(create_form)\n\n# Check form structure\nassert 'form' in create_str.lower()\nassert 'method=\"post\"' in create_str\nassert 'action=\"/admin/products/new\"' in create_str\nassert 'New Product' in create_str\n\n# Check fields are present (excluding id)\nassert 'name=\"name\"' in create_str\nassert 'name=\"price\"' in create_str\nassert 'name=\"description\"' in create_str\nassert 'name=\"is_active\"' in create_str\n\n# Check buttons\nassert 'Save' in create_str\nassert 'Cancel' in create_str\n\n# Test admin_form for edit (with data)\nproduct_data = {\n    'id': 1,\n    'name': 'Test Widget',\n    'price': 29.99,\n    'description': 'A test widget',\n    'is_active': True,\n    'created_at': datetime.now()\n}\nedit_form = admin_form(TestProduct, product_data, '/admin/products/1/edit', 'Edit Product')\nedit_str = str(edit_form)\n\n# Check pre-filled values\nassert 'Test Widget' in edit_str\nassert '29.99' in edit_str\nassert 'A test widget' in edit_str\nassert 'Edit Product' in edit_str\n\n# Test form with error\nerror_form = admin_form(TestProduct, None, '/admin/products/new', 'New Product', \n                       error='Name is required')\nerror_str = str(error_form)\nassert 'Name is required' in error_str\nassert 'alert' in error_str.lower()\n\nprint(\"✓ Admin form generation tests passed\")\n\n✓ Admin form generation tests passed\n\n\n\n\nTest Admin List View\n\n# Test admin_list_view\nproducts = test_products()\nlist_view = admin_list_view('products', products, page=1, total_pages=1, \n                            search='', base_path='/admin/products')\nlist_str = str(list_view)\n\n# Check main components\nassert 'Products List' in list_str\nassert '+ New Products' in list_str\nassert '/admin/products/new' in list_str\n\n# Check search form\nassert 'search' in list_str.lower()\nassert 'placeholder=\"Search...\"' in list_str\n\n# Check table is included\nassert 'Widget' in list_str\nassert 'Gadget' in list_str\n\n# Test with search\nsearch_view = admin_list_view('products', products, page=1, total_pages=1,\n                             search='widget', base_path='/admin/products')\nsearch_str = str(search_view)\nassert 'value=\"widget\"' in search_str\n\n# Test with pagination\npaginated_view = admin_list_view('products', products, page=2, total_pages=3,\n                                search='', base_path='/admin/products')\npaginated_str = str(paginated_view)\nassert '← Previous' in paginated_str\nassert 'Next →' in paginated_str\nassert 'page=1' in paginated_str\nassert 'page=3' in paginated_str\n\nprint(\"✓ Admin list view tests passed\")\n\n✓ Admin list view tests passed\n\n\n\n\nTest Search Functionality\n\n# Test _search_items helper\n# Search for \"widget\" should find the Widget product (case-insensitive)\nsearch_results = _search_items(test_products, TestProduct, 'widget', limit=10, offset=0)\nassert len(search_results) &gt;= 1\n# Check if Widget is in results (handle both dict and object)\nfound_widget = False\nfor p in search_results:\n    name = p.name if hasattr(p, 'name') else p.get('name', '')\n    if 'widget' in name.lower():\n        found_widget = True\n        break\nassert found_widget, \"Should find Widget product\"\n\n# Search for \"amazing\" should find the Gadget (in description)\nsearch_results = _search_items(test_products, TestProduct, 'amazing', limit=10, offset=0)\nassert len(search_results) &gt;= 1\n\n# Test pagination in search\nsearch_results = _search_items(test_products, TestProduct, '', limit=2, offset=1)\nassert len(search_results) &lt;= 2  # Should get at most 2 items\n\n# Test model with no string fields\n@dataclass\nclass NumericModel:\n    count: int\n    value: float\n    id: Optional[int] = None\n\nnumeric_table = test_db.create(NumericModel, pk='id')\nnumeric_table.insert(NumericModel(count=1, value=1.5))\n\n# Should return results even with no string fields\nresults = _search_items(numeric_table, NumericModel, 'test', limit=10, offset=0)\nassert isinstance(results, list)  # Should not error and return a list\n\nprint(\"✓ Search functionality tests passed\")\n\n✓ Search functionality tests passed\n\n\n\n\nTest Pagination\n\n# Test _pagination helper\n# Test no pagination needed (1 page)\npagination = _pagination(1, 1, '/admin/products')\nassert str(pagination) == '&lt;div&gt;&lt;/div&gt;'  # Empty div when no pagination needed\n\n# Test basic pagination\npagination = _pagination(2, 5, '/admin/products')\npag_str = str(pagination)\nassert '← Previous' in pag_str\nassert 'Next →' in pag_str\nassert 'page=1' in pag_str\nassert 'page=3' in pag_str\nassert '&lt;span' in pag_str  # Current page as span\n\n# Test first page\npagination = _pagination(1, 3, '/admin/products')\npag_str = str(pagination)\nassert '← Previous' not in pag_str  # No previous on first page\nassert 'Next →' in pag_str\nassert 'page=2' in pag_str\n\n# Test last page\npagination = _pagination(5, 5, '/admin/products')\npag_str = str(pagination)\nassert '← Previous' in pag_str\nassert 'Next →' not in pag_str  # No next on last page\nassert 'page=4' in pag_str\n\n# Test with search parameter\npagination = _pagination(2, 3, '/admin/products', search='widget')\npag_str = str(pagination)\nassert 'search=widget' in pag_str\n# Check both parameters are present (order doesn't matter)\nassert 'page=1' in pag_str and 'search=widget' in pag_str\n\nprint(\"✓ Pagination tests passed\")\n\n✓ Pagination tests passed\n\n\n\n\nTest Route Setup (Mock)\n\n# Test setup_admin_routes with a mock router\nclass MockRouter:\n    \"\"\"Mock router to test route registration\"\"\"\n    def __init__(self):\n        self.routes = {}\n    \n    def __call__(self, path):\n        def decorator(func):\n            # Store both GET and POST handlers\n            if path not in self.routes:\n                self.routes[path] = {}\n            \n            # Determine method based on function name\n            if 'handler' in func.__name__:\n                self.routes[path]['POST'] = func\n            else:\n                self.routes[path]['GET'] = func\n            return func\n        return decorator\n\n# Create mock router and setup routes\nmock_rt = MockRouter()\nsetup_admin_routes(mock_rt, 'products', test_products, TestProduct)\n\n# Check all expected routes were created\nexpected_routes = [\n    '/admin/products/',\n    '/admin/products/new',\n    '/admin/products/{id}/edit',\n    '/admin/products/{id}/delete'\n]\n\nfor route in expected_routes:\n    assert route in mock_rt.routes, f\"Route {route} not found\"\n\n# Check route has both GET and POST where appropriate\nassert 'GET' in mock_rt.routes['/admin/products/new']\nassert 'POST' in mock_rt.routes['/admin/products/new']\nassert 'GET' in mock_rt.routes['/admin/products/{id}/edit']\nassert 'POST' in mock_rt.routes['/admin/products/{id}/edit']\n\n# Test custom path prefix\nmock_rt2 = MockRouter()\nsetup_admin_routes(mock_rt2, 'users', test_users, TestUser, path_prefix='/backend')\n\nassert '/backend/users/' in mock_rt2.routes\nassert '/admin/users/' not in mock_rt2.routes\n\nprint(\"✓ Route setup tests passed\")\n\n✓ Route setup tests passed\n\n\n\n\nTest Edge Cases\n\n# Test edge cases\n\n# 1. Model with all optional fields\n@dataclass\nclass OptionalModel:\n    name: Optional[str] = None\n    count: Optional[int] = None\n    active: Optional[bool] = None\n    id: Optional[int] = None\n\n# Should handle optional fields gracefully\nform = admin_form(OptionalModel, None, '/test', 'Test')\nassert isinstance(form, FT)\n\n# 2. Model with complex types\nfrom typing import List\n@dataclass \nclass ComplexModel:\n    tags: List[str] = field(default_factory=list)\n    metadata: Dict[str, Any] = field(default_factory=dict)\n    id: Optional[int] = None\n\n# Should handle complex types (defaulting to text inputs)\ncomplex_form = admin_form(ComplexModel, None, '/test', 'Test')\nassert isinstance(complex_form, FT)\n\n# 3. Empty form data cleaning\nempty_data = {}\ncleaned = clean_form_data(TestProduct, empty_data)\n# Should handle empty data without errors\nassert isinstance(cleaned, dict)\n\n# 4. Special characters in data\nspecial_data = {\n    'name': 'Product & &lt;Special&gt;',\n    'price': '19.99',\n    'description': 'Contains \"quotes\" and \\'apostrophes\\''\n}\ncleaned = clean_form_data(TestProduct, special_data)\nassert cleaned['name'] == 'Product & &lt;Special&gt;'\nassert cleaned['description'] == 'Contains \"quotes\" and \\'apostrophes\\''\n\n# 5. Very long field names\n@dataclass\nclass LongFieldModel:\n    this_is_a_very_long_field_name_that_should_still_work: str = \"\"\n    id: Optional[int] = None\n\ninput_elem = get_field_input('this_is_a_very_long_field_name_that_should_still_work', str, 'test')\nassert isinstance(input_elem, FT)\nassert 'This Is A Very Long Field Name That Should Still Work' in str(input_elem)\n\nprint(\"✓ Edge case tests passed\")\n\n✓ Edge case tests passed\n\n\n\n\nCleanup\n\n\nIntegration Test Example\n\n# Full integration test showing how all components work together\nfrom dataclasses import dataclass\nfrom typing import Optional\nfrom datetime import datetime\n\n# Define a complete model\n@dataclass\nclass Article:\n    title: str\n    content: str\n    author: str\n    published: bool = False\n    views: int = 0\n    published_at: Optional[datetime] = None\n    id: Optional[int] = None\n\n# Create test database\nintegration_db = Database(':memory:')\narticles = integration_db.create(Article, pk='id')\n\n# Insert test data\narticles.insert(Article(\n    title=\"Getting Started with FastHTML\",\n    content=\"FastHTML is a modern web framework...\",\n    author=\"John Doe\",\n    published=True,\n    views=150,\n    published_at=datetime.now()\n))\narticles.insert(Article(\n    title=\"Building Admin Panels\",\n    content=\"Admin panels are essential for managing content...\",\n    author=\"Jane Smith\",\n    published=False,\n    views=0\n))\n\n# Test all components work together\n# 1. List view\nlist_html = admin_list_view('articles', articles(), 1, 1, '', '/admin/articles')\nassert 'Getting Started with FastHTML' in str(list_html)\nassert '150' in str(list_html)  # views\n\n# 2. Create form\ncreate_form_html = admin_form(Article, None, '/admin/articles/new', 'New Article')\nassert 'name=\"title\"' in str(create_form_html)\nassert 'name=\"content\"' in str(create_form_html)\nassert 'name=\"published\"' in str(create_form_html)\n\n# 3. Edit form with data\narticle = articles[1]\narticle_dict = vars(article) if hasattr(article, '__dict__') else article\nedit_form_html = admin_form(Article, article_dict, f'/admin/articles/1/edit', 'Edit Article')\nassert 'Getting Started with FastHTML' in str(edit_form_html)\n\n# 4. Test form data processing\nform_data = {\n    'title': 'New Article',\n    'content': 'Content here',\n    'author': 'Test Author',\n    'published': 'true',\n    'views': '100',\n    'published_at': '2024-01-01T10:00'\n}\ncleaned = clean_form_data(Article, form_data)\nassert cleaned['title'] == 'New Article'\nassert cleaned['published'] == True\nassert cleaned['views'] == 100\nassert isinstance(cleaned['published_at'], datetime)\n\nprint(\"✓ Integration test passed - all components work together!\")\n\n✓ Integration test passed - all components work together!\n\n\n\n# Clean up test database\nos.unlink(test_db_path)\nprint(\"✓ Test database cleaned up\")\n\nprint(\"\\n🎉 All admin tests passed successfully!\")\n\n✓ Test database cleaned up\n\n🎉 All admin tests passed successfully!",
+    "crumbs": [
+      "Admin Panel"
+    ]
+  },
+  {
+    "objectID": "admin.html#interactive-demo",
+    "href": "admin.html#interactive-demo",
+    "title": "Admin Panel",
+    "section": "Interactive Demo",
+    "text": "Interactive Demo\nLet’s create a complete demo app showing all admin features in action:\n\n# Complete demo app showing all admin features\nfrom fasthtml.common import *\nfrom fasthtml.jupyter import JupyUvi\nfrom ship_kit.auth import *\nfrom ship_kit.permissions import *\nfrom ship_kit.admin import *\nfrom dataclasses import dataclass, field\nfrom datetime import datetime, date\nfrom typing import Optional\n\n# Configure auth beforeware\nbeforeware = Beforeware(\n    user_auth_before,\n    skip=['/login', '/', '/public']\n)\n\napp, rt = fast_app(before=beforeware)\n\n# Initialize database\ndemo_db = Database(':memory:')\n\n# Create auth tables directly (since init_auth_tables expects a path, not a Database object)\nusers_table = demo_db.create(User, pk='id', name='user')\nlogins_table = demo_db.create(UserLogin, pk='id', name='user_logins')\n\n# Define models for different data types\n@dataclass\nclass Product:\n    name: str\n    price: float\n    category: str\n    description: str = \"\"\n    in_stock: bool = True\n    created_at: datetime = field(default_factory=datetime.utcnow)\n    id: Optional[int] = None\n\n@dataclass\nclass BlogPost:\n    title: str\n    content: str\n    author: str\n    published: bool = False\n    publish_date: Optional[date] = None\n    views: int = 0\n    tags: str = \"\"  # Comma-separated\n    id: Optional[int] = None\n\n@dataclass\nclass Customer:\n    name: str\n    email: str\n    phone: str = \"\"\n    notes: str = \"\"\n    is_vip: bool = False\n    joined: date = field(default_factory=lambda: date.today())\n    id: Optional[int] = None\n\n# Create tables\nproducts = demo_db.create(Product, pk='id')\nblog_posts = demo_db.create(BlogPost, pk='id')\ncustomers = demo_db.create(Customer, pk='id')\n\n# Insert sample data\n# Products\nproducts.insert(Product(\"Laptop Pro\", 1299.99, \"Electronics\", \"High-performance laptop with 16GB RAM\"))\nproducts.insert(Product(\"Wireless Mouse\", 29.99, \"Accessories\", \"Ergonomic wireless mouse\", True))\nproducts.insert(Product(\"USB-C Hub\", 49.99, \"Accessories\", \"7-in-1 USB-C hub\", False))\nproducts.insert(Product(\"Monitor 4K\", 599.99, \"Electronics\", \"27-inch 4K display\"))\nproducts.insert(Product(\"Keyboard Mechanical\", 129.99, \"Accessories\", \"RGB mechanical keyboard\"))\n\n# Blog posts\nblog_posts.insert(BlogPost(\n    \"Getting Started with FastHTML\",\n    \"FastHTML is a modern Python web framework that makes building web apps simple and fun...\",\n    \"Jane Doe\",\n    True,\n    date(2024, 1, 1),\n    1523,\n    \"tutorial,fasthtml,python\"\n))\nblog_posts.insert(BlogPost(\n    \"Building Admin Panels the Simple Way\",\n    \"Learn how to create admin panels using simple, composable functions...\",\n    \"John Smith\",\n    True,\n    date(2024, 1, 5),\n    892,\n    \"admin,tutorial,ship-kit\"\n))\nblog_posts.insert(BlogPost(\n    \"Draft: Advanced Patterns\",\n    \"This post covers advanced patterns in FastHTML...\",\n    \"Jane Doe\",\n    False,\n    None,\n    0,\n    \"advanced,patterns\"\n))\n\n# Customers\ncustomers.insert(Customer(\"Alice Johnson\", \"alice@example.com\", \"555-0101\", \"Prefers email contact\", True))\ncustomers.insert(Customer(\"Bob Smith\", \"bob@example.com\", \"555-0102\"))\ncustomers.insert(Customer(\"Carol White\", \"carol@example.com\", \"\", \"New customer, follow up next week\"))\n\n# Create demo users\ncreate_user(demo_db, \"admin@demo.com\", \"admin\", \"admin\", role=\"admin\")\ncreate_user(demo_db, \"user@demo.com\", \"user\", \"user\", role=\"user\")\n\n# Public home page\n@rt('/')\ndef get():\n    return Container(\n        Card(\n            H1(\"Admin Panel Demo\", cls=\"text-4xl font-bold mb-4\"),\n            P(\"This demo showcases all admin panel features:\", cls=\"text-lg mb-4\"),\n            Ul(\n                Li(\"✅ CRUD operations for multiple models\"),\n                Li(\"✅ Different field types (text, number, boolean, date/time)\"),\n                Li(\"✅ Search and pagination\"),\n                Li(\"✅ Role-based access control\"),\n                Li(\"✅ Responsive MonsterUI components\"),\n                cls=\"space-y-2 mb-6\"\n            ),\n            Div(\n                H3(\"Demo Accounts:\", cls=\"text-xl font-semibold mb-2\"),\n                Ul(\n                    Li(Code(\"admin@demo.com\"), \" - Password: \", Code(\"admin\"), \" (full access)\"),\n                    Li(Code(\"user@demo.com\"), \" - Password: \", Code(\"user\"), \" (limited access)\"),\n                    cls=\"space-y-1\"\n                ),\n                cls=\"bg-muted p-4 rounded-lg mb-6\"\n            ),\n            A(\"Login to Admin Panel\", href=\"/login\", cls=\"btn btn-primary btn-lg\")\n        )\n    )\n\n# Login page\n@rt('/login')\ndef get():\n    return Container(\n        Card(\n            H2(\"Login to Admin Panel\", cls=\"text-2xl font-bold mb-4\"),\n            Form(\n                LabelInput(\"Email\", name=\"email\", type=\"email\", \n                          value=\"admin@demo.com\", required=True),\n                LabelInput(\"Password\", name=\"password\", type=\"password\", \n                          value=\"admin\", required=True),\n                Button(\"Login\", type=\"submit\", cls=\"btn btn-primary w-full mt-4\"),\n                method=\"post\",\n                cls=\"space-y-4\"\n            ),\n            cls=\"max-w-md mx-auto\"\n        )\n    )\n\n@rt('/login', methods=['POST'])\nasync def post(req, sess):\n    form_data = await req.form()\n    email = form_data.get('email')\n    password = form_data.get('password')\n    \n    user = authenticate_user(demo_db, email, password)\n    if user:\n        sess['auth'] = create_auth_token(user['id'])\n        sess['user'] = user\n        return RedirectResponse('/admin', status_code=303)\n    \n    return Container(\n        Alert(\"Invalid email or password\", variant=\"destructive\"),\n        A(\"Try again\", href=\"/login\", cls=\"btn btn-outline mt-4\")\n    )\n\n# Admin dashboard\n@rt('/admin')\n@auth_required\ndef get(req, sess):\n    user = get_user_from_session(sess)\n    \n    return Container(\n        H1(\"Admin Dashboard\", cls=\"text-3xl font-bold mb-6\"),\n        P(f\"Welcome, {user['username']}! (Role: {user['role']})\", cls=\"text-lg mb-6\"),\n        \n        Grid(\n            Card(\n                H3(\"Products\", cls=\"text-xl font-semibold mb-2\"),\n                P(f\"{len(products())} products in catalog\", cls=\"text-muted mb-4\"),\n                A(\"Manage Products →\", href=\"/admin/products/\", cls=\"btn btn-primary w-full\")\n            ),\n            Card(\n                H3(\"Blog Posts\", cls=\"text-xl font-semibold mb-2\"),\n                P(f\"{len(blog_posts())} posts total\", cls=\"text-muted mb-4\"),\n                A(\"Manage Posts →\", href=\"/admin/posts/\", cls=\"btn btn-primary w-full\")\n            ),\n            Card(\n                H3(\"Customers\", cls=\"text-xl font-semibold mb-2\"),\n                P(f\"{len(customers())} registered customers\", cls=\"text-muted mb-4\"),\n                A(\"Manage Customers →\", href=\"/admin/customers/\", cls=\"btn btn-primary w-full\")\n            ),\n            cols=3,\n            cls=\"gap-6 mb-6\"\n        ),\n        \n        Card(\n            H3(\"Quick Stats\", cls=\"text-xl font-semibold mb-4\"),\n            Grid(\n                Div(\n                    P(\"Published Posts\", cls=\"text-sm text-muted\"),\n                    P(str(len([p for p in blog_posts() if p.published])), cls=\"text-2xl font-bold\")\n                ),\n                Div(\n                    P(\"In-Stock Products\", cls=\"text-sm text-muted\"),\n                    P(str(len([p for p in products() if p.in_stock])), cls=\"text-2xl font-bold\")\n                ),\n                Div(\n                    P(\"VIP Customers\", cls=\"text-sm text-muted\"),\n                    P(str(len([c for c in customers() if c.is_vip])), cls=\"text-2xl font-bold\")\n                ),\n                cols=3,\n                cls=\"gap-6\"\n            )\n        ),\n        \n        Div(\n            A(\"Logout\", href=\"/logout\", cls=\"btn btn-outline mt-6\")\n        )\n    )\n\n# Setup admin routes for each model\nsetup_admin_routes(rt, 'products', products, Product)\nsetup_admin_routes(rt, 'posts', blog_posts, BlogPost, path_prefix='/admin')\nsetup_admin_routes(rt, 'customers', customers, Customer)\n\n# Logout\n@rt('/logout')\ndef get(sess):\n    sess.clear()\n    return RedirectResponse('/', status_code=303)\n\n# Run the demo\nserver = JupyUvi(app)\nprint(\"🚀 Admin Panel Demo is running!\")\nprint(\"   Visit the home page to get started\")\n\n&lt;string&gt;:8: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n\n\n\n\n\n\n🚀 Admin Panel Demo is running!\n   Visit the home page to get started\n\n\n\nDemo Features\nThe interactive demo showcases:\n\nMultiple Model Types:\n\nProducts: With prices, categories, stock status, and timestamps\nBlog Posts: With rich text content, publish dates, view counts, and tags\nCustomers: With contact info, notes, and VIP status\n\nField Type Support:\n\nText inputs (name, email, title)\nNumber inputs (price, views)\nTextareas (description, content, notes)\nCheckboxes (in_stock, published, is_vip)\nDate pickers (publish_date, joined)\nDateTime pickers (created_at)\n\nAdmin Features:\n\nList views with sortable columns\nCreate new items with forms\nEdit existing items\nDelete with confirmation\nSearch functionality\nPagination for large datasets\nRole-based access control\n\nUser Experience:\n\nBeautiful MonsterUI components\nResponsive design\nHTMX for dynamic updates\nClear navigation\nError handling\n\n\n\n# View the app right here in the notebook by uncommenting the line below\nfrom fasthtml.jupyter import HTMX\n# HTMX()\n\n\n# Stop the server gracefully\n# Note: Always run this after testing to clean up otherwise there will be a dangling thread\n# https://fastht.ml/docs/tutorials/jupyter_and_fasthtml.html#graceful-shutdowns\nprint(\"Stopping server...\")\nserver.stop()\n\nStopping server...\n\n\n\n\nTry It Yourself!\nTo run the demo:\n\nExecute the demo cell above to start the server\nClick the home page link to see the landing page\nLogin with admin@demo.com / admin for full access\nExplore the admin panel features:\n\nBrowse products, posts, and customers\nTry searching for items (e.g., “laptop” in products)\nCreate new items using the forms\nEdit existing items\nDelete items (with confirmation)\nNotice how different field types have appropriate inputs\n\nTry logging in as user@demo.com / user to see role restrictions\nRemember to stop the server when done!",
+    "crumbs": [
+      "Admin Panel"
+    ]
+  },
+  {
+    "objectID": "admin.html#summary",
+    "href": "admin.html#summary",
+    "title": "Admin Panel",
+    "section": "Summary",
+    "text": "Summary\nThis improved admin module follows FastHTML and Answer.ai best practices:\n\n✅ What’s Better:\n\nUses rt Router Pattern - Routes registered on the FastHTML router, not app instance\nFunctional Approach - Simple functions instead of complex classes\nComposable - Each function has a single purpose and can be used independently\nSimple Setup - One line to add admin: setup_admin_routes(rt, 'products', products, Product)\nTransparent - No hidden magic, every component is inspectable\nProgressive Enhancement - Start simple, customize as needed\nStandard Patterns - Uses FastHTML’s @rt, req, sess, and form handling\n\n\n\n🎯 Key Improvements:\n\nRemoved Complex Class: No more AdminPanel class with dozens of methods\nFollows rt Pattern: Routes use @rt() decorator like all FastHTML apps\nSingle Purpose Functions: Each function does one thing well\nEasy to Understand: Linear flow from simple to complex use cases\nCustomizable Components: Use admin_table(), admin_form() in your own routes\nFastHTML Native: Uses standard req/sess/form patterns throughout\n\nThis approach embodies Jeremy Howard’s philosophy: “Simple things should be simple, complex things should be possible.” You can set up admin in one line, but every component is accessible for customization.\n\n\nIntegration with Other Modules\nThe admin module seamlessly integrates with other Ship Kit modules: - Authentication: Uses require_role from permissions module for auth checks - Permissions: Default auth check requires ‘admin’ role - Session Schema: Follows consistent session patterns from auth module",
+    "crumbs": [
+      "Admin Panel"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html",
+    "href": "routes_auth.html",
+    "title": "routes.auth",
+    "section": "",
+    "text": "This module provides pre-built authentication routes that follow FastHTML patterns and the Answer.AI design philosophy:\n\nSimple by default: login_route(rt) gives you a working login page\nProgressively customizable: Override forms, handlers, or paths as needed\nNo magic: All behavior is explicit and visible\nMonsterUI integration: Beautiful forms out of the box",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#overview",
+    "href": "routes_auth.html#overview",
+    "title": "routes.auth",
+    "section": "",
+    "text": "This module provides pre-built authentication routes that follow FastHTML patterns and the Answer.AI design philosophy:\n\nSimple by default: login_route(rt) gives you a working login page\nProgressively customizable: Override forms, handlers, or paths as needed\nNo magic: All behavior is explicit and visible\nMonsterUI integration: Beautiful forms out of the box",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#quick-start",
+    "href": "routes_auth.html#quick-start",
+    "title": "routes.auth",
+    "section": "Quick Start",
+    "text": "Quick Start\nfrom ship_kit.routes.auth import login_route, signup_route, logout_route\nfrom fasthtml.common import *\n\napp, rt = fast_app()\n\n# Add all auth routes with defaults\nlogin_route(rt)\nsignup_route(rt)\nlogout_route(rt)",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#component-visualization",
+    "href": "routes_auth.html#component-visualization",
+    "title": "routes.auth",
+    "section": "Component Visualization",
+    "text": "Component Visualization\nTo visualize MonsterUI components in this notebook during development, run the setup cell below. This will create a JupyUvi server that can render components with proper MonsterUI styling.\nNote: The Show function requires a running JupyUvi server. If components aren’t displaying, make sure you’ve run the setup cell and that the server is still running on port 8003.\n\n# Setup visualization for this notebook\nfrom fasthtml.jupyter import HTMX, JupyUvi\nimport uuid\n\n# Create visualization app and server\n_viz_app, _viz_rt = fast_app(hdrs=Theme.blue.headers())\n_viz_server = JupyUvi(_viz_app, port=8003)\n\ndef Show(component, height='auto'):\n    \"\"\"Display a MonsterUI component in the notebook.\"\"\"\n    path = f'/show/{uuid.uuid4().hex}'\n    \n    @_viz_app.route(path)\n    def show_component():\n        return component\n    \n    return HTMX(path, app=_viz_app, port=8003, height=height)\n\n\n# Remember to stop the server to avoid dangling thread\n_viz_server.stop()",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#login-route",
+    "href": "routes_auth.html#login-route",
+    "title": "routes.auth",
+    "section": "Login Route",
+    "text": "Login Route\n\nsource\n\nlogin_route\n\n login_route (rt, path='/login', redirect_to='/', login_form=None,\n              authenticate=None, session_key='auth', **kwargs)\n\n*Create a login route with customizable form and authentication.\nFollowing FastHTML patterns - pass the router instance, not the app.\nArgs: rt: FastHTML router instance (from fast_app()) path: Route path (default: ‘/login’) redirect_to: Where to redirect after successful login (default: ‘/’) login_form: Custom form component (callable returning FT) authenticate: Custom authentication function(email, password) -&gt; user_dict or None session_key: Session key for auth data (default: ‘auth’) **kwargs: Additional arguments passed to form component*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nrt\n\n\nFastHTML router instance\n\n\npath\nstr\n/login\n\n\n\nredirect_to\nstr\n/\n\n\n\nlogin_form\nNoneType\nNone\n\n\n\nauthenticate\nNoneType\nNone\n\n\n\nsession_key\nstr\nauth\n\n\n\nkwargs\nVAR_KEYWORD\n\n\n\n\n\n\ndef default_login_form(error=None, **kwargs):\n    return Card(\n        H2('Login'),\n        Form(\n            LabelInput('Email', \n                      name='email', \n                      id='email', \n                      type='email', \n                      required=True, \n                      placeholder='you@example.com'),\n            LabelInput('Password', \n                      name='password', \n                      id='password', \n                      type='password', \n                      required=True),\n            Alert(error, variant='destructive') if error else None,\n            Button('Sign In', type='submit', cls='w-full'),\n            method='post',\n            cls='space-y-4'\n        ),\n        P(\n            \"Don't have an account? \",\n            A('Sign up', href='/signup', cls='text-primary hover:underline'),\n            cls='text-center text-sm mt-4'\n        ),\n        cls='max-w-md mx-auto mt-8'\n    )\n\n\n# Uncomment to Visualize the default login form\n#Show(default_login_form(), height='500px')\n\n\n\nLogin Examples\n\nBasic Usage\nThe default login form includes: - Email and password fields with proper input types - MonsterUI styling with Card container - Error handling with Alert component - HTMX integration for seamless form submission - Link to signup page\n# Simple login with all defaults\nlogin_route(rt)\n\n\nCustom Form Example\n\ndef branded_login_form(error=None, **kwargs):\n    return Container(\n        Card(\n            Div(\n                H1('Welcome Back!', cls='text-3xl font-bold'),\n                P('Sign in to continue to your account', cls='text-muted-foreground'),\n                cls='text-center mb-6'\n            ),\n            Form(\n                LabelInput('Email Address',\n                          name='email', \n                          type='email', \n                          required=True, \n                          placeholder='Enter your email'),\n                Div(\n                    LabelInput('Password',\n                              name='password', \n                              type='password', \n                              required=True),\n                    A('Forgot password?', href='/forgot-password', \n                      cls='text-sm text-primary hover:underline mt-1 block'),\n                    cls='space-y-1'\n                ),\n                Alert(error, variant='destructive', cls='mb-4') if error else None,\n                Button('Sign In', type='submit', cls='w-full', size='lg'),\n                DividerSplit('Or'),\n                P(\n                    \"Don't have an account? \",\n                    A('Sign up', href='/signup', cls='text-primary hover:underline'),\n                    cls='text-center text-sm'\n                ),\n                method='post',\n                cls='space-y-4'\n            ),\n            cls='max-w-md w-full'\n        ),\n        cls='min-h-screen flex items-center justify-center'\n    )\n\n# Use the custom form\n# login_route(rt, login_form=branded_login_form)\n\n\n# Uncomment to Visualize the branded login form\n#Show(branded_login_form(), height='700px')\n\n\n\nCustom Authentication\n\n# Example with database authentication\ndef db_authenticate(email, password):\n    \"\"\"Authenticate user against database.\"\"\"\n    # This is pseudocode - implement your actual database logic\n    # user = db.query(\"SELECT * FROM users WHERE email = ?\", email)\n    # if user and verify_password(password, user['password_hash']):\n    #     return {'id': user['id'], 'email': user['email'], 'name': user['name']}\n    # return None\n    pass\n\n# login_route(rt, authenticate=db_authenticate)",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#signup-route",
+    "href": "routes_auth.html#signup-route",
+    "title": "routes.auth",
+    "section": "Signup Route",
+    "text": "Signup Route\n\nsource\n\nsignup_route\n\n signup_route (rt, path='/signup', redirect_to='/', signup_form=None,\n               create_user=None, session_key='auth', **kwargs)\n\n*Create a signup route with customizable form and user creation.\nFollowing FastHTML patterns - pass the router instance, not the app.\nArgs: rt: FastHTML router instance (from fast_app()) path: Route path (default: ‘/signup’) redirect_to: Where to redirect after successful signup (default: ‘/’) signup_form: Custom form component (callable returning FT) create_user: Custom user creation function(form_data) -&gt; user_dict or error_string session_key: Session key for auth data (default: ‘auth’) **kwargs: Additional arguments passed to form component*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nrt\n\n\nFastHTML router instance\n\n\npath\nstr\n/signup\n\n\n\nredirect_to\nstr\n/\n\n\n\nsignup_form\nNoneType\nNone\n\n\n\ncreate_user\nNoneType\nNone\n\n\n\nsession_key\nstr\nauth\n\n\n\nkwargs\nVAR_KEYWORD\n\n\n\n\n\nThe default signup form includes: - Name, email, password, and password confirmation fields - Form validation with error messages - Preserves form values on validation errors - HTMX integration for seamless submission - Link to login page for existing users\n\n# Visualize the default signup form\ndef default_signup_form(error=None, values=None, **kwargs):\n    values = values or {}\n    return Card(\n        H2('Create Account'),\n        Form(\n            LabelInput('Name',\n                      name='name', \n                      id='name', \n                      required=True, \n                      value=values.get('name', ''),\n                      placeholder='John Doe'),\n            LabelInput('Email',\n                      name='email', \n                      id='email', \n                      type='email', \n                      required=True,\n                      value=values.get('email', ''),\n                      placeholder='you@example.com'),\n            LabelInput('Password',\n                      name='password', \n                      id='password', \n                      type='password', \n                      required=True,\n                      placeholder='At least 8 characters'),\n            LabelInput('Confirm Password',\n                      name='password_confirm', \n                      id='password_confirm', \n                      type='password', \n                      required=True),\n            Alert(error, variant='destructive') if error else None,\n            Button('Create Account', type='submit', cls='w-full'),\n            method='post',\n            cls='space-y-4'\n        ),\n        P(\n            \"Already have an account? \",\n            A('Sign in', href='/login', cls='text-primary hover:underline'),\n            cls='text-center text-sm mt-4'\n        ),\n        cls='max-w-md mx-auto mt-8'\n    )\n\n\n# Uncomment to Visualize the default signup form\n#Show(default_signup_form(), height='600px')",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#logout-route",
+    "href": "routes_auth.html#logout-route",
+    "title": "routes.auth",
+    "section": "Logout Route",
+    "text": "Logout Route\n\nsource\n\nlogout_route\n\n logout_route (rt, path='/logout', redirect_to='/login',\n               session_key='auth', before_logout=None)\n\n*Create a logout route that clears the session.\nFollowing FastHTML patterns - pass the router instance, not the app.\nArgs: rt: FastHTML router instance (from fast_app()) path: Route path (default: ‘/logout’) redirect_to: Where to redirect after logout (default: ‘/login’) session_key: Session key to clear (default: ‘auth’) before_logout: Optional callback function(session) called before logout*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nrt\n\n\nFastHTML router instance\n\n\npath\nstr\n/logout\n\n\n\nredirect_to\nstr\n/login\n\n\n\nsession_key\nstr\nauth\n\n\n\nbefore_logout\nNoneType\nNone",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#complete-example",
+    "href": "routes_auth.html#complete-example",
+    "title": "routes.auth",
+    "section": "Complete Example",
+    "text": "Complete Example\nHere’s a complete example showing how to use all the auth routes together with custom authentication:\n\n# Example of complete auth setup\ndef setup_auth(rt, db):\n    \"\"\"Setup authentication routes with database integration.\"\"\"\n    \n    def authenticate_user(email, password):\n        \"\"\"Check credentials against database.\"\"\"\n        user = db.get_user_by_email(email)\n        if user and verify_password(password, user['password_hash']):\n            return {\n                'id': user['id'],\n                'email': user['email'],\n                'name': user['name']\n            }\n        return None\n    \n    def create_new_user(form_data):\n        \"\"\"Create new user in database.\"\"\"\n        # Validation\n        if form_data['password'] != form_data['password_confirm']:\n            return \"Passwords don't match\"\n        \n        if len(form_data['password']) &lt; 8:\n            return \"Password must be at least 8 characters\"\n        \n        # Check if email exists\n        if db.get_user_by_email(form_data['email']):\n            return \"Email already registered\"\n        \n        # Create user\n        user_id = db.create_user(\n            email=form_data['email'],\n            name=form_data['name'],\n            password_hash=hash_password(form_data['password'])\n        )\n        \n        return {\n            'id': user_id,\n            'email': form_data['email'],\n            'name': form_data['name']\n        }\n    \n    # Add all routes\n    login_route(rt, authenticate=authenticate_user)\n    signup_route(rt, create_user=create_new_user)\n    logout_route(rt)\n\n# Usage:\n# app, rt = fast_app()\n# setup_auth(rt, database)",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#interactive-demo",
+    "href": "routes_auth.html#interactive-demo",
+    "title": "routes.auth",
+    "section": "Interactive Demo",
+    "text": "Interactive Demo\nYou can create a working demo using JupyUvi:\n\n# Demo app with all auth routes\n# Note: This demo uses JupyUvi to run interactively in the notebook\nfrom fasthtml.jupyter import JupyUvi\n\n# Create demo app\ndemo_app, rt = fast_app(hdrs=Theme.blue.headers())\n\n# Simple in-memory user store for demo\ndemo_users = {}\n\ndef demo_authenticate(email, password):\n    \"\"\"Demo authentication.\"\"\"\n    user = demo_users.get(email)\n    if user and user['password'] == password:  # Don't do this in production!\n        return {'email': email, 'name': user['name']}\n    return None\n\ndef demo_create_user(form_data):\n    \"\"\"Demo user creation.\"\"\"\n    if form_data['password'] != form_data['password_confirm']:\n        return \"Passwords don't match\"\n    \n    if form_data['email'] in demo_users:\n        return \"Email already exists\"\n    \n    demo_users[form_data['email']] = {\n        'name': form_data['name'],\n        'password': form_data['password']  # Don't store plain passwords in production!\n    }\n    \n    return {'email': form_data['email'], 'name': form_data['name']}\n\n# Add auth routes using rt pattern\nlogin_route(rt, authenticate=demo_authenticate)\nsignup_route(rt, create_user=demo_create_user)\nlogout_route(rt)\n\n# Add a protected home page\n@rt('/')\ndef home(sess):\n    user = sess.get('auth')\n    if not user:\n        return RedirectResponse('/login', status_code=303)\n    \n    return Container(\n        Card(\n            H1(f\"Welcome, {user.get('name', 'User')}!\"),\n            P(f\"You are logged in as {user['email']}\"),\n            Button('Logout', hx_get='/logout', hx_push_url='true'),\n            cls='max-w-2xl mx-auto mt-8'\n        )\n    )\n\n# Run the demo server\nprint(\"Starting demo server...\")\nprint(\"\\nDemo app routes:\")\nprint(\"- http://localhost:8000/login - Login page\")\nprint(\"- http://localhost:8000/signup - Signup page\") \nprint(\"- http://localhost:8000/logout - Logout\")\nprint(\"- http://localhost:8000/ - Protected home page\")\nprint(\"\\nTry creating an account and logging in!\")\n\n# Start the server\nserver = JupyUvi(demo_app)\n\n\n# Remember to stop the server when done:\nserver.stop()",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#advanced-customization",
+    "href": "routes_auth.html#advanced-customization",
+    "title": "routes.auth",
+    "section": "Advanced Customization",
+    "text": "Advanced Customization\n\nCustom Session Management\n\n# Use different session keys for different user types\n# login_route(rt, session_key='admin_auth', path='/admin/login')\n# login_route(rt, session_key='user_auth', path='/user/login')\n\n\n\nMulti-tenant Authentication\n\ndef tenant_authenticate(email, password, tenant_id=None):\n    \"\"\"Authenticate within a specific tenant.\"\"\"\n    # Your multi-tenant logic here\n    pass\n\n# Create tenant-specific login\n# login_route(rt, \n#     path='/tenant/{tenant_id}/login',\n#     authenticate=lambda e, p: tenant_authenticate(e, p, req.path_params['tenant_id'])\n# )\n\n\n\nOAuth Login Form\n\ndef oauth_login_form(error=None, **kwargs):\n    \"\"\"Login form with OAuth options.\"\"\"\n    return Card(\n        H2('Sign In'),\n        Div(\n            Button(\n                UkIcon('github'), 'Continue with GitHub',\n                onclick=\"window.location.href='/auth/github'\",\n                cls='w-full mb-2'\n            ),\n            Button(\n                'Continue with Google', \n                onclick=\"window.location.href='/auth/google'\",\n                cls='w-full'\n            ),\n            cls='mb-4'\n        ),\n        DividerSplit('OR'),\n        Form(\n            # Regular email/password form\n            LabelInput('Email',\n                      name='email', \n                      type='email', \n                      required=True),\n            LabelInput('Password',\n                      name='password', \n                      type='password', \n                      required=True),\n            Alert(error, variant='destructive') if error else None,\n            Button('Sign In with Email', type='submit', cls='w-full'),\n            method='post',\n            cls='space-y-4'\n        ),\n        cls='max-w-md mx-auto mt-8'\n    )\n\n# Use OAuth-enabled form\n# login_route(rt, login_form=oauth_login_form)",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#testing-auth-routes",
+    "href": "routes_auth.html#testing-auth-routes",
+    "title": "routes.auth",
+    "section": "Testing Auth Routes",
+    "text": "Testing Auth Routes\nHere’s how to test the auth routes:\n\n# Test with httpx\nimport httpx\n\ndef test_auth_flow(base_url='http://localhost:8000'):\n    \"\"\"Test the complete auth flow.\"\"\"\n    with httpx.Client(base_url=base_url, follow_redirects=True) as client:\n        # Test signup\n        response = client.post('/signup', data={\n            'name': 'Test User',\n            'email': 'test@example.com',\n            'password': 'testpass123',\n            'password_confirm': 'testpass123'\n        })\n        assert response.status_code == 200\n        \n        # Test login\n        response = client.post('/login', data={\n            'email': 'test@example.com',\n            'password': 'testpass123'\n        })\n        assert response.status_code == 200\n        \n        # Test protected route\n        response = client.get('/')\n        assert 'Welcome' in response.text\n        \n        # Test logout\n        response = client.get('/logout')\n        assert response.url.path == '/login'\n        \n    print(\"All tests passed!\")\n\n# Run tests against your app\n# test_auth_flow()\n\n\n# Uncomment to Visualize the OAuth login form\n# Show(oauth_login_form(), height='600px')",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "routes_auth.html#summary",
+    "href": "routes_auth.html#summary",
+    "title": "routes.auth",
+    "section": "Summary",
+    "text": "Summary\nThe auth routes module provides:\n\nSimple defaults - Just call login_route(rt) to get started\nProgressive customization - Override forms, handlers, or paths as needed\nFastHTML patterns - Uses standard rt() decorator, req/sess parameters, and HTMX\nMonsterUI integration - Beautiful forms out of the box\nNo magic - All code is explicit and understandable\n\nThe routes handle both regular and HTMX requests, include CSRF protection via POST methods, and integrate seamlessly with FastHTML’s session management.\n\nBreaking Changes in v2.0\n\nFunctions now take rt parameter instead of app - This follows FastHTML best practices\nOld: login_route(app)\nNew: login_route(rt)",
+    "crumbs": [
+      "routes.auth"
+    ]
+  },
+  {
+    "objectID": "permissions.html#quick-start",
+    "href": "permissions.html#quick-start",
+    "title": "Permissions",
+    "section": "Quick Start",
+    "text": "Quick Start\nShip Kit’s permissions module provides simple, transparent access control for your FastHTML applications:\nfrom ship_kit.permissions import *\nfrom fasthtml.common import *\n\napp, rt = fast_app()\n\n# 1. Protect routes with simple functions\n@rt(\"/admin\")\ndef get(req, sess):\n    if not require_role(\"admin\", req, sess):\n        return RedirectResponse('/login', status_code=303)\n    return \"Welcome to admin area!\"\n\n# 2. Or use decorators for cleaner code\n@rt(\"/moderator/dashboard\")\n@role_required(\"moderator\")\ndef get(req, sess):\n    return \"Moderator Dashboard\"\n\n# 3. Check granular permissions\n@rt(\"/users/delete\")\n@permission_required(\"delete_users\")\ndef post(req, sess):\n    # Delete user logic\n    pass\n\n# 4. Manual permission checks for conditional UI\n@rt(\"/api/sensitive\")\ndef get(req, sess):\n    if not require_permission(\"view_sensitive_data\", req, sess):\n        return JSONResponse({\"error\": \"Forbidden\"}, status_code=403)\n    return {\"data\": \"sensitive information\"}\nThat’s it! Your routes are now protected with role-based access control.",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#overview",
+    "href": "permissions.html#overview",
+    "title": "Permissions",
+    "section": "Overview",
+    "text": "Overview\nThis module provides a complete RBAC (Role-Based Access Control) system:\n\nCore Functions\n\n\n\nFunction\nPurpose\nWhen to Use\n\n\n\n\nrequire_auth\nCheck if user is authenticated\nManual auth checks\n\n\nrequire_role\nCheck if user has specific role\nManual role checks\n\n\nrequire_permission\nCheck if user has permission\nManual permission checks\n\n\n\n\n\nDecorators\n\n\n\n\n\n\n\n\nDecorator\nPurpose\nWhen to Use\n\n\n\n\n@auth_required\nRequire authentication\nProtect any authenticated route\n\n\n@role_required\nRequire specific role\nAdmin/moderator areas\n\n\n@permission_required\nRequire specific permission\nGranular access control\n\n\n\n\n\nPermission Management\n\n\n\nFunction\nPurpose\nWhen to Use\n\n\n\n\nget_user_permissions\nGet all user permissions\nDisplay user capabilities\n\n\nregister_permission\nRegister new permission\nAdd custom permissions\n\n\nset_role_permissions\nSet permissions for role\nConfigure roles\n\n\nclear_permission_cache\nClear cached permissions\nAfter role changes",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#default-configuration",
+    "href": "permissions.html#default-configuration",
+    "title": "Permissions",
+    "section": "Default Configuration",
+    "text": "Default Configuration\nLaunch Kit provides sensible defaults for role hierarchy and permissions:",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#core-permission-functions",
+    "href": "permissions.html#core-permission-functions",
+    "title": "Permissions",
+    "section": "Core Permission Functions",
+    "text": "Core Permission Functions\nSimple boolean functions for checking authentication, roles, and permissions:\n\nsource\n\nrequire_auth\n\n require_auth (req, sess)\n\n*Check if user is authenticated.\nThis is the simplest permission check - just verifies that a user is logged in.*\n\n\n\n\nType\nDetails\n\n\n\n\nreq\n\nThe FastHTML Request object\n\n\nsess\n\nThe FastHTML Session object\n\n\nReturns\nbool\nTrue if user is authenticated\n\n\n\n\nsource\n\n\ncheck_role_hierarchy\n\n check_role_hierarchy (user_role:Optional[str], required_role:str)\n\n*Check if user’s role meets or exceeds the required role in hierarchy.\nUses ROLE_HIERARCHY to determine if a user’s role has sufficient privileges. For example, an ‘admin’ can access ‘moderator’ areas.*\n\n\n\n\nType\nDetails\n\n\n\n\nuser_role\nOptional\nThe user’s current role\n\n\nrequired_role\nstr\nThe required role\n\n\nReturns\nbool\nTrue if user role &gt;= required role\n\n\n\n\nsource\n\n\nrequire_role\n\n require_role (role:str, req, sess)\n\n*Check if user has the required role or higher in the hierarchy.\nUses role hierarchy so admins can access moderator areas, etc.*\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nrole\nstr\nThe required role\n\n\nreq\n\nThe FastHTML Request object\n\n\nsess\n\nThe FastHTML Session object\n\n\nReturns\nbool\nTrue if user has the required role or higher\n\n\n\n\nsource\n\n\nget_user_permissions\n\n get_user_permissions (user:Dict[str,Any])\n\n*Get all permissions for a user based on their role.\nReturns a set of permission strings. Admins get ’’ which means all permissions.\n\n\n\n\nType\nDetails\n\n\n\n\nuser\nDict\nThe user dictionary from session\n\n\nReturns\nSet\nSet of permission strings\n\n\n\n\nsource\n\n\nhas_permission\n\n has_permission (user:Dict[str,Any], permission:str)\n\n*Check if user has a specific permission.\nHandles the special case where admins have ’’ meaning all permissions.\n\n\n\n\nType\nDetails\n\n\n\n\nuser\nDict\nThe user dictionary\n\n\npermission\nstr\nThe permission to check\n\n\nReturns\nbool\nTrue if user has permission\n\n\n\n\nsource\n\n\nrequire_permission\n\n require_permission (permission:str, req, sess)\n\n*Check if user has a specific permission.\nThis is for granular permission checking beyond roles.*\n\n\n\n\nType\nDetails\n\n\n\n\npermission\nstr\nThe required permission\n\n\nreq\n\nThe FastHTML Request object\n\n\nsess\n\nThe FastHTML Session object\n\n\nReturns\nbool\nTrue if user has permission",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#permission-decorators",
+    "href": "permissions.html#permission-decorators",
+    "title": "Permissions",
+    "section": "Permission Decorators",
+    "text": "Permission Decorators\nDecorators provide a clean way to protect FastHTML routes:\n\nsource\n\nauth_required\n\n auth_required (func:Callable)\n\n*Decorator that requires authentication for a route.\nRedirects to /login if user is not authenticated. Works with FastHTML route functions that accept req and sess parameters.\nExample: @rt(‘/dashboard’) @auth_required def get(req, sess): return “Dashboard content”*\n\n\n\n\nType\nDetails\n\n\n\n\nfunc\nCallable\nThe route function to protect\n\n\nReturns\nCallable\nThe wrapped function\n\n\n\n\nsource\n\n\nrole_required\n\n role_required (role:str)\n\n*Decorator that requires a specific role for a route.\nReturns 403 Forbidden if user doesn’t have the required role.\nExample: @rt(‘/admin’) @role_required(‘admin’) def get(req, sess): return “Admin panel”*\n\n\n\n\nType\nDetails\n\n\n\n\nrole\nstr\nThe required role\n\n\nReturns\nCallable\nDecorator function\n\n\n\n\nsource\n\n\npermission_required\n\n permission_required (permission:str)\n\n*Decorator that requires a specific permission for a route.\nReturns 403 Forbidden if user doesn’t have the required permission.\nExample: @rt(‘/users/delete’) @permission_required(‘delete_users’) def post(req, sess, user_id: int): # Delete user logic pass*\n\n\n\n\nType\nDetails\n\n\n\n\npermission\nstr\nThe required permission\n\n\nReturns\nCallable\nDecorator function",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#permission-management-1",
+    "href": "permissions.html#permission-management-1",
+    "title": "Permissions",
+    "section": "Permission Management",
+    "text": "Permission Management\nFunctions for managing and configuring permissions:\n\nsource\n\nregister_permission\n\n register_permission (name:str, description:Optional[str]=None)\n\n*Register a new permission in the system.\nThis is optional but helps with documentation and validation.*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nname\nstr\n\nPermission identifier\n\n\ndescription\nOptional\nNone\nHuman-readable description\n\n\nReturns\nNone\n\n\n\n\n\n\nsource\n\n\nget_permissions_for_role\n\n get_permissions_for_role (role:str)\n\nGet all permissions assigned to a role.\n\n\n\n\nType\nDetails\n\n\n\n\nrole\nstr\nThe role name\n\n\nReturns\nSet\nSet of permissions\n\n\n\n\nsource\n\n\nset_role_permissions\n\n set_role_permissions (role:str, permissions:Union[Set[str],List[str]])\n\nSet permissions for a role, replacing any existing permissions.\n\n\n\n\nType\nDetails\n\n\n\n\nrole\nstr\nThe role name\n\n\npermissions\nUnion\nPermissions to assign\n\n\nReturns\nNone\n\n\n\n\n\nsource\n\n\nadd_role_permission\n\n add_role_permission (role:str, permission:str)\n\nAdd a single permission to a role.\n\n\n\n\nType\nDetails\n\n\n\n\nrole\nstr\nThe role name\n\n\npermission\nstr\nPermission to add\n\n\nReturns\nNone\n\n\n\n\n\nsource\n\n\nremove_role_permission\n\n remove_role_permission (role:str, permission:str)\n\nRemove a single permission from a role.\n\n\n\n\nType\nDetails\n\n\n\n\nrole\nstr\nThe role name\n\n\npermission\nstr\nPermission to remove\n\n\nReturns\nNone",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#session-integration",
+    "href": "permissions.html#session-integration",
+    "title": "Permissions",
+    "section": "Session Integration",
+    "text": "Session Integration\nUtilities for caching permissions in the session for performance:\n\nsource\n\nclear_permission_cache\n\n clear_permission_cache (sess)\n\n*Clear cached permissions from session.\nCall this after changing a user’s role or permissions.*\n\n\n\n\nType\nDetails\n\n\n\n\nsess\n\nThe FastHTML Session object\n\n\nReturns\nNone",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#examples",
+    "href": "permissions.html#examples",
+    "title": "Permissions",
+    "section": "Examples",
+    "text": "Examples\n\nBasic Authentication Protection\n\nfrom fasthtml.common import *\nfrom ship_kit.permissions import *\n\napp, rt = fast_app()\n\n# Simple authentication check\n@rt('/dashboard')\n@auth_required\ndef get(req, sess):\n    user = get_user_from_session(sess)\n    return Div(\n        H1(f\"Welcome {user['username']}!\"),\n        P(\"This is your dashboard.\")\n    )\n\n\n\nRole-Based Access Control\n\n# Admin-only area\n@rt('/admin')\n@role_required('admin')\ndef get(req, sess):\n    return Div(\n        H1(\"Admin Panel\"),\n        P(\"Only administrators can see this.\")\n    )\n\n# Moderator area (admins can also access)\n@rt('/moderate')\n@role_required('moderator')  \ndef get(req, sess):\n    return Div(\n        H1(\"Moderation Queue\"),\n        P(\"Moderators and admins can see this.\")\n    )\n\n\n\nGranular Permission Checks\n\n# Check specific permission\n@rt('/users/{user_id}/delete', methods=['POST'])\n@permission_required('delete_users')\ndef delete_user(req, sess, user_id: int):\n    # Delete user logic here\n    return {\"status\": \"deleted\", \"user_id\": user_id}\n\n# Manual permission check for conditional UI\n@rt('/users/{user_id}')\n@auth_required\ndef get(req, sess, user_id: int):\n    user = get_user_from_session(sess)\n    can_delete = has_permission(user, 'delete_users')\n    \n    return Div(\n        H1(f\"User Profile #{user_id}\"),\n        Button(\n            \"Delete User\",\n            hx_post=f\"/users/{user_id}/delete\",\n            hx_confirm=\"Are you sure?\"\n        ) if can_delete else None\n    )\n\n\n\nCustom Permission Configuration\n\n# Register custom permissions\nregister_permission('export_data', 'Export system data to CSV')\nregister_permission('view_analytics', 'View analytics dashboard')\n\n# Create a custom role\nset_role_permissions('analyst', {\n    'read_all_data',\n    'view_analytics', \n    'export_data'\n})\n\n# Add permission to existing role\nadd_role_permission('moderator', 'view_analytics')\n\n# Remove permission from role\nremove_role_permission('user', 'delete_own_data')\n\n\n\nAPI Endpoints with Permissions\n\n# JSON API with permission checks\n@rt('/api/users')\ndef get(req, sess):\n    if not require_permission('read_all_data', req, sess):\n        return JSONResponse(\n            {\"error\": \"Forbidden\", \"message\": \"Insufficient permissions\"},\n            status_code=403\n        )\n    \n    # Return user data\n    return JSONResponse({\"users\": []})\n\n# Using decorators with JSON responses\n@rt('/api/admin/stats')\n@role_required('admin')\ndef get(req, sess):\n    # Admin-only statistics\n    return JSONResponse({\n        \"total_users\": 1000,\n        \"active_sessions\": 42\n    })",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#testing-permissions",
+    "href": "permissions.html#testing-permissions",
+    "title": "Permissions",
+    "section": "Testing Permissions",
+    "text": "Testing Permissions\n\nInteractive Demo\n\n# Complete demo app showing all permission features\nfrom fasthtml.common import *\nfrom ship_kit.auth import user_auth_before\nfrom ship_kit.permissions import *\n\n# Configure auth beforeware\nbeforeware = Beforeware(\n    user_auth_before,\n    skip=['/login', '/public', '/']\n)\n\napp, rt = fast_app(before=beforeware)\n\n# Mock user database\nusers = {\n    'admin@example.com': {'id': 1, 'email': 'admin@example.com', 'role': 'admin'},\n    'mod@example.com': {'id': 2, 'email': 'mod@example.com', 'role': 'moderator'},\n    'user@example.com': {'id': 3, 'email': 'user@example.com', 'role': 'user'}\n}\n\n# Public home page\n@rt('/')\ndef get():\n    return Div(\n        H1(\"Permissions Demo\"),\n        P(\"Test different user roles:\"),\n        Ul(\n            Li(\"admin@example.com - Admin role\"),\n            Li(\"mod@example.com - Moderator role\"),\n            Li(\"user@example.com - User role\")\n        ),\n        A(\"Login\", href=\"/login\", cls=\"button\")\n    )\n\n# Login page\n@rt('/login')\ndef get():\n    return Div(\n        H2(\"Login\"),\n        Form(\n            Input(name=\"email\", type=\"email\", placeholder=\"Email\", required=True),\n            Button(\"Login\", type=\"submit\"),\n            method=\"post\"\n        )\n    )\n\n@rt('/login', methods=['POST'])\nasync def post(req, sess):\n    form = await req.form()\n    email = form.get('email')\n    if email in users:\n        sess['auth'] = True\n        sess['user'] = users[email]\n        return RedirectResponse('/dashboard', status_code=303)\n    return \"Invalid email\"\n\n# User dashboard - requires authentication\n@rt('/dashboard')\n@auth_required\ndef get(req, sess):\n    user = get_user_from_session(sess)\n    permissions = get_user_permissions(user)\n    \n    return Div(\n        H1(f\"Welcome {user['email']}\"),\n        P(f\"Role: {user['role']}\"),\n        H3(\"Your Permissions:\"),\n        Ul(*[Li(perm) for perm in sorted(permissions)]) if '*' not in permissions else P(\"All permissions\"),\n        H3(\"Test Areas:\"),\n        Ul(\n            Li(A(\"Admin Area\", href=\"/admin\")),\n            Li(A(\"Moderator Area\", href=\"/moderate\")),\n            Li(A(\"Delete Users\", href=\"/users/delete\"))\n        ),\n        A(\"Logout\", href=\"/logout\")\n    )\n\n# Admin only area\n@rt('/admin')\n@role_required('admin')\ndef get(req, sess):\n    return Div(\n        H1(\"Admin Area\"),\n        P(\"Only admins can see this!\"),\n        A(\"Back to Dashboard\", href=\"/dashboard\")\n    )\n\n# Moderator area (admins can also access)\n@rt('/moderate')\n@role_required('moderator')\ndef get(req, sess):\n    user = get_user_from_session(sess)\n    return Div(\n        H1(\"Moderator Area\"),\n        P(f\"Welcome {user['role']}! Moderators and admins can see this.\"),\n        A(\"Back to Dashboard\", href=\"/dashboard\")\n    )\n\n# Permission-based access\n@rt('/users/delete')\n@permission_required('delete_users')\ndef get(req, sess):\n    return Div(\n        H1(\"Delete Users\"),\n        P(\"This requires the 'delete_users' permission.\"),\n        P(\"Only admins have this by default.\"),\n        A(\"Back to Dashboard\", href=\"/dashboard\")\n    )\n\n# Logout\n@rt('/logout')\ndef get(sess):\n    sess.clear()\n    return RedirectResponse('/', status_code=303)\n\n# Run the demo\nfrom fasthtml.jupyter import JupyUvi\nserver = JupyUvi(app)\n\n\n# View the app right here in the notebook by uncommenting the line below\nfrom fasthtml.jupyter import HTMX\n# HTMX()\n\n\n# Stop the server gracefully\n# Note: Always run this after testing to clean up otherwise there will be a dangling thread\n# https://fastht.ml/docs/tutorials/jupyter_and_fasthtml.html#graceful-shutdowns\nprint(\"Stopping server...\")\nserver.stop()\n\nStopping server...",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#best-practices",
+    "href": "permissions.html#best-practices",
+    "title": "Permissions",
+    "section": "Best Practices",
+    "text": "Best Practices\n\n1. Use Decorators for Clean Code\n# Good: Clean and declarative\n@rt('/admin')\n@role_required('admin')\ndef get(req, sess):\n    return admin_panel()\n\n# Avoid: Manual checks in every route\n@rt('/admin')\ndef get(req, sess):\n    if not require_role('admin', req, sess):\n        return RedirectResponse('/login')  \n    return admin_panel()\n\n\n2. Role Hierarchy for Flexibility\n# Admins automatically get access to moderator areas\n@role_required('moderator')  # Admins can also access\n\n\n3. Granular Permissions for Sensitive Operations\n# Use specific permissions for dangerous operations\n@permission_required('delete_all_data')  # More specific than @role_required('admin')\n\n\n4. Clear Permission Cache After Role Changes\ndef promote_to_admin(user_id, sess):\n    # Update user role in database\n    update_user_role(user_id, 'admin')\n    # Clear cached permissions\n    clear_permission_cache(sess)\n\n\n5. Combine with Beforeware for Global Auth\n# Use beforeware for site-wide auth\nbeforeware = Beforeware(user_auth_before, skip=['/login', '/public'])\n\n# Then use decorators for specific permissions\n@role_required('admin')",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#security-considerations",
+    "href": "permissions.html#security-considerations",
+    "title": "Permissions",
+    "section": "Security Considerations",
+    "text": "Security Considerations\n\n🔒 Permission Design\n\n\n\n\n\n\n\nPractice\nImplementation\n\n\n\n\nPrinciple of Least Privilege\nGive users minimum required permissions\n\n\nRole Separation\nDon’t combine unrelated permissions\n\n\nAudit Trail\nLog permission changes and access attempts\n\n\nRegular Review\nPeriodically review role assignments\n\n\n\n\n\n🛡️ Implementation Security\n\n\n\nPractice\nImplementation\n\n\n\n\nSession Security\nUse secure session configuration\n\n\nCSRF Protection\nVerify state-changing operations\n\n\nRate Limiting\nLimit permission check attempts\n\n\nError Handling\nDon’t leak permission info in errors",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "permissions.html#summary",
+    "href": "permissions.html#summary",
+    "title": "Permissions",
+    "section": "Summary",
+    "text": "Summary\nShip Kit’s permissions module provides:\n\nSimple API - Boolean functions and clean decorators\nRole Hierarchy - Admins can access moderator areas automatically\nGranular Permissions - Beyond roles for specific operations\nFastHTML Native - Works seamlessly with req/sess patterns\nTransparent - No hidden middleware or magic\nFlexible - Easy to extend with custom roles and permissions\nPerformance - Optional session caching for efficiency\n\nThe module follows Ship Kit’s philosophy of being simple, transparent, and flexible while providing all the features needed for production applications.\n\nBreaking Changes in v2.0\n\nSimplified decorators - Decorators now expect FastHTML standard function signatures (req, sess as first two parameters)\n**Removed _extract_req_sess** - No more complex parameter extraction, decorators work with standard patterns only",
+    "crumbs": [
+      "Permissions"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "ship-kit",
+    "section": "",
+    "text": "Launch Kit provides composable utilities for building production-ready SaaS applications with FastHTML. Following Answer.AI’s philosophy of simplicity and transparency, it offers pre-built functionality without hiding the underlying framework.\nCore Principles: - 🎯 No Magic - Everything is explicit and inspectable - 🧩 Composable - Import only what you need - 🔍 Transparent - You can see exactly what’s happening - ⚡ FastHTML-First - Enhances FastHTML, doesn’t wrap it - 🎨 Override-Friendly - Sensible defaults, full customization",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "ship-kit",
+    "section": "",
+    "text": "Launch Kit provides composable utilities for building production-ready SaaS applications with FastHTML. Following Answer.AI’s philosophy of simplicity and transparency, it offers pre-built functionality without hiding the underlying framework.\nCore Principles: - 🎯 No Magic - Everything is explicit and inspectable - 🧩 Composable - Import only what you need - 🔍 Transparent - You can see exactly what’s happening - ⚡ FastHTML-First - Enhances FastHTML, doesn’t wrap it - 🎨 Override-Friendly - Sensible defaults, full customization",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "ship-kit",
+    "section": "Installation",
+    "text": "Installation\nInstall latest from the GitHub repository:\npip install git+https://github.com/LotsOfOrg/ship-kit.git\nOr install from PyPI (when available):\npip install ship-kit\nFor development:\n# Clone the repository\ngit clone https://github.com/LotsOfOrg/ship-kit.git\ncd ship-kit\n\n# Install in development mode\npip install -e .\n\n# Install with development dependencies\npip install -e \".[dev]\"",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#quick-start",
+    "href": "index.html#quick-start",
+    "title": "ship-kit",
+    "section": "Quick Start",
+    "text": "Quick Start\n\nBasic FastHTML App with Authentication\nHere’s how to add authentication to your FastHTML app in minutes:\n\nfrom fasthtml.common import *\nfrom ship_kit.routes.auth import login_route, signup_route, logout_route\n\n# Standard FastHTML app - no wrapping!\napp, rt = fast_app()\n\n# Add authentication routes with one line each\nlogin_route(app)\nsignup_route(app) \nlogout_route(app)\n\n# Your routes - that's it!\n@rt(\"/\")\ndef get(sess):\n    user = sess.get('auth')\n    if user:\n        return Title(\"Home\"), Main(\n            H1(f\"Welcome {user['email']}!\"),\n            A(\"Logout\", href=\"/auth/logout\")\n        )\n    return Title(\"Welcome\"), Main(\n        P(\"Please \", A(\"login\", href=\"/auth/login\"), \" to continue.\")\n    )\n\nserve()\n\nThat’s it! You now have: - 📝 Beautiful login and signup forms with MonsterUI - 🔐 Secure password hashing - 🍪 Session-based authentication - 🚀 HTMX-enhanced interactions - 🎨 Fully customizable components",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#features",
+    "href": "index.html#features",
+    "title": "ship-kit",
+    "section": "Features",
+    "text": "Features\n\n🔐 Authentication Module\nCore authentication utilities and pre-built routes:\nfrom ship_kit.auth import hash_password, verify_password",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#philosophy-utilities-not-frameworks",
+    "href": "index.html#philosophy-utilities-not-frameworks",
+    "title": "ship-kit",
+    "section": "Philosophy: Utilities, Not Frameworks",
+    "text": "Philosophy: Utilities, Not Frameworks\nLaunch Kit follows Answer.AI’s principles:\n\nSimple things should be simple - login_route(app) just works\nComplex things should be possible - Override any component or behavior\nNo magic - You can read and understand every line of code\nComposable - Use only what you need, ignore the rest\nFastHTML-native - Uses standard FastHTML patterns (rt, sess, FT components)",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#advanced-example-custom-authentication",
+    "href": "index.html#advanced-example-custom-authentication",
+    "title": "ship-kit",
+    "section": "Advanced Example: Custom Authentication",
+    "text": "Advanced Example: Custom Authentication\nHere’s how to build a complete authentication system with custom logic:\n\nfrom fasthtml.common import *\nfrom ship_kit.auth import hash_password, verify_password\nfrom ship_kit.routes.auth import login_route, signup_route, logout_route\nfrom datetime import datetime\n\n# Your database setup (example with dict for simplicity)\nusers_db = {}\n\ndef authenticate_user(email, password):\n    \"\"\"Custom authentication logic\"\"\"\n    user = users_db.get(email)\n    if user and verify_password(password, user['password_hash']):\n        return {'email': email, 'name': user['name']}\n    return None\n\ndef create_user(form_data):\n    \"\"\"Custom user creation logic\"\"\"\n    email = form_data.get('email')\n    \n    # Validation\n    if form_data['password'] != form_data['password_confirm']:\n        return \"Passwords don't match\"\n    \n    if email in users_db:\n        return \"Email already registered\"\n    \n    # Create user\n    users_db[email] = {\n        'name': form_data['name'],\n        'password_hash': hash_password(form_data['password']),\n        'created_at': datetime.now()\n    }\n    \n    return {'email': email, 'name': form_data['name']}\n\n# Create app with session middleware\napp, rt = fast_app(\n    secret_key='your-secret-key',  # Required for sessions\n    pico=True  # Optional: Use Pico CSS for styling\n)\n\n# Add auth routes with custom logic\nlogin_route(app, authenticate=authenticate_user)\nsignup_route(app, create_user=create_user)\nlogout_route(app)\n\n# Protected route example\n@rt(\"/dashboard\")\ndef get(sess):\n    user = sess.get('auth')\n    if not user:\n        return RedirectResponse('/auth/login', status_code=303)\n    \n    return Title(\"Dashboard\"), Main(\n        H1(f\"Welcome to your dashboard, {user['name']}!\"),\n        P(f\"Logged in as: {user['email']}\"),\n        Button(\"Logout\", hx_get=\"/auth/logout\", hx_push_url=\"true\")\n    )\n\n# Public route\n@rt(\"/\")\ndef get():\n    return Title(\"Ship Kit Demo\"), Main(\n        H1(\"Welcome to Ship Kit\"),\n        P(\"A FastHTML toolkit for building SaaS applications\"),\n        Div(\n            A(\"Login\", href=\"/auth/login\", cls=\"button\"),\n            \" \",\n            A(\"Sign Up\", href=\"/auth/signup\", cls=\"button outline\"),\n            cls=\"grid\"\n        )\n    )\n\nserve()",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#developer-guide",
+    "href": "index.html#developer-guide",
+    "title": "ship-kit",
+    "section": "Developer Guide",
+    "text": "Developer Guide\nLaunch Kit uses nbdev for development. Here’s how to contribute:\n\nDevelopment Setup\n# Clone the repository\ngit clone https://github.com/LotsOfOrg/ship-kit.git\ncd ship-kit\n\n# Install in development mode\npip install -e .\n\n# Make changes in the notebooks under nbs/\n# The source code in ship_kit/ is auto-generated\n\n# After making changes, prepare for commit\nnbdev_prepare\n\n\nProject Structure\nship-kit/\n├── nbs/                    # Development notebooks (source of truth)\n│   ├── 00_auth.ipynb      # Core authentication utilities\n│   ├── 01_routes_auth.ipynb # Authentication routes\n│   └── index.ipynb        # This file (package docs)\n├── ship_kit/            # Auto-generated Python modules\n│   ├── auth.py\n│   └── routes/\n│       └── auth.py\n└── settings.ini          # nbdev configuration\nImportant: Never edit files in ship_kit/ directly - they’re auto-generated from notebooks!",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#documentation",
+    "href": "index.html#documentation",
+    "title": "ship-kit",
+    "section": "Documentation",
+    "text": "Documentation\n\nGitHub: https://github.com/LotsOfOrg/ship-kit\nDocumentation: https://LotsOfOrg.github.io/ship-kit/\nIssues: https://github.com/LotsOfOrg/ship-kit/issues",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#license",
+    "href": "index.html#license",
+    "title": "ship-kit",
+    "section": "License",
+    "text": "License\nLicensed under the Apache License, Version 2.0. See LICENSE for details.",
+    "crumbs": [
+      "ship-kit"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "ship-kit",
+    "section": "How to use",
+    "text": "How to use\nLaunch Kit provides simple, transparent utilities for building production-ready FastHTML applications. Here’s a quick example of using the authentication utilities:\n\nfrom ship_kit.auth import hash_password, verify_password\n\n# Hash a password when user signs up\npassword = \"secure_password123\"\nhashed = hash_password(password)\nprint(f\"Hashed: {hashed[:20]}...\")\n\n# Verify password when user logs in\nis_valid = verify_password(password, hashed)\nprint(f\"Valid: {is_valid}\")",
+    "crumbs": [
+      "ship-kit"
+    ]
+  }
+]

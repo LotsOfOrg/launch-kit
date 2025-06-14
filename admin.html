@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Simple, composable admin utilities following FastHTML patterns">
+
+<title>Admin Panel – ship-kit</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-b1527d6dab3c1d2528611d399e709420.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Admin Panel – ship-kit">
+<meta property="og:description" content="Simple, composable admin utilities following FastHTML patterns">
+<meta property="og:site_name" content="ship-kit">
+<meta name="twitter:title" content="Admin Panel – ship-kit">
+<meta name="twitter:description" content="Simple, composable admin utilities following FastHTML patterns">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">ship-kit</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./admin.html">Admin Panel</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ship-kit</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Authentication</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./routes_auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">routes.auth</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./permissions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Permissions</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./admin.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Admin Panel</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./admin_routes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">admin_routes</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#quick-start" id="toc-quick-start" class="nav-link active" data-scroll-target="#quick-start">Quick Start</a></li>
+  <li><a href="#core-functions" id="toc-core-functions" class="nav-link" data-scroll-target="#core-functions">Core Functions</a>
+  <ul class="collapse">
+  <li><a href="#setup_admin_routes" id="toc-setup_admin_routes" class="nav-link" data-scroll-target="#setup_admin_routes">setup_admin_routes</a></li>
+  <li><a href="#admin_list_view" id="toc-admin_list_view" class="nav-link" data-scroll-target="#admin_list_view">admin_list_view</a></li>
+  <li><a href="#admin_table" id="toc-admin_table" class="nav-link" data-scroll-target="#admin_table">admin_table</a></li>
+  <li><a href="#admin_form" id="toc-admin_form" class="nav-link" data-scroll-target="#admin_form">admin_form</a></li>
+  <li><a href="#get_field_input" id="toc-get_field_input" class="nav-link" data-scroll-target="#get_field_input">get_field_input</a></li>
+  <li><a href="#clean_form_data" id="toc-clean_form_data" class="nav-link" data-scroll-target="#clean_form_data">clean_form_data</a></li>
+  </ul></li>
+  <li><a href="#helper-functions" id="toc-helper-functions" class="nav-link" data-scroll-target="#helper-functions">Helper Functions</a></li>
+  <li><a href="#usage-examples" id="toc-usage-examples" class="nav-link" data-scroll-target="#usage-examples">Usage Examples</a>
+  <ul class="collapse">
+  <li><a href="#simple-setup" id="toc-simple-setup" class="nav-link" data-scroll-target="#simple-setup">Simple Setup</a></li>
+  <li><a href="#custom-components" id="toc-custom-components" class="nav-link" data-scroll-target="#custom-components">Custom Components</a></li>
+  </ul></li>
+  <li><a href="#tests" id="toc-tests" class="nav-link" data-scroll-target="#tests">Tests</a>
+  <ul class="collapse">
+  <li><a href="#test-setup" id="toc-test-setup" class="nav-link" data-scroll-target="#test-setup">Test Setup</a></li>
+  <li><a href="#test-form-data-cleaning" id="toc-test-form-data-cleaning" class="nav-link" data-scroll-target="#test-form-data-cleaning">Test Form Data Cleaning</a></li>
+  <li><a href="#test-field-input-generation" id="toc-test-field-input-generation" class="nav-link" data-scroll-target="#test-field-input-generation">Test Field Input Generation</a></li>
+  <li><a href="#test-admin-table-generation" id="toc-test-admin-table-generation" class="nav-link" data-scroll-target="#test-admin-table-generation">Test Admin Table Generation</a></li>
+  <li><a href="#test-admin-form-generation" id="toc-test-admin-form-generation" class="nav-link" data-scroll-target="#test-admin-form-generation">Test Admin Form Generation</a></li>
+  <li><a href="#test-admin-list-view" id="toc-test-admin-list-view" class="nav-link" data-scroll-target="#test-admin-list-view">Test Admin List View</a></li>
+  <li><a href="#test-search-functionality" id="toc-test-search-functionality" class="nav-link" data-scroll-target="#test-search-functionality">Test Search Functionality</a></li>
+  <li><a href="#test-pagination" id="toc-test-pagination" class="nav-link" data-scroll-target="#test-pagination">Test Pagination</a></li>
+  <li><a href="#test-route-setup-mock" id="toc-test-route-setup-mock" class="nav-link" data-scroll-target="#test-route-setup-mock">Test Route Setup (Mock)</a></li>
+  <li><a href="#test-edge-cases" id="toc-test-edge-cases" class="nav-link" data-scroll-target="#test-edge-cases">Test Edge Cases</a></li>
+  <li><a href="#cleanup" id="toc-cleanup" class="nav-link" data-scroll-target="#cleanup">Cleanup</a></li>
+  <li><a href="#integration-test-example" id="toc-integration-test-example" class="nav-link" data-scroll-target="#integration-test-example">Integration Test Example</a></li>
+  </ul></li>
+  <li><a href="#interactive-demo" id="toc-interactive-demo" class="nav-link" data-scroll-target="#interactive-demo">Interactive Demo</a>
+  <ul class="collapse">
+  <li><a href="#demo-features" id="toc-demo-features" class="nav-link" data-scroll-target="#demo-features">Demo Features</a></li>
+  <li><a href="#try-it-yourself" id="toc-try-it-yourself" class="nav-link" data-scroll-target="#try-it-yourself">Try It Yourself!</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a>
+  <ul class="collapse">
+  <li><a href="#whats-better" id="toc-whats-better" class="nav-link" data-scroll-target="#whats-better">✅ What’s Better:</a></li>
+  <li><a href="#key-improvements" id="toc-key-improvements" class="nav-link" data-scroll-target="#key-improvements">🎯 Key Improvements:</a></li>
+  <li><a href="#integration-with-other-modules" id="toc-integration-with-other-modules" class="nav-link" data-scroll-target="#integration-with-other-modules">Integration with Other Modules</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/LotsOfOrg/ship-kit/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="admin.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Admin Panel</h1>
+</div>
+
+<div>
+  <div class="description">
+    Simple, composable admin utilities following FastHTML patterns
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<div id="cell-2" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">__all__</span> <span class="op">=</span> [<span class="st">'setup_admin_routes'</span>, <span class="st">'admin_list_view'</span>, <span class="st">'admin_form'</span>, <span class="st">'admin_table'</span>, </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">'get_field_input'</span>, <span class="st">'clean_form_data'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="quick-start" class="level2">
+<h2 class="anchored" data-anchor-id="quick-start">Quick Start</h2>
+<p>Following FastHTML patterns with simple, composable utilities:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ship_kit.admin <span class="im">import</span> setup_admin_routes</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fasthtml.common <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>app, rt <span class="op">=</span> fast_app()</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>db <span class="op">=</span> Database(<span class="st">'app.db'</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>products <span class="op">=</span> db.create(Product, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple setup - just pass your table and router</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(rt, <span class="st">'products'</span>, products, Product)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># That's it! Routes are created at /admin/products/</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="core-functions" class="level2">
+<h2 class="anchored" data-anchor-id="core-functions">Core Functions</h2>
+<p>Simple, composable functions following FastHTML’s functional approach:</p>
+<hr>
+<p><a href="https://github.com/LotsOfOrg/ship-kit/blob/main/ship_kit/admin.py#L20" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="setup_admin_routes" class="level3">
+<h3 class="anchored" data-anchor-id="setup_admin_routes">setup_admin_routes</h3>
+<blockquote class="blockquote">
+<pre><code> setup_admin_routes (rt, name:str, table, model_class:Type,
+                     path_prefix:str='/admin',
+                     auth_check:Optional[Callable]=None, per_page:int=25)</code></pre>
+</blockquote>
+<p>*Setup admin routes for a model using standard FastHTML patterns.</p>
+<p>This creates all CRUD routes following FastHTML conventions.*</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>rt</td>
+<td></td>
+<td></td>
+<td>FastHTML router instance</td>
+</tr>
+<tr class="even">
+<td>name</td>
+<td>str</td>
+<td></td>
+<td>Model name (e.g., ‘products’)</td>
+</tr>
+<tr class="odd">
+<td>table</td>
+<td></td>
+<td></td>
+<td>MiniDataAPI table</td>
+</tr>
+<tr class="even">
+<td>model_class</td>
+<td>Type</td>
+<td></td>
+<td>Dataclass model</td>
+</tr>
+<tr class="odd">
+<td>path_prefix</td>
+<td>str</td>
+<td>/admin</td>
+<td>URL prefix</td>
+</tr>
+<tr class="even">
+<td>auth_check</td>
+<td>Optional</td>
+<td>None</td>
+<td>Auth function</td>
+</tr>
+<tr class="odd">
+<td>per_page</td>
+<td>int</td>
+<td>25</td>
+<td>Items per page</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/LotsOfOrg/ship-kit/blob/main/ship_kit/admin.py#L136" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="admin_list_view" class="level3">
+<h3 class="anchored" data-anchor-id="admin_list_view">admin_list_view</h3>
+<blockquote class="blockquote">
+<pre><code> admin_list_view (name:str, items:List, page:int, total_pages:int,
+                  search:str='', base_path:str='')</code></pre>
+</blockquote>
+<p>*Generate admin list view with table and pagination.</p>
+<p>Simple, reusable component following FastHTML patterns.*</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>name</td>
+<td>str</td>
+<td></td>
+<td>Model name</td>
+</tr>
+<tr class="even">
+<td>items</td>
+<td>List</td>
+<td></td>
+<td>List of items</td>
+</tr>
+<tr class="odd">
+<td>page</td>
+<td>int</td>
+<td></td>
+<td>Current page</td>
+</tr>
+<tr class="even">
+<td>total_pages</td>
+<td>int</td>
+<td></td>
+<td>Total pages</td>
+</tr>
+<tr class="odd">
+<td>search</td>
+<td>str</td>
+<td></td>
+<td>Search query</td>
+</tr>
+<tr class="even">
+<td>base_path</td>
+<td>str</td>
+<td></td>
+<td>Base URL path</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>FT</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/LotsOfOrg/ship-kit/blob/main/ship_kit/admin.py#L172" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="admin_table" class="level3">
+<h3 class="anchored" data-anchor-id="admin_table">admin_table</h3>
+<blockquote class="blockquote">
+<pre><code> admin_table (items:List, base_path:str='')</code></pre>
+</blockquote>
+<p>*Generate admin table component.</p>
+<p>Simple table component that works with any list of dict-like objects.*</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>items</td>
+<td>List</td>
+<td></td>
+<td>List of items to display</td>
+</tr>
+<tr class="even">
+<td>base_path</td>
+<td>str</td>
+<td></td>
+<td>Base URL path for actions</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>FT</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/LotsOfOrg/ship-kit/blob/main/ship_kit/admin.py#L237" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="admin_form" class="level3">
+<h3 class="anchored" data-anchor-id="admin_form">admin_form</h3>
+<blockquote class="blockquote">
+<pre><code> admin_form (model_class:Type, data:Optional[Dict]=None, action:str='',
+             title:str='Form', error:Optional[str]=None)</code></pre>
+</blockquote>
+<p>*Generate admin form from dataclass.</p>
+<p>Simple form generator that creates appropriate inputs for each field type.*</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>model_class</td>
+<td>Type</td>
+<td></td>
+<td>Dataclass model</td>
+</tr>
+<tr class="even">
+<td>data</td>
+<td>Optional</td>
+<td>None</td>
+<td>Current data (for editing)</td>
+</tr>
+<tr class="odd">
+<td>action</td>
+<td>str</td>
+<td></td>
+<td>Form action URL</td>
+</tr>
+<tr class="even">
+<td>title</td>
+<td>str</td>
+<td>Form</td>
+<td>Form title</td>
+</tr>
+<tr class="odd">
+<td>error</td>
+<td>Optional</td>
+<td>None</td>
+<td>Error message</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>FT</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/LotsOfOrg/ship-kit/blob/main/ship_kit/admin.py#L280" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="get_field_input" class="level3">
+<h3 class="anchored" data-anchor-id="get_field_input">get_field_input</h3>
+<blockquote class="blockquote">
+<pre><code> get_field_input (name:str, field_type:Type, value:Any='')</code></pre>
+</blockquote>
+<p>*Get appropriate input component for field type.</p>
+<p>Simple function that maps Python types to HTML input types.*</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>name</td>
+<td>str</td>
+<td></td>
+<td>Field name</td>
+</tr>
+<tr class="even">
+<td>field_type</td>
+<td>Type</td>
+<td></td>
+<td>Field type</td>
+</tr>
+<tr class="odd">
+<td>value</td>
+<td>Any</td>
+<td></td>
+<td>Current value</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>FT</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/LotsOfOrg/ship-kit/blob/main/ship_kit/admin.py#L334" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="clean_form_data" class="level3">
+<h3 class="anchored" data-anchor-id="clean_form_data">clean_form_data</h3>
+<blockquote class="blockquote">
+<pre><code> clean_form_data (model_class:Type, form_data:Dict)</code></pre>
+</blockquote>
+<p>*Clean and convert form data to appropriate types.</p>
+<p>Simple type conversion from HTML form strings to Python types.*</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>model_class</td>
+<td>Type</td>
+<td>Dataclass model</td>
+</tr>
+<tr class="even">
+<td>form_data</td>
+<td>Dict</td>
+<td>Raw form data</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>Dict</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="helper-functions" class="level2">
+<h2 class="anchored" data-anchor-id="helper-functions">Helper Functions</h2>
+</section>
+<section id="usage-examples" class="level2">
+<h2 class="anchored" data-anchor-id="usage-examples">Usage Examples</h2>
+<section id="simple-setup" class="level3">
+<h3 class="anchored" data-anchor-id="simple-setup">Simple Setup</h3>
+<div id="cell-13" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fasthtml.common <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ship_kit.admin <span class="im">import</span> setup_admin_routes</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Optional</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Standard FastHTML setup</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>app, rt <span class="op">=</span> fast_app()</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>db <span class="op">=</span> Database(<span class="st">'app.db'</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Product:</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    name: <span class="bu">str</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    price: <span class="bu">float</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    category: <span class="bu">str</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    is_active: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>products <span class="op">=</span> db.create(Product, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># One line setup</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(rt, <span class="st">'products'</span>, products, Product)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co"># That's it! Routes created:</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co"># /admin/products/ - list view</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co"># /admin/products/new - create form</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co"># /admin/products/{id}/edit - edit form</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co"># /admin/products/{id}/delete - delete handler</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="custom-components" class="level3">
+<h3 class="anchored" data-anchor-id="custom-components">Custom Components</h3>
+<div id="cell-15" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use individual components for custom layouts</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ship_kit.admin <span class="im">import</span> admin_table, admin_form, get_field_input</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="at">@rt</span>(<span class="st">'/custom-admin'</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> custom_admin(req, sess):</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    products <span class="op">=</span> products_table()  <span class="co"># Your table</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Container(</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        H1(<span class="st">"Custom Admin Dashboard"</span>),</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        admin_table(products, <span class="st">'/admin/products'</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="at">@rt</span>(<span class="st">'/custom-form'</span>)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> custom_form(req, sess):</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> admin_form(Product, action<span class="op">=</span><span class="st">'/save-product'</span>, title<span class="op">=</span><span class="st">'Add Product'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-16" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup admin for multiple models</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Category:</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    name: <span class="bu">str</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    description: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Order:</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    customer_email: <span class="bu">str</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    total: <span class="bu">float</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    status: <span class="bu">str</span> <span class="op">=</span> <span class="st">"pending"</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    created_at: datetime <span class="op">=</span> field(default_factory<span class="op">=</span>datetime.utcnow)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Create tables</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>categories <span class="op">=</span> db.create(Category, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>orders <span class="op">=</span> db.create(Order, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup admin routes for each</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(rt, <span class="st">'products'</span>, products, Product)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(rt, <span class="st">'categories'</span>, categories, Category)</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(rt, <span class="st">'orders'</span>, orders, Order)</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Create admin dashboard</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="at">@rt</span>(<span class="st">'/admin'</span>)</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> admin_dashboard(req, sess):</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Container(</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>        H1(<span class="st">"Admin Dashboard"</span>, cls<span class="op">=</span><span class="st">"text-3xl font-bold mb-6"</span>),</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>        Grid(</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>            Card(H3(<span class="st">"Products"</span>), A(<span class="st">"Manage →"</span>, href<span class="op">=</span><span class="st">"/admin/products/"</span>)),</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>            Card(H3(<span class="st">"Categories"</span>), A(<span class="st">"Manage →"</span>, href<span class="op">=</span><span class="st">"/admin/categories/"</span>)),</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>            Card(H3(<span class="st">"Orders"</span>), A(<span class="st">"Manage →"</span>, href<span class="op">=</span><span class="st">"/admin/orders/"</span>)),</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>            cols<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="tests" class="level2">
+<h2 class="anchored" data-anchor-id="tests">Tests</h2>
+<p>Let’s test all the admin functionality to ensure it works correctly:</p>
+<section id="test-setup" class="level3">
+<h3 class="anchored" data-anchor-id="test-setup">Test Setup</h3>
+<div id="cell-19" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create test database and models for testing</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tempfile <span class="im">import</span> NamedTemporaryFile</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a temporary database for testing</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>temp_db <span class="op">=</span> NamedTemporaryFile(delete<span class="op">=</span><span class="va">False</span>, suffix<span class="op">=</span><span class="st">'.db'</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>test_db_path <span class="op">=</span> temp_db.name</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>temp_db.close()</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize test database</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>test_db <span class="op">=</span> Database(test_db_path)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Define test models</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TestProduct:</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    name: <span class="bu">str</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    price: <span class="bu">float</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    description: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    is_active: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    created_at: datetime <span class="op">=</span> field(default_factory<span class="op">=</span>datetime.utcnow)</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>  </span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TestUser:</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    username: <span class="bu">str</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    email: <span class="bu">str</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    role: <span class="bu">str</span> <span class="op">=</span> <span class="st">"user"</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    is_active: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Create tables</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>test_products <span class="op">=</span> test_db.create(TestProduct, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>test_users <span class="op">=</span> test_db.create(TestUser, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Insert test data</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>test_products.insert(TestProduct(name<span class="op">=</span><span class="st">"Widget"</span>, price<span class="op">=</span><span class="fl">19.99</span>, description<span class="op">=</span><span class="st">"A useful widget"</span>))</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>test_products.insert(TestProduct(name<span class="op">=</span><span class="st">"Gadget"</span>, price<span class="op">=</span><span class="fl">29.99</span>, description<span class="op">=</span><span class="st">"An amazing gadget"</span>, is_active<span class="op">=</span><span class="va">False</span>))</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>test_products.insert(TestProduct(name<span class="op">=</span><span class="st">"Doohickey"</span>, price<span class="op">=</span><span class="fl">9.99</span>))</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>test_users.insert(TestUser(username<span class="op">=</span><span class="st">"alice"</span>, email<span class="op">=</span><span class="st">"alice@example.com"</span>, role<span class="op">=</span><span class="st">"admin"</span>))</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>test_users.insert(TestUser(username<span class="op">=</span><span class="st">"bob"</span>, email<span class="op">=</span><span class="st">"bob@example.com"</span>))</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Test database created with </span><span class="sc">{</span><span class="bu">len</span>(test_products())<span class="sc">}</span><span class="ss"> products and </span><span class="sc">{</span><span class="bu">len</span>(test_users())<span class="sc">}</span><span class="ss"> users"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Test database created with 3 products and 2 users</code></pre>
+</div>
+</div>
+</section>
+<section id="test-form-data-cleaning" class="level3">
+<h3 class="anchored" data-anchor-id="test-form-data-cleaning">Test Form Data Cleaning</h3>
+<div id="cell-21" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test clean_form_data function</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>test_form_data <span class="op">=</span> {</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'name'</span>: <span class="st">'Test Product'</span>,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'price'</span>: <span class="st">'49.99'</span>,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">'description'</span>: <span class="st">'A test product'</span>,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'is_active'</span>: <span class="st">'true'</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">'created_at'</span>: <span class="st">'2024-01-01T10:00'</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>cleaned <span class="op">=</span> clean_form_data(TestProduct, test_form_data)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Test type conversions</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> cleaned[<span class="st">'name'</span>] <span class="op">==</span> <span class="st">'Test Product'</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> cleaned[<span class="st">'price'</span>] <span class="op">==</span> <span class="fl">49.99</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(cleaned[<span class="st">'price'</span>], <span class="bu">float</span>)</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> cleaned[<span class="st">'is_active'</span>] <span class="op">==</span> <span class="va">True</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(cleaned[<span class="st">'is_active'</span>], <span class="bu">bool</span>)</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(cleaned[<span class="st">'created_at'</span>], datetime)</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Test empty values</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>test_form_data_empty <span class="op">=</span> {</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">'name'</span>: <span class="st">'Product'</span>,</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">'price'</span>: <span class="st">'10.0'</span>,</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">'description'</span>: <span class="st">''</span>,  <span class="co"># Empty string should become None or default</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">'is_active'</span>: <span class="st">''</span>    <span class="co"># Empty string for bool</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>cleaned_empty <span class="op">=</span> clean_form_data(TestProduct, test_form_data_empty)</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> cleaned_empty[<span class="st">'description'</span>] <span class="op">==</span> <span class="st">""</span>  <span class="co"># Default value</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'is_active'</span> <span class="kw">not</span> <span class="kw">in</span> cleaned_empty <span class="kw">or</span> cleaned_empty[<span class="st">'is_active'</span>] <span class="op">==</span> <span class="va">True</span>  <span class="co"># Default value</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Form data cleaning tests passed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Form data cleaning tests passed</code></pre>
+</div>
+</div>
+</section>
+<section id="test-field-input-generation" class="level3">
+<h3 class="anchored" data-anchor-id="test-field-input-generation">Test Field Input Generation</h3>
+<div id="cell-23" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test get_field_input for different field types</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Optional</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Test text input</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>text_input <span class="op">=</span> get_field_input(<span class="st">'name'</span>, <span class="bu">str</span>, <span class="st">'Test Name'</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(text_input, FT)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Test Name'</span> <span class="kw">in</span> <span class="bu">str</span>(text_input)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Test number input</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>number_input <span class="op">=</span> get_field_input(<span class="st">'price'</span>, <span class="bu">float</span>, <span class="fl">19.99</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(number_input, FT)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'19.99'</span> <span class="kw">in</span> <span class="bu">str</span>(number_input)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'type="number"'</span> <span class="kw">in</span> <span class="bu">str</span>(number_input)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Test boolean checkbox</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>bool_input <span class="op">=</span> get_field_input(<span class="st">'is_active'</span>, <span class="bu">bool</span>, <span class="va">True</span>)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(bool_input, FT)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'checkbox'</span> <span class="kw">in</span> <span class="bu">str</span>(bool_input)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'checked'</span> <span class="kw">in</span> <span class="bu">str</span>(bool_input)</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Test datetime input</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> datetime(<span class="dv">2024</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">30</span>)</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>datetime_input <span class="op">=</span> get_field_input(<span class="st">'created_at'</span>, datetime, dt)</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(datetime_input, FT)</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'datetime-local'</span> <span class="kw">in</span> <span class="bu">str</span>(datetime_input)</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'2024-01-01T10:30'</span> <span class="kw">in</span> <span class="bu">str</span>(datetime_input)</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Test textarea for description fields</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>textarea_input <span class="op">=</span> get_field_input(<span class="st">'description'</span>, <span class="bu">str</span>, <span class="st">'Long text'</span>)</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(textarea_input, FT)</span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'textarea'</span> <span class="kw">in</span> <span class="bu">str</span>(textarea_input).lower()</span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Long text'</span> <span class="kw">in</span> <span class="bu">str</span>(textarea_input)</span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Test Optional types</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>optional_input <span class="op">=</span> get_field_input(<span class="st">'optional_field'</span>, Optional[<span class="bu">str</span>], <span class="st">'Value'</span>)</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(optional_input, FT)</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Field input generation tests passed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Field input generation tests passed</code></pre>
+</div>
+</div>
+</section>
+<section id="test-admin-table-generation" class="level3">
+<h3 class="anchored" data-anchor-id="test-admin-table-generation">Test Admin Table Generation</h3>
+<div id="cell-25" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test admin_table function</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>products <span class="op">=</span> test_products()</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>table_html <span class="op">=</span> admin_table(products, <span class="st">'/admin/products'</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to string for testing</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>table_str <span class="op">=</span> <span class="bu">str</span>(table_html)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Check table structure</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'table'</span> <span class="kw">in</span> table_str.lower()</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'thead'</span> <span class="kw">in</span> table_str.lower()</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'tbody'</span> <span class="kw">in</span> table_str.lower()</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Check headers are present (excluding id)</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Name'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Price'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Description'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Is Active'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Actions'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Check data is present</span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Widget'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'19.99'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Gadget'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Check action buttons</span></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'/admin/products/1/edit'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'/admin/products/1/delete'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'hx-post'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'hx-confirm'</span> <span class="kw">in</span> table_str</span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Test empty table</span></span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>empty_table <span class="op">=</span> admin_table([], <span class="st">'/admin/products'</span>)</span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>empty_str <span class="op">=</span> <span class="bu">str</span>(empty_table)</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'No items found'</span> <span class="kw">in</span> empty_str</span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Admin table generation tests passed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Admin table generation tests passed</code></pre>
+</div>
+</div>
+</section>
+<section id="test-admin-form-generation" class="level3">
+<h3 class="anchored" data-anchor-id="test-admin-form-generation">Test Admin Form Generation</h3>
+<div id="cell-27" class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test admin_form for create (no data)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>create_form <span class="op">=</span> admin_form(TestProduct, <span class="va">None</span>, <span class="st">'/admin/products/new'</span>, <span class="st">'New Product'</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>create_str <span class="op">=</span> <span class="bu">str</span>(create_form)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Check form structure</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'form'</span> <span class="kw">in</span> create_str.lower()</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'method="post"'</span> <span class="kw">in</span> create_str</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'action="/admin/products/new"'</span> <span class="kw">in</span> create_str</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'New Product'</span> <span class="kw">in</span> create_str</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Check fields are present (excluding id)</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'name="name"'</span> <span class="kw">in</span> create_str</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'name="price"'</span> <span class="kw">in</span> create_str</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'name="description"'</span> <span class="kw">in</span> create_str</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'name="is_active"'</span> <span class="kw">in</span> create_str</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Check buttons</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Save'</span> <span class="kw">in</span> create_str</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Cancel'</span> <span class="kw">in</span> create_str</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Test admin_form for edit (with data)</span></span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>product_data <span class="op">=</span> {</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">'id'</span>: <span class="dv">1</span>,</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">'name'</span>: <span class="st">'Test Widget'</span>,</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">'price'</span>: <span class="fl">29.99</span>,</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">'description'</span>: <span class="st">'A test widget'</span>,</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>    <span class="st">'is_active'</span>: <span class="va">True</span>,</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">'created_at'</span>: datetime.now()</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>edit_form <span class="op">=</span> admin_form(TestProduct, product_data, <span class="st">'/admin/products/1/edit'</span>, <span class="st">'Edit Product'</span>)</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>edit_str <span class="op">=</span> <span class="bu">str</span>(edit_form)</span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Check pre-filled values</span></span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Test Widget'</span> <span class="kw">in</span> edit_str</span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'29.99'</span> <span class="kw">in</span> edit_str</span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'A test widget'</span> <span class="kw">in</span> edit_str</span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Edit Product'</span> <span class="kw">in</span> edit_str</span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Test form with error</span></span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>error_form <span class="op">=</span> admin_form(TestProduct, <span class="va">None</span>, <span class="st">'/admin/products/new'</span>, <span class="st">'New Product'</span>, </span>
+<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>                       error<span class="op">=</span><span class="st">'Name is required'</span>)</span>
+<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>error_str <span class="op">=</span> <span class="bu">str</span>(error_form)</span>
+<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Name is required'</span> <span class="kw">in</span> error_str</span>
+<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'alert'</span> <span class="kw">in</span> error_str.lower()</span>
+<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Admin form generation tests passed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Admin form generation tests passed</code></pre>
+</div>
+</div>
+</section>
+<section id="test-admin-list-view" class="level3">
+<h3 class="anchored" data-anchor-id="test-admin-list-view">Test Admin List View</h3>
+<div id="cell-29" class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test admin_list_view</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>products <span class="op">=</span> test_products()</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>list_view <span class="op">=</span> admin_list_view(<span class="st">'products'</span>, products, page<span class="op">=</span><span class="dv">1</span>, total_pages<span class="op">=</span><span class="dv">1</span>, </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                            search<span class="op">=</span><span class="st">''</span>, base_path<span class="op">=</span><span class="st">'/admin/products'</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>list_str <span class="op">=</span> <span class="bu">str</span>(list_view)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Check main components</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Products List'</span> <span class="kw">in</span> list_str</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'+ New Products'</span> <span class="kw">in</span> list_str</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'/admin/products/new'</span> <span class="kw">in</span> list_str</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Check search form</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'search'</span> <span class="kw">in</span> list_str.lower()</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'placeholder="Search..."'</span> <span class="kw">in</span> list_str</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Check table is included</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Widget'</span> <span class="kw">in</span> list_str</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Gadget'</span> <span class="kw">in</span> list_str</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Test with search</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>search_view <span class="op">=</span> admin_list_view(<span class="st">'products'</span>, products, page<span class="op">=</span><span class="dv">1</span>, total_pages<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>                             search<span class="op">=</span><span class="st">'widget'</span>, base_path<span class="op">=</span><span class="st">'/admin/products'</span>)</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>search_str <span class="op">=</span> <span class="bu">str</span>(search_view)</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'value="widget"'</span> <span class="kw">in</span> search_str</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Test with pagination</span></span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>paginated_view <span class="op">=</span> admin_list_view(<span class="st">'products'</span>, products, page<span class="op">=</span><span class="dv">2</span>, total_pages<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>                                search<span class="op">=</span><span class="st">''</span>, base_path<span class="op">=</span><span class="st">'/admin/products'</span>)</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>paginated_str <span class="op">=</span> <span class="bu">str</span>(paginated_view)</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'← Previous'</span> <span class="kw">in</span> paginated_str</span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Next →'</span> <span class="kw">in</span> paginated_str</span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'page=1'</span> <span class="kw">in</span> paginated_str</span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'page=3'</span> <span class="kw">in</span> paginated_str</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Admin list view tests passed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Admin list view tests passed</code></pre>
+</div>
+</div>
+</section>
+<section id="test-search-functionality" class="level3">
+<h3 class="anchored" data-anchor-id="test-search-functionality">Test Search Functionality</h3>
+<div id="cell-31" class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test _search_items helper</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Search for "widget" should find the Widget product (case-insensitive)</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>search_results <span class="op">=</span> _search_items(test_products, TestProduct, <span class="st">'widget'</span>, limit<span class="op">=</span><span class="dv">10</span>, offset<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(search_results) <span class="op">&gt;=</span> <span class="dv">1</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if Widget is in results (handle both dict and object)</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>found_widget <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> p <span class="kw">in</span> search_results:</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> p.name <span class="cf">if</span> <span class="bu">hasattr</span>(p, <span class="st">'name'</span>) <span class="cf">else</span> p.get(<span class="st">'name'</span>, <span class="st">''</span>)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">'widget'</span> <span class="kw">in</span> name.lower():</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>        found_widget <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> found_widget, <span class="st">"Should find Widget product"</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Search for "amazing" should find the Gadget (in description)</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>search_results <span class="op">=</span> _search_items(test_products, TestProduct, <span class="st">'amazing'</span>, limit<span class="op">=</span><span class="dv">10</span>, offset<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(search_results) <span class="op">&gt;=</span> <span class="dv">1</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Test pagination in search</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>search_results <span class="op">=</span> _search_items(test_products, TestProduct, <span class="st">''</span>, limit<span class="op">=</span><span class="dv">2</span>, offset<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(search_results) <span class="op">&lt;=</span> <span class="dv">2</span>  <span class="co"># Should get at most 2 items</span></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Test model with no string fields</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> NumericModel:</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>    count: <span class="bu">int</span></span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>    value: <span class="bu">float</span></span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>numeric_table <span class="op">=</span> test_db.create(NumericModel, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>numeric_table.insert(NumericModel(count<span class="op">=</span><span class="dv">1</span>, value<span class="op">=</span><span class="fl">1.5</span>))</span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Should return results even with no string fields</span></span>
+<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> _search_items(numeric_table, NumericModel, <span class="st">'test'</span>, limit<span class="op">=</span><span class="dv">10</span>, offset<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(results, <span class="bu">list</span>)  <span class="co"># Should not error and return a list</span></span>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Search functionality tests passed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Search functionality tests passed</code></pre>
+</div>
+</div>
+</section>
+<section id="test-pagination" class="level3">
+<h3 class="anchored" data-anchor-id="test-pagination">Test Pagination</h3>
+<div id="cell-33" class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test _pagination helper</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Test no pagination needed (1 page)</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>pagination <span class="op">=</span> _pagination(<span class="dv">1</span>, <span class="dv">1</span>, <span class="st">'/admin/products'</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">str</span>(pagination) <span class="op">==</span> <span class="st">'&lt;div&gt;&lt;/div&gt;'</span>  <span class="co"># Empty div when no pagination needed</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Test basic pagination</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>pagination <span class="op">=</span> _pagination(<span class="dv">2</span>, <span class="dv">5</span>, <span class="st">'/admin/products'</span>)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>pag_str <span class="op">=</span> <span class="bu">str</span>(pagination)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'← Previous'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Next →'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'page=1'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'page=3'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'&lt;span'</span> <span class="kw">in</span> pag_str  <span class="co"># Current page as span</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Test first page</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>pagination <span class="op">=</span> _pagination(<span class="dv">1</span>, <span class="dv">3</span>, <span class="st">'/admin/products'</span>)</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>pag_str <span class="op">=</span> <span class="bu">str</span>(pagination)</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'← Previous'</span> <span class="kw">not</span> <span class="kw">in</span> pag_str  <span class="co"># No previous on first page</span></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Next →'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'page=2'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Test last page</span></span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>pagination <span class="op">=</span> _pagination(<span class="dv">5</span>, <span class="dv">5</span>, <span class="st">'/admin/products'</span>)</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>pag_str <span class="op">=</span> <span class="bu">str</span>(pagination)</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'← Previous'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Next →'</span> <span class="kw">not</span> <span class="kw">in</span> pag_str  <span class="co"># No next on last page</span></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'page=4'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Test with search parameter</span></span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>pagination <span class="op">=</span> _pagination(<span class="dv">2</span>, <span class="dv">3</span>, <span class="st">'/admin/products'</span>, search<span class="op">=</span><span class="st">'widget'</span>)</span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>pag_str <span class="op">=</span> <span class="bu">str</span>(pagination)</span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'search=widget'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Check both parameters are present (order doesn't matter)</span></span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'page=1'</span> <span class="kw">in</span> pag_str <span class="kw">and</span> <span class="st">'search=widget'</span> <span class="kw">in</span> pag_str</span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Pagination tests passed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Pagination tests passed</code></pre>
+</div>
+</div>
+</section>
+<section id="test-route-setup-mock" class="level3">
+<h3 class="anchored" data-anchor-id="test-route-setup-mock">Test Route Setup (Mock)</h3>
+<div id="cell-35" class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test setup_admin_routes with a mock router</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MockRouter:</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Mock router to test route registration"""</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>):</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.routes <span class="op">=</span> {}</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__call__</span>(<span class="va">self</span>, path):</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> decorator(func):</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Store both GET and POST handlers</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> path <span class="kw">not</span> <span class="kw">in</span> <span class="va">self</span>.routes:</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.routes[path] <span class="op">=</span> {}</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Determine method based on function name</span></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="st">'handler'</span> <span class="kw">in</span> func.<span class="va">__name__</span>:</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.routes[path][<span class="st">'POST'</span>] <span class="op">=</span> func</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.routes[path][<span class="st">'GET'</span>] <span class="op">=</span> func</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> func</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> decorator</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Create mock router and setup routes</span></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>mock_rt <span class="op">=</span> MockRouter()</span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(mock_rt, <span class="st">'products'</span>, test_products, TestProduct)</span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Check all expected routes were created</span></span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>expected_routes <span class="op">=</span> [</span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/admin/products/'</span>,</span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/admin/products/new'</span>,</span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/admin/products/</span><span class="sc">{id}</span><span class="st">/edit'</span>,</span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/admin/products/</span><span class="sc">{id}</span><span class="st">/delete'</span></span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> route <span class="kw">in</span> expected_routes:</span>
+<span id="cb28-34"><a href="#cb28-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> route <span class="kw">in</span> mock_rt.routes, <span class="ss">f"Route </span><span class="sc">{</span>route<span class="sc">}</span><span class="ss"> not found"</span></span>
+<span id="cb28-35"><a href="#cb28-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-36"><a href="#cb28-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Check route has both GET and POST where appropriate</span></span>
+<span id="cb28-37"><a href="#cb28-37" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'GET'</span> <span class="kw">in</span> mock_rt.routes[<span class="st">'/admin/products/new'</span>]</span>
+<span id="cb28-38"><a href="#cb28-38" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'POST'</span> <span class="kw">in</span> mock_rt.routes[<span class="st">'/admin/products/new'</span>]</span>
+<span id="cb28-39"><a href="#cb28-39" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'GET'</span> <span class="kw">in</span> mock_rt.routes[<span class="st">'/admin/products/</span><span class="sc">{id}</span><span class="st">/edit'</span>]</span>
+<span id="cb28-40"><a href="#cb28-40" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'POST'</span> <span class="kw">in</span> mock_rt.routes[<span class="st">'/admin/products/</span><span class="sc">{id}</span><span class="st">/edit'</span>]</span>
+<span id="cb28-41"><a href="#cb28-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-42"><a href="#cb28-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Test custom path prefix</span></span>
+<span id="cb28-43"><a href="#cb28-43" aria-hidden="true" tabindex="-1"></a>mock_rt2 <span class="op">=</span> MockRouter()</span>
+<span id="cb28-44"><a href="#cb28-44" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(mock_rt2, <span class="st">'users'</span>, test_users, TestUser, path_prefix<span class="op">=</span><span class="st">'/backend'</span>)</span>
+<span id="cb28-45"><a href="#cb28-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-46"><a href="#cb28-46" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'/backend/users/'</span> <span class="kw">in</span> mock_rt2.routes</span>
+<span id="cb28-47"><a href="#cb28-47" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'/admin/users/'</span> <span class="kw">not</span> <span class="kw">in</span> mock_rt2.routes</span>
+<span id="cb28-48"><a href="#cb28-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-49"><a href="#cb28-49" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Route setup tests passed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Route setup tests passed</code></pre>
+</div>
+</div>
+</section>
+<section id="test-edge-cases" class="level3">
+<h3 class="anchored" data-anchor-id="test-edge-cases">Test Edge Cases</h3>
+<div id="cell-37" class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test edge cases</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Model with all optional fields</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> OptionalModel:</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    name: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    count: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    active: Optional[<span class="bu">bool</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Should handle optional fields gracefully</span></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>form <span class="op">=</span> admin_form(OptionalModel, <span class="va">None</span>, <span class="st">'/test'</span>, <span class="st">'Test'</span>)</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(form, FT)</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Model with complex types</span></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> List</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span> </span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ComplexModel:</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>    tags: List[<span class="bu">str</span>] <span class="op">=</span> field(default_factory<span class="op">=</span><span class="bu">list</span>)</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>    metadata: Dict[<span class="bu">str</span>, Any] <span class="op">=</span> field(default_factory<span class="op">=</span><span class="bu">dict</span>)</span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Should handle complex types (defaulting to text inputs)</span></span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>complex_form <span class="op">=</span> admin_form(ComplexModel, <span class="va">None</span>, <span class="st">'/test'</span>, <span class="st">'Test'</span>)</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(complex_form, FT)</span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Empty form data cleaning</span></span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>empty_data <span class="op">=</span> {}</span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>cleaned <span class="op">=</span> clean_form_data(TestProduct, empty_data)</span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Should handle empty data without errors</span></span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(cleaned, <span class="bu">dict</span>)</span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Special characters in data</span></span>
+<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a>special_data <span class="op">=</span> {</span>
+<span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">'name'</span>: <span class="st">'Product &amp; &lt;Special&gt;'</span>,</span>
+<span id="cb30-36"><a href="#cb30-36" aria-hidden="true" tabindex="-1"></a>    <span class="st">'price'</span>: <span class="st">'19.99'</span>,</span>
+<span id="cb30-37"><a href="#cb30-37" aria-hidden="true" tabindex="-1"></a>    <span class="st">'description'</span>: <span class="st">'Contains "quotes" and </span><span class="ch">\'</span><span class="st">apostrophes</span><span class="ch">\'</span><span class="st">'</span></span>
+<span id="cb30-38"><a href="#cb30-38" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb30-39"><a href="#cb30-39" aria-hidden="true" tabindex="-1"></a>cleaned <span class="op">=</span> clean_form_data(TestProduct, special_data)</span>
+<span id="cb30-40"><a href="#cb30-40" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> cleaned[<span class="st">'name'</span>] <span class="op">==</span> <span class="st">'Product &amp; &lt;Special&gt;'</span></span>
+<span id="cb30-41"><a href="#cb30-41" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> cleaned[<span class="st">'description'</span>] <span class="op">==</span> <span class="st">'Contains "quotes" and </span><span class="ch">\'</span><span class="st">apostrophes</span><span class="ch">\'</span><span class="st">'</span></span>
+<span id="cb30-42"><a href="#cb30-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-43"><a href="#cb30-43" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Very long field names</span></span>
+<span id="cb30-44"><a href="#cb30-44" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb30-45"><a href="#cb30-45" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LongFieldModel:</span>
+<span id="cb30-46"><a href="#cb30-46" aria-hidden="true" tabindex="-1"></a>    this_is_a_very_long_field_name_that_should_still_work: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb30-47"><a href="#cb30-47" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb30-48"><a href="#cb30-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-49"><a href="#cb30-49" aria-hidden="true" tabindex="-1"></a>input_elem <span class="op">=</span> get_field_input(<span class="st">'this_is_a_very_long_field_name_that_should_still_work'</span>, <span class="bu">str</span>, <span class="st">'test'</span>)</span>
+<span id="cb30-50"><a href="#cb30-50" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(input_elem, FT)</span>
+<span id="cb30-51"><a href="#cb30-51" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'This Is A Very Long Field Name That Should Still Work'</span> <span class="kw">in</span> <span class="bu">str</span>(input_elem)</span>
+<span id="cb30-52"><a href="#cb30-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-53"><a href="#cb30-53" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Edge case tests passed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Edge case tests passed</code></pre>
+</div>
+</div>
+</section>
+<section id="cleanup" class="level3">
+<h3 class="anchored" data-anchor-id="cleanup">Cleanup</h3>
+</section>
+<section id="integration-test-example" class="level3">
+<h3 class="anchored" data-anchor-id="integration-test-example">Integration Test Example</h3>
+<div id="cell-40" class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Full integration test showing how all components work together</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Optional</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a complete model</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Article:</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    title: <span class="bu">str</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    content: <span class="bu">str</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    author: <span class="bu">str</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    published: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    views: <span class="bu">int</span> <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    published_at: Optional[datetime] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Create test database</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>integration_db <span class="op">=</span> Database(<span class="st">':memory:'</span>)</span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>articles <span class="op">=</span> integration_db.create(Article, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Insert test data</span></span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>articles.insert(Article(</span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Getting Started with FastHTML"</span>,</span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>    content<span class="op">=</span><span class="st">"FastHTML is a modern web framework..."</span>,</span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>    author<span class="op">=</span><span class="st">"John Doe"</span>,</span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>    published<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>    views<span class="op">=</span><span class="dv">150</span>,</span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>    published_at<span class="op">=</span>datetime.now()</span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a>articles.insert(Article(</span>
+<span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Building Admin Panels"</span>,</span>
+<span id="cb32-32"><a href="#cb32-32" aria-hidden="true" tabindex="-1"></a>    content<span class="op">=</span><span class="st">"Admin panels are essential for managing content..."</span>,</span>
+<span id="cb32-33"><a href="#cb32-33" aria-hidden="true" tabindex="-1"></a>    author<span class="op">=</span><span class="st">"Jane Smith"</span>,</span>
+<span id="cb32-34"><a href="#cb32-34" aria-hidden="true" tabindex="-1"></a>    published<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb32-35"><a href="#cb32-35" aria-hidden="true" tabindex="-1"></a>    views<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb32-36"><a href="#cb32-36" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb32-37"><a href="#cb32-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-38"><a href="#cb32-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Test all components work together</span></span>
+<span id="cb32-39"><a href="#cb32-39" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. List view</span></span>
+<span id="cb32-40"><a href="#cb32-40" aria-hidden="true" tabindex="-1"></a>list_html <span class="op">=</span> admin_list_view(<span class="st">'articles'</span>, articles(), <span class="dv">1</span>, <span class="dv">1</span>, <span class="st">''</span>, <span class="st">'/admin/articles'</span>)</span>
+<span id="cb32-41"><a href="#cb32-41" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Getting Started with FastHTML'</span> <span class="kw">in</span> <span class="bu">str</span>(list_html)</span>
+<span id="cb32-42"><a href="#cb32-42" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'150'</span> <span class="kw">in</span> <span class="bu">str</span>(list_html)  <span class="co"># views</span></span>
+<span id="cb32-43"><a href="#cb32-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-44"><a href="#cb32-44" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Create form</span></span>
+<span id="cb32-45"><a href="#cb32-45" aria-hidden="true" tabindex="-1"></a>create_form_html <span class="op">=</span> admin_form(Article, <span class="va">None</span>, <span class="st">'/admin/articles/new'</span>, <span class="st">'New Article'</span>)</span>
+<span id="cb32-46"><a href="#cb32-46" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'name="title"'</span> <span class="kw">in</span> <span class="bu">str</span>(create_form_html)</span>
+<span id="cb32-47"><a href="#cb32-47" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'name="content"'</span> <span class="kw">in</span> <span class="bu">str</span>(create_form_html)</span>
+<span id="cb32-48"><a href="#cb32-48" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'name="published"'</span> <span class="kw">in</span> <span class="bu">str</span>(create_form_html)</span>
+<span id="cb32-49"><a href="#cb32-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-50"><a href="#cb32-50" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Edit form with data</span></span>
+<span id="cb32-51"><a href="#cb32-51" aria-hidden="true" tabindex="-1"></a>article <span class="op">=</span> articles[<span class="dv">1</span>]</span>
+<span id="cb32-52"><a href="#cb32-52" aria-hidden="true" tabindex="-1"></a>article_dict <span class="op">=</span> <span class="bu">vars</span>(article) <span class="cf">if</span> <span class="bu">hasattr</span>(article, <span class="st">'__dict__'</span>) <span class="cf">else</span> article</span>
+<span id="cb32-53"><a href="#cb32-53" aria-hidden="true" tabindex="-1"></a>edit_form_html <span class="op">=</span> admin_form(Article, article_dict, <span class="ss">f'/admin/articles/1/edit'</span>, <span class="st">'Edit Article'</span>)</span>
+<span id="cb32-54"><a href="#cb32-54" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'Getting Started with FastHTML'</span> <span class="kw">in</span> <span class="bu">str</span>(edit_form_html)</span>
+<span id="cb32-55"><a href="#cb32-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-56"><a href="#cb32-56" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Test form data processing</span></span>
+<span id="cb32-57"><a href="#cb32-57" aria-hidden="true" tabindex="-1"></a>form_data <span class="op">=</span> {</span>
+<span id="cb32-58"><a href="#cb32-58" aria-hidden="true" tabindex="-1"></a>    <span class="st">'title'</span>: <span class="st">'New Article'</span>,</span>
+<span id="cb32-59"><a href="#cb32-59" aria-hidden="true" tabindex="-1"></a>    <span class="st">'content'</span>: <span class="st">'Content here'</span>,</span>
+<span id="cb32-60"><a href="#cb32-60" aria-hidden="true" tabindex="-1"></a>    <span class="st">'author'</span>: <span class="st">'Test Author'</span>,</span>
+<span id="cb32-61"><a href="#cb32-61" aria-hidden="true" tabindex="-1"></a>    <span class="st">'published'</span>: <span class="st">'true'</span>,</span>
+<span id="cb32-62"><a href="#cb32-62" aria-hidden="true" tabindex="-1"></a>    <span class="st">'views'</span>: <span class="st">'100'</span>,</span>
+<span id="cb32-63"><a href="#cb32-63" aria-hidden="true" tabindex="-1"></a>    <span class="st">'published_at'</span>: <span class="st">'2024-01-01T10:00'</span></span>
+<span id="cb32-64"><a href="#cb32-64" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb32-65"><a href="#cb32-65" aria-hidden="true" tabindex="-1"></a>cleaned <span class="op">=</span> clean_form_data(Article, form_data)</span>
+<span id="cb32-66"><a href="#cb32-66" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> cleaned[<span class="st">'title'</span>] <span class="op">==</span> <span class="st">'New Article'</span></span>
+<span id="cb32-67"><a href="#cb32-67" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> cleaned[<span class="st">'published'</span>] <span class="op">==</span> <span class="va">True</span></span>
+<span id="cb32-68"><a href="#cb32-68" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> cleaned[<span class="st">'views'</span>] <span class="op">==</span> <span class="dv">100</span></span>
+<span id="cb32-69"><a href="#cb32-69" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(cleaned[<span class="st">'published_at'</span>], datetime)</span>
+<span id="cb32-70"><a href="#cb32-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-71"><a href="#cb32-71" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Integration test passed - all components work together!"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Integration test passed - all components work together!</code></pre>
+</div>
+</div>
+<div id="cell-41" class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean up test database</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>os.unlink(test_db_path)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Test database cleaned up"</span>)</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">🎉 All admin tests passed successfully!"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✓ Test database cleaned up
+
+🎉 All admin tests passed successfully!</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="interactive-demo" class="level2">
+<h2 class="anchored" data-anchor-id="interactive-demo">Interactive Demo</h2>
+<p>Let’s create a complete demo app showing all admin features in action:</p>
+<div id="cell-43" class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Complete demo app showing all admin features</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fasthtml.common <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fasthtml.jupyter <span class="im">import</span> JupyUvi</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ship_kit.auth <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ship_kit.permissions <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ship_kit.admin <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass, field</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime, date</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Optional</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure auth beforeware</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>beforeware <span class="op">=</span> Beforeware(</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    user_auth_before,</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    skip<span class="op">=</span>[<span class="st">'/login'</span>, <span class="st">'/'</span>, <span class="st">'/public'</span>]</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>app, rt <span class="op">=</span> fast_app(before<span class="op">=</span>beforeware)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize database</span></span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>demo_db <span class="op">=</span> Database(<span class="st">':memory:'</span>)</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Create auth tables directly (since init_auth_tables expects a path, not a Database object)</span></span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>users_table <span class="op">=</span> demo_db.create(User, pk<span class="op">=</span><span class="st">'id'</span>, name<span class="op">=</span><span class="st">'user'</span>)</span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>logins_table <span class="op">=</span> demo_db.create(UserLogin, pk<span class="op">=</span><span class="st">'id'</span>, name<span class="op">=</span><span class="st">'user_logins'</span>)</span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Define models for different data types</span></span>
+<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Product:</span>
+<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>    name: <span class="bu">str</span></span>
+<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a>    price: <span class="bu">float</span></span>
+<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a>    category: <span class="bu">str</span></span>
+<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>    description: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a>    in_stock: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>    created_at: datetime <span class="op">=</span> field(default_factory<span class="op">=</span>datetime.utcnow)</span>
+<span id="cb36-35"><a href="#cb36-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb36-36"><a href="#cb36-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-37"><a href="#cb36-37" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb36-38"><a href="#cb36-38" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> BlogPost:</span>
+<span id="cb36-39"><a href="#cb36-39" aria-hidden="true" tabindex="-1"></a>    title: <span class="bu">str</span></span>
+<span id="cb36-40"><a href="#cb36-40" aria-hidden="true" tabindex="-1"></a>    content: <span class="bu">str</span></span>
+<span id="cb36-41"><a href="#cb36-41" aria-hidden="true" tabindex="-1"></a>    author: <span class="bu">str</span></span>
+<span id="cb36-42"><a href="#cb36-42" aria-hidden="true" tabindex="-1"></a>    published: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb36-43"><a href="#cb36-43" aria-hidden="true" tabindex="-1"></a>    publish_date: Optional[date] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb36-44"><a href="#cb36-44" aria-hidden="true" tabindex="-1"></a>    views: <span class="bu">int</span> <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb36-45"><a href="#cb36-45" aria-hidden="true" tabindex="-1"></a>    tags: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span>  <span class="co"># Comma-separated</span></span>
+<span id="cb36-46"><a href="#cb36-46" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb36-47"><a href="#cb36-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-48"><a href="#cb36-48" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb36-49"><a href="#cb36-49" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Customer:</span>
+<span id="cb36-50"><a href="#cb36-50" aria-hidden="true" tabindex="-1"></a>    name: <span class="bu">str</span></span>
+<span id="cb36-51"><a href="#cb36-51" aria-hidden="true" tabindex="-1"></a>    email: <span class="bu">str</span></span>
+<span id="cb36-52"><a href="#cb36-52" aria-hidden="true" tabindex="-1"></a>    phone: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb36-53"><a href="#cb36-53" aria-hidden="true" tabindex="-1"></a>    notes: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb36-54"><a href="#cb36-54" aria-hidden="true" tabindex="-1"></a>    is_vip: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb36-55"><a href="#cb36-55" aria-hidden="true" tabindex="-1"></a>    joined: date <span class="op">=</span> field(default_factory<span class="op">=</span><span class="kw">lambda</span>: date.today())</span>
+<span id="cb36-56"><a href="#cb36-56" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb36-57"><a href="#cb36-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-58"><a href="#cb36-58" aria-hidden="true" tabindex="-1"></a><span class="co"># Create tables</span></span>
+<span id="cb36-59"><a href="#cb36-59" aria-hidden="true" tabindex="-1"></a>products <span class="op">=</span> demo_db.create(Product, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb36-60"><a href="#cb36-60" aria-hidden="true" tabindex="-1"></a>blog_posts <span class="op">=</span> demo_db.create(BlogPost, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb36-61"><a href="#cb36-61" aria-hidden="true" tabindex="-1"></a>customers <span class="op">=</span> demo_db.create(Customer, pk<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb36-62"><a href="#cb36-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-63"><a href="#cb36-63" aria-hidden="true" tabindex="-1"></a><span class="co"># Insert sample data</span></span>
+<span id="cb36-64"><a href="#cb36-64" aria-hidden="true" tabindex="-1"></a><span class="co"># Products</span></span>
+<span id="cb36-65"><a href="#cb36-65" aria-hidden="true" tabindex="-1"></a>products.insert(Product(<span class="st">"Laptop Pro"</span>, <span class="fl">1299.99</span>, <span class="st">"Electronics"</span>, <span class="st">"High-performance laptop with 16GB RAM"</span>))</span>
+<span id="cb36-66"><a href="#cb36-66" aria-hidden="true" tabindex="-1"></a>products.insert(Product(<span class="st">"Wireless Mouse"</span>, <span class="fl">29.99</span>, <span class="st">"Accessories"</span>, <span class="st">"Ergonomic wireless mouse"</span>, <span class="va">True</span>))</span>
+<span id="cb36-67"><a href="#cb36-67" aria-hidden="true" tabindex="-1"></a>products.insert(Product(<span class="st">"USB-C Hub"</span>, <span class="fl">49.99</span>, <span class="st">"Accessories"</span>, <span class="st">"7-in-1 USB-C hub"</span>, <span class="va">False</span>))</span>
+<span id="cb36-68"><a href="#cb36-68" aria-hidden="true" tabindex="-1"></a>products.insert(Product(<span class="st">"Monitor 4K"</span>, <span class="fl">599.99</span>, <span class="st">"Electronics"</span>, <span class="st">"27-inch 4K display"</span>))</span>
+<span id="cb36-69"><a href="#cb36-69" aria-hidden="true" tabindex="-1"></a>products.insert(Product(<span class="st">"Keyboard Mechanical"</span>, <span class="fl">129.99</span>, <span class="st">"Accessories"</span>, <span class="st">"RGB mechanical keyboard"</span>))</span>
+<span id="cb36-70"><a href="#cb36-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-71"><a href="#cb36-71" aria-hidden="true" tabindex="-1"></a><span class="co"># Blog posts</span></span>
+<span id="cb36-72"><a href="#cb36-72" aria-hidden="true" tabindex="-1"></a>blog_posts.insert(BlogPost(</span>
+<span id="cb36-73"><a href="#cb36-73" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Getting Started with FastHTML"</span>,</span>
+<span id="cb36-74"><a href="#cb36-74" aria-hidden="true" tabindex="-1"></a>    <span class="st">"FastHTML is a modern Python web framework that makes building web apps simple and fun..."</span>,</span>
+<span id="cb36-75"><a href="#cb36-75" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Jane Doe"</span>,</span>
+<span id="cb36-76"><a href="#cb36-76" aria-hidden="true" tabindex="-1"></a>    <span class="va">True</span>,</span>
+<span id="cb36-77"><a href="#cb36-77" aria-hidden="true" tabindex="-1"></a>    date(<span class="dv">2024</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb36-78"><a href="#cb36-78" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1523</span>,</span>
+<span id="cb36-79"><a href="#cb36-79" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tutorial,fasthtml,python"</span></span>
+<span id="cb36-80"><a href="#cb36-80" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb36-81"><a href="#cb36-81" aria-hidden="true" tabindex="-1"></a>blog_posts.insert(BlogPost(</span>
+<span id="cb36-82"><a href="#cb36-82" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Building Admin Panels the Simple Way"</span>,</span>
+<span id="cb36-83"><a href="#cb36-83" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Learn how to create admin panels using simple, composable functions..."</span>,</span>
+<span id="cb36-84"><a href="#cb36-84" aria-hidden="true" tabindex="-1"></a>    <span class="st">"John Smith"</span>,</span>
+<span id="cb36-85"><a href="#cb36-85" aria-hidden="true" tabindex="-1"></a>    <span class="va">True</span>,</span>
+<span id="cb36-86"><a href="#cb36-86" aria-hidden="true" tabindex="-1"></a>    date(<span class="dv">2024</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb36-87"><a href="#cb36-87" aria-hidden="true" tabindex="-1"></a>    <span class="dv">892</span>,</span>
+<span id="cb36-88"><a href="#cb36-88" aria-hidden="true" tabindex="-1"></a>    <span class="st">"admin,tutorial,ship-kit"</span></span>
+<span id="cb36-89"><a href="#cb36-89" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb36-90"><a href="#cb36-90" aria-hidden="true" tabindex="-1"></a>blog_posts.insert(BlogPost(</span>
+<span id="cb36-91"><a href="#cb36-91" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Draft: Advanced Patterns"</span>,</span>
+<span id="cb36-92"><a href="#cb36-92" aria-hidden="true" tabindex="-1"></a>    <span class="st">"This post covers advanced patterns in FastHTML..."</span>,</span>
+<span id="cb36-93"><a href="#cb36-93" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Jane Doe"</span>,</span>
+<span id="cb36-94"><a href="#cb36-94" aria-hidden="true" tabindex="-1"></a>    <span class="va">False</span>,</span>
+<span id="cb36-95"><a href="#cb36-95" aria-hidden="true" tabindex="-1"></a>    <span class="va">None</span>,</span>
+<span id="cb36-96"><a href="#cb36-96" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>,</span>
+<span id="cb36-97"><a href="#cb36-97" aria-hidden="true" tabindex="-1"></a>    <span class="st">"advanced,patterns"</span></span>
+<span id="cb36-98"><a href="#cb36-98" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb36-99"><a href="#cb36-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-100"><a href="#cb36-100" aria-hidden="true" tabindex="-1"></a><span class="co"># Customers</span></span>
+<span id="cb36-101"><a href="#cb36-101" aria-hidden="true" tabindex="-1"></a>customers.insert(Customer(<span class="st">"Alice Johnson"</span>, <span class="st">"alice@example.com"</span>, <span class="st">"555-0101"</span>, <span class="st">"Prefers email contact"</span>, <span class="va">True</span>))</span>
+<span id="cb36-102"><a href="#cb36-102" aria-hidden="true" tabindex="-1"></a>customers.insert(Customer(<span class="st">"Bob Smith"</span>, <span class="st">"bob@example.com"</span>, <span class="st">"555-0102"</span>))</span>
+<span id="cb36-103"><a href="#cb36-103" aria-hidden="true" tabindex="-1"></a>customers.insert(Customer(<span class="st">"Carol White"</span>, <span class="st">"carol@example.com"</span>, <span class="st">""</span>, <span class="st">"New customer, follow up next week"</span>))</span>
+<span id="cb36-104"><a href="#cb36-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-105"><a href="#cb36-105" aria-hidden="true" tabindex="-1"></a><span class="co"># Create demo users</span></span>
+<span id="cb36-106"><a href="#cb36-106" aria-hidden="true" tabindex="-1"></a>create_user(demo_db, <span class="st">"admin@demo.com"</span>, <span class="st">"admin"</span>, <span class="st">"admin"</span>, role<span class="op">=</span><span class="st">"admin"</span>)</span>
+<span id="cb36-107"><a href="#cb36-107" aria-hidden="true" tabindex="-1"></a>create_user(demo_db, <span class="st">"user@demo.com"</span>, <span class="st">"user"</span>, <span class="st">"user"</span>, role<span class="op">=</span><span class="st">"user"</span>)</span>
+<span id="cb36-108"><a href="#cb36-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-109"><a href="#cb36-109" aria-hidden="true" tabindex="-1"></a><span class="co"># Public home page</span></span>
+<span id="cb36-110"><a href="#cb36-110" aria-hidden="true" tabindex="-1"></a><span class="at">@rt</span>(<span class="st">'/'</span>)</span>
+<span id="cb36-111"><a href="#cb36-111" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get():</span>
+<span id="cb36-112"><a href="#cb36-112" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Container(</span>
+<span id="cb36-113"><a href="#cb36-113" aria-hidden="true" tabindex="-1"></a>        Card(</span>
+<span id="cb36-114"><a href="#cb36-114" aria-hidden="true" tabindex="-1"></a>            H1(<span class="st">"Admin Panel Demo"</span>, cls<span class="op">=</span><span class="st">"text-4xl font-bold mb-4"</span>),</span>
+<span id="cb36-115"><a href="#cb36-115" aria-hidden="true" tabindex="-1"></a>            P(<span class="st">"This demo showcases all admin panel features:"</span>, cls<span class="op">=</span><span class="st">"text-lg mb-4"</span>),</span>
+<span id="cb36-116"><a href="#cb36-116" aria-hidden="true" tabindex="-1"></a>            Ul(</span>
+<span id="cb36-117"><a href="#cb36-117" aria-hidden="true" tabindex="-1"></a>                Li(<span class="st">"✅ CRUD operations for multiple models"</span>),</span>
+<span id="cb36-118"><a href="#cb36-118" aria-hidden="true" tabindex="-1"></a>                Li(<span class="st">"✅ Different field types (text, number, boolean, date/time)"</span>),</span>
+<span id="cb36-119"><a href="#cb36-119" aria-hidden="true" tabindex="-1"></a>                Li(<span class="st">"✅ Search and pagination"</span>),</span>
+<span id="cb36-120"><a href="#cb36-120" aria-hidden="true" tabindex="-1"></a>                Li(<span class="st">"✅ Role-based access control"</span>),</span>
+<span id="cb36-121"><a href="#cb36-121" aria-hidden="true" tabindex="-1"></a>                Li(<span class="st">"✅ Responsive MonsterUI components"</span>),</span>
+<span id="cb36-122"><a href="#cb36-122" aria-hidden="true" tabindex="-1"></a>                cls<span class="op">=</span><span class="st">"space-y-2 mb-6"</span></span>
+<span id="cb36-123"><a href="#cb36-123" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb36-124"><a href="#cb36-124" aria-hidden="true" tabindex="-1"></a>            Div(</span>
+<span id="cb36-125"><a href="#cb36-125" aria-hidden="true" tabindex="-1"></a>                H3(<span class="st">"Demo Accounts:"</span>, cls<span class="op">=</span><span class="st">"text-xl font-semibold mb-2"</span>),</span>
+<span id="cb36-126"><a href="#cb36-126" aria-hidden="true" tabindex="-1"></a>                Ul(</span>
+<span id="cb36-127"><a href="#cb36-127" aria-hidden="true" tabindex="-1"></a>                    Li(Code(<span class="st">"admin@demo.com"</span>), <span class="st">" - Password: "</span>, Code(<span class="st">"admin"</span>), <span class="st">" (full access)"</span>),</span>
+<span id="cb36-128"><a href="#cb36-128" aria-hidden="true" tabindex="-1"></a>                    Li(Code(<span class="st">"user@demo.com"</span>), <span class="st">" - Password: "</span>, Code(<span class="st">"user"</span>), <span class="st">" (limited access)"</span>),</span>
+<span id="cb36-129"><a href="#cb36-129" aria-hidden="true" tabindex="-1"></a>                    cls<span class="op">=</span><span class="st">"space-y-1"</span></span>
+<span id="cb36-130"><a href="#cb36-130" aria-hidden="true" tabindex="-1"></a>                ),</span>
+<span id="cb36-131"><a href="#cb36-131" aria-hidden="true" tabindex="-1"></a>                cls<span class="op">=</span><span class="st">"bg-muted p-4 rounded-lg mb-6"</span></span>
+<span id="cb36-132"><a href="#cb36-132" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb36-133"><a href="#cb36-133" aria-hidden="true" tabindex="-1"></a>            A(<span class="st">"Login to Admin Panel"</span>, href<span class="op">=</span><span class="st">"/login"</span>, cls<span class="op">=</span><span class="st">"btn btn-primary btn-lg"</span>)</span>
+<span id="cb36-134"><a href="#cb36-134" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb36-135"><a href="#cb36-135" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb36-136"><a href="#cb36-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-137"><a href="#cb36-137" aria-hidden="true" tabindex="-1"></a><span class="co"># Login page</span></span>
+<span id="cb36-138"><a href="#cb36-138" aria-hidden="true" tabindex="-1"></a><span class="at">@rt</span>(<span class="st">'/login'</span>)</span>
+<span id="cb36-139"><a href="#cb36-139" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get():</span>
+<span id="cb36-140"><a href="#cb36-140" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Container(</span>
+<span id="cb36-141"><a href="#cb36-141" aria-hidden="true" tabindex="-1"></a>        Card(</span>
+<span id="cb36-142"><a href="#cb36-142" aria-hidden="true" tabindex="-1"></a>            H2(<span class="st">"Login to Admin Panel"</span>, cls<span class="op">=</span><span class="st">"text-2xl font-bold mb-4"</span>),</span>
+<span id="cb36-143"><a href="#cb36-143" aria-hidden="true" tabindex="-1"></a>            Form(</span>
+<span id="cb36-144"><a href="#cb36-144" aria-hidden="true" tabindex="-1"></a>                LabelInput(<span class="st">"Email"</span>, name<span class="op">=</span><span class="st">"email"</span>, <span class="bu">type</span><span class="op">=</span><span class="st">"email"</span>, </span>
+<span id="cb36-145"><a href="#cb36-145" aria-hidden="true" tabindex="-1"></a>                          value<span class="op">=</span><span class="st">"admin@demo.com"</span>, required<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb36-146"><a href="#cb36-146" aria-hidden="true" tabindex="-1"></a>                LabelInput(<span class="st">"Password"</span>, name<span class="op">=</span><span class="st">"password"</span>, <span class="bu">type</span><span class="op">=</span><span class="st">"password"</span>, </span>
+<span id="cb36-147"><a href="#cb36-147" aria-hidden="true" tabindex="-1"></a>                          value<span class="op">=</span><span class="st">"admin"</span>, required<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb36-148"><a href="#cb36-148" aria-hidden="true" tabindex="-1"></a>                Button(<span class="st">"Login"</span>, <span class="bu">type</span><span class="op">=</span><span class="st">"submit"</span>, cls<span class="op">=</span><span class="st">"btn btn-primary w-full mt-4"</span>),</span>
+<span id="cb36-149"><a href="#cb36-149" aria-hidden="true" tabindex="-1"></a>                method<span class="op">=</span><span class="st">"post"</span>,</span>
+<span id="cb36-150"><a href="#cb36-150" aria-hidden="true" tabindex="-1"></a>                cls<span class="op">=</span><span class="st">"space-y-4"</span></span>
+<span id="cb36-151"><a href="#cb36-151" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb36-152"><a href="#cb36-152" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">"max-w-md mx-auto"</span></span>
+<span id="cb36-153"><a href="#cb36-153" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb36-154"><a href="#cb36-154" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb36-155"><a href="#cb36-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-156"><a href="#cb36-156" aria-hidden="true" tabindex="-1"></a><span class="at">@rt</span>(<span class="st">'/login'</span>, methods<span class="op">=</span>[<span class="st">'POST'</span>])</span>
+<span id="cb36-157"><a href="#cb36-157" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> post(req, sess):</span>
+<span id="cb36-158"><a href="#cb36-158" aria-hidden="true" tabindex="-1"></a>    form_data <span class="op">=</span> <span class="cf">await</span> req.form()</span>
+<span id="cb36-159"><a href="#cb36-159" aria-hidden="true" tabindex="-1"></a>    email <span class="op">=</span> form_data.get(<span class="st">'email'</span>)</span>
+<span id="cb36-160"><a href="#cb36-160" aria-hidden="true" tabindex="-1"></a>    password <span class="op">=</span> form_data.get(<span class="st">'password'</span>)</span>
+<span id="cb36-161"><a href="#cb36-161" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-162"><a href="#cb36-162" aria-hidden="true" tabindex="-1"></a>    user <span class="op">=</span> authenticate_user(demo_db, email, password)</span>
+<span id="cb36-163"><a href="#cb36-163" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> user:</span>
+<span id="cb36-164"><a href="#cb36-164" aria-hidden="true" tabindex="-1"></a>        sess[<span class="st">'auth'</span>] <span class="op">=</span> create_auth_token(user[<span class="st">'id'</span>])</span>
+<span id="cb36-165"><a href="#cb36-165" aria-hidden="true" tabindex="-1"></a>        sess[<span class="st">'user'</span>] <span class="op">=</span> user</span>
+<span id="cb36-166"><a href="#cb36-166" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> RedirectResponse(<span class="st">'/admin'</span>, status_code<span class="op">=</span><span class="dv">303</span>)</span>
+<span id="cb36-167"><a href="#cb36-167" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-168"><a href="#cb36-168" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Container(</span>
+<span id="cb36-169"><a href="#cb36-169" aria-hidden="true" tabindex="-1"></a>        Alert(<span class="st">"Invalid email or password"</span>, variant<span class="op">=</span><span class="st">"destructive"</span>),</span>
+<span id="cb36-170"><a href="#cb36-170" aria-hidden="true" tabindex="-1"></a>        A(<span class="st">"Try again"</span>, href<span class="op">=</span><span class="st">"/login"</span>, cls<span class="op">=</span><span class="st">"btn btn-outline mt-4"</span>)</span>
+<span id="cb36-171"><a href="#cb36-171" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb36-172"><a href="#cb36-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-173"><a href="#cb36-173" aria-hidden="true" tabindex="-1"></a><span class="co"># Admin dashboard</span></span>
+<span id="cb36-174"><a href="#cb36-174" aria-hidden="true" tabindex="-1"></a><span class="at">@rt</span>(<span class="st">'/admin'</span>)</span>
+<span id="cb36-175"><a href="#cb36-175" aria-hidden="true" tabindex="-1"></a><span class="at">@auth_required</span></span>
+<span id="cb36-176"><a href="#cb36-176" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get(req, sess):</span>
+<span id="cb36-177"><a href="#cb36-177" aria-hidden="true" tabindex="-1"></a>    user <span class="op">=</span> get_user_from_session(sess)</span>
+<span id="cb36-178"><a href="#cb36-178" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-179"><a href="#cb36-179" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Container(</span>
+<span id="cb36-180"><a href="#cb36-180" aria-hidden="true" tabindex="-1"></a>        H1(<span class="st">"Admin Dashboard"</span>, cls<span class="op">=</span><span class="st">"text-3xl font-bold mb-6"</span>),</span>
+<span id="cb36-181"><a href="#cb36-181" aria-hidden="true" tabindex="-1"></a>        P(<span class="ss">f"Welcome, </span><span class="sc">{</span>user[<span class="st">'username'</span>]<span class="sc">}</span><span class="ss">! (Role: </span><span class="sc">{</span>user[<span class="st">'role'</span>]<span class="sc">}</span><span class="ss">)"</span>, cls<span class="op">=</span><span class="st">"text-lg mb-6"</span>),</span>
+<span id="cb36-182"><a href="#cb36-182" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb36-183"><a href="#cb36-183" aria-hidden="true" tabindex="-1"></a>        Grid(</span>
+<span id="cb36-184"><a href="#cb36-184" aria-hidden="true" tabindex="-1"></a>            Card(</span>
+<span id="cb36-185"><a href="#cb36-185" aria-hidden="true" tabindex="-1"></a>                H3(<span class="st">"Products"</span>, cls<span class="op">=</span><span class="st">"text-xl font-semibold mb-2"</span>),</span>
+<span id="cb36-186"><a href="#cb36-186" aria-hidden="true" tabindex="-1"></a>                P(<span class="ss">f"</span><span class="sc">{</span><span class="bu">len</span>(products())<span class="sc">}</span><span class="ss"> products in catalog"</span>, cls<span class="op">=</span><span class="st">"text-muted mb-4"</span>),</span>
+<span id="cb36-187"><a href="#cb36-187" aria-hidden="true" tabindex="-1"></a>                A(<span class="st">"Manage Products →"</span>, href<span class="op">=</span><span class="st">"/admin/products/"</span>, cls<span class="op">=</span><span class="st">"btn btn-primary w-full"</span>)</span>
+<span id="cb36-188"><a href="#cb36-188" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb36-189"><a href="#cb36-189" aria-hidden="true" tabindex="-1"></a>            Card(</span>
+<span id="cb36-190"><a href="#cb36-190" aria-hidden="true" tabindex="-1"></a>                H3(<span class="st">"Blog Posts"</span>, cls<span class="op">=</span><span class="st">"text-xl font-semibold mb-2"</span>),</span>
+<span id="cb36-191"><a href="#cb36-191" aria-hidden="true" tabindex="-1"></a>                P(<span class="ss">f"</span><span class="sc">{</span><span class="bu">len</span>(blog_posts())<span class="sc">}</span><span class="ss"> posts total"</span>, cls<span class="op">=</span><span class="st">"text-muted mb-4"</span>),</span>
+<span id="cb36-192"><a href="#cb36-192" aria-hidden="true" tabindex="-1"></a>                A(<span class="st">"Manage Posts →"</span>, href<span class="op">=</span><span class="st">"/admin/posts/"</span>, cls<span class="op">=</span><span class="st">"btn btn-primary w-full"</span>)</span>
+<span id="cb36-193"><a href="#cb36-193" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb36-194"><a href="#cb36-194" aria-hidden="true" tabindex="-1"></a>            Card(</span>
+<span id="cb36-195"><a href="#cb36-195" aria-hidden="true" tabindex="-1"></a>                H3(<span class="st">"Customers"</span>, cls<span class="op">=</span><span class="st">"text-xl font-semibold mb-2"</span>),</span>
+<span id="cb36-196"><a href="#cb36-196" aria-hidden="true" tabindex="-1"></a>                P(<span class="ss">f"</span><span class="sc">{</span><span class="bu">len</span>(customers())<span class="sc">}</span><span class="ss"> registered customers"</span>, cls<span class="op">=</span><span class="st">"text-muted mb-4"</span>),</span>
+<span id="cb36-197"><a href="#cb36-197" aria-hidden="true" tabindex="-1"></a>                A(<span class="st">"Manage Customers →"</span>, href<span class="op">=</span><span class="st">"/admin/customers/"</span>, cls<span class="op">=</span><span class="st">"btn btn-primary w-full"</span>)</span>
+<span id="cb36-198"><a href="#cb36-198" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb36-199"><a href="#cb36-199" aria-hidden="true" tabindex="-1"></a>            cols<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb36-200"><a href="#cb36-200" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">"gap-6 mb-6"</span></span>
+<span id="cb36-201"><a href="#cb36-201" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb36-202"><a href="#cb36-202" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb36-203"><a href="#cb36-203" aria-hidden="true" tabindex="-1"></a>        Card(</span>
+<span id="cb36-204"><a href="#cb36-204" aria-hidden="true" tabindex="-1"></a>            H3(<span class="st">"Quick Stats"</span>, cls<span class="op">=</span><span class="st">"text-xl font-semibold mb-4"</span>),</span>
+<span id="cb36-205"><a href="#cb36-205" aria-hidden="true" tabindex="-1"></a>            Grid(</span>
+<span id="cb36-206"><a href="#cb36-206" aria-hidden="true" tabindex="-1"></a>                Div(</span>
+<span id="cb36-207"><a href="#cb36-207" aria-hidden="true" tabindex="-1"></a>                    P(<span class="st">"Published Posts"</span>, cls<span class="op">=</span><span class="st">"text-sm text-muted"</span>),</span>
+<span id="cb36-208"><a href="#cb36-208" aria-hidden="true" tabindex="-1"></a>                    P(<span class="bu">str</span>(<span class="bu">len</span>([p <span class="cf">for</span> p <span class="kw">in</span> blog_posts() <span class="cf">if</span> p.published])), cls<span class="op">=</span><span class="st">"text-2xl font-bold"</span>)</span>
+<span id="cb36-209"><a href="#cb36-209" aria-hidden="true" tabindex="-1"></a>                ),</span>
+<span id="cb36-210"><a href="#cb36-210" aria-hidden="true" tabindex="-1"></a>                Div(</span>
+<span id="cb36-211"><a href="#cb36-211" aria-hidden="true" tabindex="-1"></a>                    P(<span class="st">"In-Stock Products"</span>, cls<span class="op">=</span><span class="st">"text-sm text-muted"</span>),</span>
+<span id="cb36-212"><a href="#cb36-212" aria-hidden="true" tabindex="-1"></a>                    P(<span class="bu">str</span>(<span class="bu">len</span>([p <span class="cf">for</span> p <span class="kw">in</span> products() <span class="cf">if</span> p.in_stock])), cls<span class="op">=</span><span class="st">"text-2xl font-bold"</span>)</span>
+<span id="cb36-213"><a href="#cb36-213" aria-hidden="true" tabindex="-1"></a>                ),</span>
+<span id="cb36-214"><a href="#cb36-214" aria-hidden="true" tabindex="-1"></a>                Div(</span>
+<span id="cb36-215"><a href="#cb36-215" aria-hidden="true" tabindex="-1"></a>                    P(<span class="st">"VIP Customers"</span>, cls<span class="op">=</span><span class="st">"text-sm text-muted"</span>),</span>
+<span id="cb36-216"><a href="#cb36-216" aria-hidden="true" tabindex="-1"></a>                    P(<span class="bu">str</span>(<span class="bu">len</span>([c <span class="cf">for</span> c <span class="kw">in</span> customers() <span class="cf">if</span> c.is_vip])), cls<span class="op">=</span><span class="st">"text-2xl font-bold"</span>)</span>
+<span id="cb36-217"><a href="#cb36-217" aria-hidden="true" tabindex="-1"></a>                ),</span>
+<span id="cb36-218"><a href="#cb36-218" aria-hidden="true" tabindex="-1"></a>                cols<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb36-219"><a href="#cb36-219" aria-hidden="true" tabindex="-1"></a>                cls<span class="op">=</span><span class="st">"gap-6"</span></span>
+<span id="cb36-220"><a href="#cb36-220" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb36-221"><a href="#cb36-221" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb36-222"><a href="#cb36-222" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb36-223"><a href="#cb36-223" aria-hidden="true" tabindex="-1"></a>        Div(</span>
+<span id="cb36-224"><a href="#cb36-224" aria-hidden="true" tabindex="-1"></a>            A(<span class="st">"Logout"</span>, href<span class="op">=</span><span class="st">"/logout"</span>, cls<span class="op">=</span><span class="st">"btn btn-outline mt-6"</span>)</span>
+<span id="cb36-225"><a href="#cb36-225" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb36-226"><a href="#cb36-226" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb36-227"><a href="#cb36-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-228"><a href="#cb36-228" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup admin routes for each model</span></span>
+<span id="cb36-229"><a href="#cb36-229" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(rt, <span class="st">'products'</span>, products, Product)</span>
+<span id="cb36-230"><a href="#cb36-230" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(rt, <span class="st">'posts'</span>, blog_posts, BlogPost, path_prefix<span class="op">=</span><span class="st">'/admin'</span>)</span>
+<span id="cb36-231"><a href="#cb36-231" aria-hidden="true" tabindex="-1"></a>setup_admin_routes(rt, <span class="st">'customers'</span>, customers, Customer)</span>
+<span id="cb36-232"><a href="#cb36-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-233"><a href="#cb36-233" aria-hidden="true" tabindex="-1"></a><span class="co"># Logout</span></span>
+<span id="cb36-234"><a href="#cb36-234" aria-hidden="true" tabindex="-1"></a><span class="at">@rt</span>(<span class="st">'/logout'</span>)</span>
+<span id="cb36-235"><a href="#cb36-235" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get(sess):</span>
+<span id="cb36-236"><a href="#cb36-236" aria-hidden="true" tabindex="-1"></a>    sess.clear()</span>
+<span id="cb36-237"><a href="#cb36-237" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> RedirectResponse(<span class="st">'/'</span>, status_code<span class="op">=</span><span class="dv">303</span>)</span>
+<span id="cb36-238"><a href="#cb36-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-239"><a href="#cb36-239" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the demo</span></span>
+<span id="cb36-240"><a href="#cb36-240" aria-hidden="true" tabindex="-1"></a>server <span class="op">=</span> JupyUvi(app)</span>
+<span id="cb36-241"><a href="#cb36-241" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"🚀 Admin Panel Demo is running!"</span>)</span>
+<span id="cb36-242"><a href="#cb36-242" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"   Visit the home page to get started"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>&lt;string&gt;:8: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<script>
+document.body.addEventListener('htmx:configRequest', (event) => {
+    if(event.detail.path.includes('://')) return;
+    htmx.config.selfRequestsOnly=false;
+    event.detail.path = `${location.protocol}//${location.hostname}:8000${event.detail.path}`;
+});
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>🚀 Admin Panel Demo is running!
+   Visit the home page to get started</code></pre>
+</div>
+</div>
+<section id="demo-features" class="level3">
+<h3 class="anchored" data-anchor-id="demo-features">Demo Features</h3>
+<p>The interactive demo showcases:</p>
+<ol type="1">
+<li><strong>Multiple Model Types</strong>:
+<ul>
+<li><strong>Products</strong>: With prices, categories, stock status, and timestamps</li>
+<li><strong>Blog Posts</strong>: With rich text content, publish dates, view counts, and tags</li>
+<li><strong>Customers</strong>: With contact info, notes, and VIP status</li>
+</ul></li>
+<li><strong>Field Type Support</strong>:
+<ul>
+<li>Text inputs (name, email, title)</li>
+<li>Number inputs (price, views)</li>
+<li>Textareas (description, content, notes)</li>
+<li>Checkboxes (in_stock, published, is_vip)</li>
+<li>Date pickers (publish_date, joined)</li>
+<li>DateTime pickers (created_at)</li>
+</ul></li>
+<li><strong>Admin Features</strong>:
+<ul>
+<li>List views with sortable columns</li>
+<li>Create new items with forms</li>
+<li>Edit existing items</li>
+<li>Delete with confirmation</li>
+<li>Search functionality</li>
+<li>Pagination for large datasets</li>
+<li>Role-based access control</li>
+</ul></li>
+<li><strong>User Experience</strong>:
+<ul>
+<li>Beautiful MonsterUI components</li>
+<li>Responsive design</li>
+<li>HTMX for dynamic updates</li>
+<li>Clear navigation</li>
+<li>Error handling</li>
+</ul></li>
+</ol>
+<div id="cell-45" class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View the app right here in the notebook by uncommenting the line below</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fasthtml.jupyter <span class="im">import</span> HTMX</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co"># HTMX()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-46" class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Stop the server gracefully</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: Always run this after testing to clean up otherwise there will be a dangling thread</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="co"># https://fastht.ml/docs/tutorials/jupyter_and_fasthtml.html#graceful-shutdowns</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Stopping server..."</span>)</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>server.stop()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Stopping server...</code></pre>
+</div>
+</div>
+</section>
+<section id="try-it-yourself" class="level3">
+<h3 class="anchored" data-anchor-id="try-it-yourself">Try It Yourself!</h3>
+<p>To run the demo:</p>
+<ol type="1">
+<li>Execute the demo cell above to start the server</li>
+<li>Click the home page link to see the landing page</li>
+<li>Login with <code>admin@demo.com</code> / <code>admin</code> for full access</li>
+<li>Explore the admin panel features:
+<ul>
+<li>Browse products, posts, and customers</li>
+<li>Try searching for items (e.g., “laptop” in products)</li>
+<li>Create new items using the forms</li>
+<li>Edit existing items</li>
+<li>Delete items (with confirmation)</li>
+<li>Notice how different field types have appropriate inputs</li>
+</ul></li>
+<li>Try logging in as <code>user@demo.com</code> / <code>user</code> to see role restrictions</li>
+<li>Remember to stop the server when done!</li>
+</ol>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>This improved admin module follows FastHTML and Answer.ai best practices:</p>
+<section id="whats-better" class="level3">
+<h3 class="anchored" data-anchor-id="whats-better">✅ What’s Better:</h3>
+<ol type="1">
+<li><strong>Uses <code>rt</code> Router Pattern</strong> - Routes registered on the FastHTML router, not app instance</li>
+<li><strong>Functional Approach</strong> - Simple functions instead of complex classes</li>
+<li><strong>Composable</strong> - Each function has a single purpose and can be used independently</li>
+<li><strong>Simple Setup</strong> - One line to add admin: <code>setup_admin_routes(rt, 'products', products, Product)</code></li>
+<li><strong>Transparent</strong> - No hidden magic, every component is inspectable</li>
+<li><strong>Progressive Enhancement</strong> - Start simple, customize as needed</li>
+<li><strong>Standard Patterns</strong> - Uses FastHTML’s <code>@rt</code>, <code>req</code>, <code>sess</code>, and form handling</li>
+</ol>
+</section>
+<section id="key-improvements" class="level3">
+<h3 class="anchored" data-anchor-id="key-improvements">🎯 Key Improvements:</h3>
+<ul>
+<li><strong>Removed Complex Class</strong>: No more <code>AdminPanel</code> class with dozens of methods</li>
+<li><strong>Follows <code>rt</code> Pattern</strong>: Routes use <code>@rt()</code> decorator like all FastHTML apps</li>
+<li><strong>Single Purpose Functions</strong>: Each function does one thing well</li>
+<li><strong>Easy to Understand</strong>: Linear flow from simple to complex use cases</li>
+<li><strong>Customizable Components</strong>: Use <a href="https://LotsOfOrg.github.io/ship-kit/admin.html#admin_table"><code>admin_table()</code></a>, <a href="https://LotsOfOrg.github.io/ship-kit/admin.html#admin_form"><code>admin_form()</code></a> in your own routes</li>
+<li><strong>FastHTML Native</strong>: Uses standard req/sess/form patterns throughout</li>
+</ul>
+<p>This approach embodies Jeremy Howard’s philosophy: “Simple things should be simple, complex things should be possible.” You can set up admin in one line, but every component is accessible for customization.</p>
+</section>
+<section id="integration-with-other-modules" class="level3">
+<h3 class="anchored" data-anchor-id="integration-with-other-modules">Integration with Other Modules</h3>
+<p>The admin module seamlessly integrates with other Ship Kit modules: - <strong>Authentication</strong>: Uses <a href="https://LotsOfOrg.github.io/ship-kit/permissions.html#require_role"><code>require_role</code></a> from permissions module for auth checks - <strong>Permissions</strong>: Default auth check requires ‘admin’ role - <strong>Session Schema</strong>: Follows consistent session patterns from auth module</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/LotsOfOrg\.github\.io\/ship-kit");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/LotsOfOrg/ship-kit/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

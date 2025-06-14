@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Pre-built authentication routes for FastHTML applications">
+
+<title>routes.auth – ship-kit</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-b1527d6dab3c1d2528611d399e709420.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="routes.auth – ship-kit">
+<meta property="og:description" content="Pre-built authentication routes for FastHTML applications">
+<meta property="og:site_name" content="ship-kit">
+<meta name="twitter:title" content="routes.auth – ship-kit">
+<meta name="twitter:description" content="Pre-built authentication routes for FastHTML applications">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">ship-kit</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./routes_auth.html">routes.auth</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ship-kit</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Authentication</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./routes_auth.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">routes.auth</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./permissions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Permissions</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./admin.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Admin Panel</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./admin_routes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">admin_routes</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#quick-start" id="toc-quick-start" class="nav-link" data-scroll-target="#quick-start">Quick Start</a></li>
+  <li><a href="#component-visualization" id="toc-component-visualization" class="nav-link" data-scroll-target="#component-visualization">Component Visualization</a></li>
+  <li><a href="#login-route" id="toc-login-route" class="nav-link" data-scroll-target="#login-route">Login Route</a>
+  <ul class="collapse">
+  <li><a href="#login_route" id="toc-login_route" class="nav-link" data-scroll-target="#login_route">login_route</a></li>
+  <li><a href="#login-examples" id="toc-login-examples" class="nav-link" data-scroll-target="#login-examples">Login Examples</a></li>
+  </ul></li>
+  <li><a href="#signup-route" id="toc-signup-route" class="nav-link" data-scroll-target="#signup-route">Signup Route</a>
+  <ul class="collapse">
+  <li><a href="#signup_route" id="toc-signup_route" class="nav-link" data-scroll-target="#signup_route">signup_route</a></li>
+  </ul></li>
+  <li><a href="#logout-route" id="toc-logout-route" class="nav-link" data-scroll-target="#logout-route">Logout Route</a>
+  <ul class="collapse">
+  <li><a href="#logout_route" id="toc-logout_route" class="nav-link" data-scroll-target="#logout_route">logout_route</a></li>
+  </ul></li>
+  <li><a href="#complete-example" id="toc-complete-example" class="nav-link" data-scroll-target="#complete-example">Complete Example</a></li>
+  <li><a href="#interactive-demo" id="toc-interactive-demo" class="nav-link" data-scroll-target="#interactive-demo">Interactive Demo</a></li>
+  <li><a href="#advanced-customization" id="toc-advanced-customization" class="nav-link" data-scroll-target="#advanced-customization">Advanced Customization</a>
+  <ul class="collapse">
+  <li><a href="#custom-session-management" id="toc-custom-session-management" class="nav-link" data-scroll-target="#custom-session-management">Custom Session Management</a></li>
+  <li><a href="#multi-tenant-authentication" id="toc-multi-tenant-authentication" class="nav-link" data-scroll-target="#multi-tenant-authentication">Multi-tenant Authentication</a></li>
+  <li><a href="#oauth-login-form" id="toc-oauth-login-form" class="nav-link" data-scroll-target="#oauth-login-form">OAuth Login Form</a></li>
+  </ul></li>
+  <li><a href="#testing-auth-routes" id="toc-testing-auth-routes" class="nav-link" data-scroll-target="#testing-auth-routes">Testing Auth Routes</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a>
+  <ul class="collapse">
+  <li><a href="#breaking-changes-in-v2.0" id="toc-breaking-changes-in-v2.0" class="nav-link" data-scroll-target="#breaking-changes-in-v2.0">Breaking Changes in v2.0</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/LotsOfOrg/ship-kit/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="routes_auth.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">routes.auth</h1>
+</div>
+
+<div>
+  <div class="description">
+    Pre-built authentication routes for FastHTML applications
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>This module provides pre-built authentication routes that follow FastHTML patterns and the Answer.AI design philosophy:</p>
+<ul>
+<li><strong>Simple by default</strong>: <code>login_route(rt)</code> gives you a working login page</li>
+<li><strong>Progressively customizable</strong>: Override forms, handlers, or paths as needed</li>
+<li><strong>No magic</strong>: All behavior is explicit and visible</li>
+<li><strong>MonsterUI integration</strong>: Beautiful forms out of the box</li>
+</ul>
+</section>
+<section id="quick-start" class="level2">
+<h2 class="anchored" data-anchor-id="quick-start">Quick Start</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ship_kit.routes.auth <span class="im">import</span> login_route, signup_route, logout_route</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fasthtml.common <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>app, rt <span class="op">=</span> fast_app()</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Add all auth routes with defaults</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>login_route(rt)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>signup_route(rt)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>logout_route(rt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="component-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="component-visualization">Component Visualization</h2>
+<p>To visualize MonsterUI components in this notebook during development, run the setup cell below. This will create a JupyUvi server that can render components with proper MonsterUI styling.</p>
+<p><strong>Note</strong>: The Show function requires a running JupyUvi server. If components aren’t displaying, make sure you’ve run the setup cell and that the server is still running on port 8003.</p>
+<div id="cell-4" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup visualization for this notebook</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fasthtml.jupyter <span class="im">import</span> HTMX, JupyUvi</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> uuid</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create visualization app and server</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>_viz_app, _viz_rt <span class="op">=</span> fast_app(hdrs<span class="op">=</span>Theme.blue.headers())</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>_viz_server <span class="op">=</span> JupyUvi(_viz_app, port<span class="op">=</span><span class="dv">8003</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Show(component, height<span class="op">=</span><span class="st">'auto'</span>):</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Display a MonsterUI component in the notebook."""</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    path <span class="op">=</span> <span class="ss">f'/show/</span><span class="sc">{</span>uuid<span class="sc">.</span>uuid4()<span class="sc">.</span><span class="bu">hex</span><span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">@_viz_app.route</span>(path)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> show_component():</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> component</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> HTMX(path, app<span class="op">=</span>_viz_app, port<span class="op">=</span><span class="dv">8003</span>, height<span class="op">=</span>height)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-5" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remember to stop the server to avoid dangling thread</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>_viz_server.stop()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="login-route" class="level2">
+<h2 class="anchored" data-anchor-id="login-route">Login Route</h2>
+<hr>
+<p><a href="https://github.com/LotsOfOrg/ship-kit/blob/main/ship_kit/routes/auth.py#L14" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="login_route" class="level3">
+<h3 class="anchored" data-anchor-id="login_route">login_route</h3>
+<blockquote class="blockquote">
+<pre><code> login_route (rt, path='/login', redirect_to='/', login_form=None,
+              authenticate=None, session_key='auth', **kwargs)</code></pre>
+</blockquote>
+<p>*Create a login route with customizable form and authentication.</p>
+<p>Following FastHTML patterns - pass the router instance, not the app.</p>
+<p>Args: rt: FastHTML router instance (from fast_app()) path: Route path (default: ‘/login’) redirect_to: Where to redirect after successful login (default: ‘/’) login_form: Custom form component (callable returning FT) authenticate: Custom authentication function(email, password) -&gt; user_dict or None session_key: Session key for auth data (default: ‘auth’) **kwargs: Additional arguments passed to form component*</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>rt</td>
+<td></td>
+<td></td>
+<td>FastHTML router instance</td>
+</tr>
+<tr class="even">
+<td>path</td>
+<td>str</td>
+<td>/login</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>redirect_to</td>
+<td>str</td>
+<td>/</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>login_form</td>
+<td>NoneType</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>authenticate</td>
+<td>NoneType</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>session_key</td>
+<td>str</td>
+<td>auth</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>kwargs</td>
+<td>VAR_KEYWORD</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div id="cell-8" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> default_login_form(error<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Card(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        H2(<span class="st">'Login'</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        Form(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>            LabelInput(<span class="st">'Email'</span>, </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                      name<span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">id</span><span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">type</span><span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                      required<span class="op">=</span><span class="va">True</span>, </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>                      placeholder<span class="op">=</span><span class="st">'you@example.com'</span>),</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>            LabelInput(<span class="st">'Password'</span>, </span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                      name<span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">id</span><span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">type</span><span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>                      required<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>            Alert(error, variant<span class="op">=</span><span class="st">'destructive'</span>) <span class="cf">if</span> error <span class="cf">else</span> <span class="va">None</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>            Button(<span class="st">'Sign In'</span>, <span class="bu">type</span><span class="op">=</span><span class="st">'submit'</span>, cls<span class="op">=</span><span class="st">'w-full'</span>),</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>            method<span class="op">=</span><span class="st">'post'</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">'space-y-4'</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        P(</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Don't have an account? "</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>            A(<span class="st">'Sign up'</span>, href<span class="op">=</span><span class="st">'/signup'</span>, cls<span class="op">=</span><span class="st">'text-primary hover:underline'</span>),</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">'text-center text-sm mt-4'</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>        cls<span class="op">=</span><span class="st">'max-w-md mx-auto mt-8'</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-9" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Uncomment to Visualize the default login form</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Show(default_login_form(), height='500px')</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="login-examples" class="level3">
+<h3 class="anchored" data-anchor-id="login-examples">Login Examples</h3>
+<section id="basic-usage" class="level4">
+<h4 class="anchored" data-anchor-id="basic-usage">Basic Usage</h4>
+<p>The default login form includes: - Email and password fields with proper input types - MonsterUI styling with Card container - Error handling with Alert component - HTMX integration for seamless form submission - Link to signup page</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple login with all defaults</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>login_route(rt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="custom-form-example" class="level4">
+<h4 class="anchored" data-anchor-id="custom-form-example">Custom Form Example</h4>
+<div id="cell-12" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> branded_login_form(error<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Container(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        Card(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>            Div(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                H1(<span class="st">'Welcome Back!'</span>, cls<span class="op">=</span><span class="st">'text-3xl font-bold'</span>),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                P(<span class="st">'Sign in to continue to your account'</span>, cls<span class="op">=</span><span class="st">'text-muted-foreground'</span>),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                cls<span class="op">=</span><span class="st">'text-center mb-6'</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>            Form(</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                LabelInput(<span class="st">'Email Address'</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                          name<span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>                          <span class="bu">type</span><span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                          required<span class="op">=</span><span class="va">True</span>, </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>                          placeholder<span class="op">=</span><span class="st">'Enter your email'</span>),</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>                Div(</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>                    LabelInput(<span class="st">'Password'</span>,</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>                              name<span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>                              <span class="bu">type</span><span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>                              required<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                    A(<span class="st">'Forgot password?'</span>, href<span class="op">=</span><span class="st">'/forgot-password'</span>, </span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>                      cls<span class="op">=</span><span class="st">'text-sm text-primary hover:underline mt-1 block'</span>),</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                    cls<span class="op">=</span><span class="st">'space-y-1'</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>                ),</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>                Alert(error, variant<span class="op">=</span><span class="st">'destructive'</span>, cls<span class="op">=</span><span class="st">'mb-4'</span>) <span class="cf">if</span> error <span class="cf">else</span> <span class="va">None</span>,</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>                Button(<span class="st">'Sign In'</span>, <span class="bu">type</span><span class="op">=</span><span class="st">'submit'</span>, cls<span class="op">=</span><span class="st">'w-full'</span>, size<span class="op">=</span><span class="st">'lg'</span>),</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>                DividerSplit(<span class="st">'Or'</span>),</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>                P(</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"Don't have an account? "</span>,</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>                    A(<span class="st">'Sign up'</span>, href<span class="op">=</span><span class="st">'/signup'</span>, cls<span class="op">=</span><span class="st">'text-primary hover:underline'</span>),</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>                    cls<span class="op">=</span><span class="st">'text-center text-sm'</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>                ),</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>                method<span class="op">=</span><span class="st">'post'</span>,</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>                cls<span class="op">=</span><span class="st">'space-y-4'</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">'max-w-md w-full'</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>        cls<span class="op">=</span><span class="st">'min-h-screen flex items-center justify-center'</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the custom form</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co"># login_route(rt, login_form=branded_login_form)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-13" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Uncomment to Visualize the branded login form</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Show(branded_login_form(), height='700px')</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="custom-authentication" class="level4">
+<h4 class="anchored" data-anchor-id="custom-authentication">Custom Authentication</h4>
+<div id="cell-15" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example with database authentication</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> db_authenticate(email, password):</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Authenticate user against database."""</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This is pseudocode - implement your actual database logic</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># user = db.query("SELECT * FROM users WHERE email = ?", email)</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># if user and verify_password(password, user['password_hash']):</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     return {'id': user['id'], 'email': user['email'], 'name': user['name']}</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># return None</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co"># login_route(rt, authenticate=db_authenticate)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="signup-route" class="level2">
+<h2 class="anchored" data-anchor-id="signup-route">Signup Route</h2>
+<hr>
+<p><a href="https://github.com/LotsOfOrg/ship-kit/blob/main/ship_kit/routes/auth.py#L104" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="signup_route" class="level3">
+<h3 class="anchored" data-anchor-id="signup_route">signup_route</h3>
+<blockquote class="blockquote">
+<pre><code> signup_route (rt, path='/signup', redirect_to='/', signup_form=None,
+               create_user=None, session_key='auth', **kwargs)</code></pre>
+</blockquote>
+<p>*Create a signup route with customizable form and user creation.</p>
+<p>Following FastHTML patterns - pass the router instance, not the app.</p>
+<p>Args: rt: FastHTML router instance (from fast_app()) path: Route path (default: ‘/signup’) redirect_to: Where to redirect after successful signup (default: ‘/’) signup_form: Custom form component (callable returning FT) create_user: Custom user creation function(form_data) -&gt; user_dict or error_string session_key: Session key for auth data (default: ‘auth’) **kwargs: Additional arguments passed to form component*</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>rt</td>
+<td></td>
+<td></td>
+<td>FastHTML router instance</td>
+</tr>
+<tr class="even">
+<td>path</td>
+<td>str</td>
+<td>/signup</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>redirect_to</td>
+<td>str</td>
+<td>/</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>signup_form</td>
+<td>NoneType</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>create_user</td>
+<td>NoneType</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>session_key</td>
+<td>str</td>
+<td>auth</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>kwargs</td>
+<td>VAR_KEYWORD</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>The default signup form includes: - Name, email, password, and password confirmation fields - Form validation with error messages - Preserves form values on validation errors - HTMX integration for seamless submission - Link to login page for existing users</p>
+<div id="cell-19" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the default signup form</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> default_signup_form(error<span class="op">=</span><span class="va">None</span>, values<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs):</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    values <span class="op">=</span> values <span class="kw">or</span> {}</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Card(</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        H2(<span class="st">'Create Account'</span>),</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        Form(</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>            LabelInput(<span class="st">'Name'</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>                      name<span class="op">=</span><span class="st">'name'</span>, </span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">id</span><span class="op">=</span><span class="st">'name'</span>, </span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>                      required<span class="op">=</span><span class="va">True</span>, </span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>                      value<span class="op">=</span>values.get(<span class="st">'name'</span>, <span class="st">''</span>),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>                      placeholder<span class="op">=</span><span class="st">'John Doe'</span>),</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>            LabelInput(<span class="st">'Email'</span>,</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                      name<span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">id</span><span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">type</span><span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                      required<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>                      value<span class="op">=</span>values.get(<span class="st">'email'</span>, <span class="st">''</span>),</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>                      placeholder<span class="op">=</span><span class="st">'you@example.com'</span>),</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>            LabelInput(<span class="st">'Password'</span>,</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>                      name<span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">id</span><span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">type</span><span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>                      required<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>                      placeholder<span class="op">=</span><span class="st">'At least 8 characters'</span>),</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>            LabelInput(<span class="st">'Confirm Password'</span>,</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>                      name<span class="op">=</span><span class="st">'password_confirm'</span>, </span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">id</span><span class="op">=</span><span class="st">'password_confirm'</span>, </span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">type</span><span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>                      required<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>            Alert(error, variant<span class="op">=</span><span class="st">'destructive'</span>) <span class="cf">if</span> error <span class="cf">else</span> <span class="va">None</span>,</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>            Button(<span class="st">'Create Account'</span>, <span class="bu">type</span><span class="op">=</span><span class="st">'submit'</span>, cls<span class="op">=</span><span class="st">'w-full'</span>),</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>            method<span class="op">=</span><span class="st">'post'</span>,</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">'space-y-4'</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>        P(</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Already have an account? "</span>,</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>            A(<span class="st">'Sign in'</span>, href<span class="op">=</span><span class="st">'/login'</span>, cls<span class="op">=</span><span class="st">'text-primary hover:underline'</span>),</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">'text-center text-sm mt-4'</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>        cls<span class="op">=</span><span class="st">'max-w-md mx-auto mt-8'</span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-20" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Uncomment to Visualize the default signup form</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Show(default_signup_form(), height='600px')</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="logout-route" class="level2">
+<h2 class="anchored" data-anchor-id="logout-route">Logout Route</h2>
+<hr>
+<p><a href="https://github.com/LotsOfOrg/ship-kit/blob/main/ship_kit/routes/auth.py#L224" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="logout_route" class="level3">
+<h3 class="anchored" data-anchor-id="logout_route">logout_route</h3>
+<blockquote class="blockquote">
+<pre><code> logout_route (rt, path='/logout', redirect_to='/login',
+               session_key='auth', before_logout=None)</code></pre>
+</blockquote>
+<p>*Create a logout route that clears the session.</p>
+<p>Following FastHTML patterns - pass the router instance, not the app.</p>
+<p>Args: rt: FastHTML router instance (from fast_app()) path: Route path (default: ‘/logout’) redirect_to: Where to redirect after logout (default: ‘/login’) session_key: Session key to clear (default: ‘auth’) before_logout: Optional callback function(session) called before logout*</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>rt</td>
+<td></td>
+<td></td>
+<td>FastHTML router instance</td>
+</tr>
+<tr class="even">
+<td>path</td>
+<td>str</td>
+<td>/logout</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>redirect_to</td>
+<td>str</td>
+<td>/login</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>session_key</td>
+<td>str</td>
+<td>auth</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>before_logout</td>
+<td>NoneType</td>
+<td>None</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="complete-example" class="level2">
+<h2 class="anchored" data-anchor-id="complete-example">Complete Example</h2>
+<p>Here’s a complete example showing how to use all the auth routes together with custom authentication:</p>
+<div id="cell-24" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example of complete auth setup</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> setup_auth(rt, db):</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Setup authentication routes with database integration."""</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> authenticate_user(email, password):</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Check credentials against database."""</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>        user <span class="op">=</span> db.get_user_by_email(email)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> user <span class="kw">and</span> verify_password(password, user[<span class="st">'password_hash'</span>]):</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> {</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>                <span class="st">'id'</span>: user[<span class="st">'id'</span>],</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>                <span class="st">'email'</span>: user[<span class="st">'email'</span>],</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>                <span class="st">'name'</span>: user[<span class="st">'name'</span>]</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> create_new_user(form_data):</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Create new user in database."""</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Validation</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> form_data[<span class="st">'password'</span>] <span class="op">!=</span> form_data[<span class="st">'password_confirm'</span>]:</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="st">"Passwords don't match"</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(form_data[<span class="st">'password'</span>]) <span class="op">&lt;</span> <span class="dv">8</span>:</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="st">"Password must be at least 8 characters"</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check if email exists</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> db.get_user_by_email(form_data[<span class="st">'email'</span>]):</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="st">"Email already registered"</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create user</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>        user_id <span class="op">=</span> db.create_user(</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>            email<span class="op">=</span>form_data[<span class="st">'email'</span>],</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span>form_data[<span class="st">'name'</span>],</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>            password_hash<span class="op">=</span>hash_password(form_data[<span class="st">'password'</span>])</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>            <span class="st">'id'</span>: user_id,</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>            <span class="st">'email'</span>: form_data[<span class="st">'email'</span>],</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>            <span class="st">'name'</span>: form_data[<span class="st">'name'</span>]</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add all routes</span></span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>    login_route(rt, authenticate<span class="op">=</span>authenticate_user)</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>    signup_route(rt, create_user<span class="op">=</span>create_new_user)</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>    logout_route(rt)</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Usage:</span></span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a><span class="co"># app, rt = fast_app()</span></span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a><span class="co"># setup_auth(rt, database)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="interactive-demo" class="level2">
+<h2 class="anchored" data-anchor-id="interactive-demo">Interactive Demo</h2>
+<p>You can create a working demo using JupyUvi:</p>
+<div id="cell-26" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Demo app with all auth routes</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: This demo uses JupyUvi to run interactively in the notebook</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fasthtml.jupyter <span class="im">import</span> JupyUvi</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create demo app</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>demo_app, rt <span class="op">=</span> fast_app(hdrs<span class="op">=</span>Theme.blue.headers())</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple in-memory user store for demo</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>demo_users <span class="op">=</span> {}</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> demo_authenticate(email, password):</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Demo authentication."""</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    user <span class="op">=</span> demo_users.get(email)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> user <span class="kw">and</span> user[<span class="st">'password'</span>] <span class="op">==</span> password:  <span class="co"># Don't do this in production!</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {<span class="st">'email'</span>: email, <span class="st">'name'</span>: user[<span class="st">'name'</span>]}</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> demo_create_user(form_data):</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Demo user creation."""</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> form_data[<span class="st">'password'</span>] <span class="op">!=</span> form_data[<span class="st">'password_confirm'</span>]:</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">"Passwords don't match"</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> form_data[<span class="st">'email'</span>] <span class="kw">in</span> demo_users:</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">"Email already exists"</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>    demo_users[form_data[<span class="st">'email'</span>]] <span class="op">=</span> {</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        <span class="st">'name'</span>: form_data[<span class="st">'name'</span>],</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">'password'</span>: form_data[<span class="st">'password'</span>]  <span class="co"># Don't store plain passwords in production!</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {<span class="st">'email'</span>: form_data[<span class="st">'email'</span>], <span class="st">'name'</span>: form_data[<span class="st">'name'</span>]}</span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Add auth routes using rt pattern</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>login_route(rt, authenticate<span class="op">=</span>demo_authenticate)</span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>signup_route(rt, create_user<span class="op">=</span>demo_create_user)</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>logout_route(rt)</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a protected home page</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="at">@rt</span>(<span class="st">'/'</span>)</span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> home(sess):</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>    user <span class="op">=</span> sess.get(<span class="st">'auth'</span>)</span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> user:</span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> RedirectResponse(<span class="st">'/login'</span>, status_code<span class="op">=</span><span class="dv">303</span>)</span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Container(</span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>        Card(</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>            H1(<span class="ss">f"Welcome, </span><span class="sc">{</span>user<span class="sc">.</span>get(<span class="st">'name'</span>, <span class="st">'User'</span>)<span class="sc">}</span><span class="ss">!"</span>),</span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>            P(<span class="ss">f"You are logged in as </span><span class="sc">{</span>user[<span class="st">'email'</span>]<span class="sc">}</span><span class="ss">"</span>),</span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>            Button(<span class="st">'Logout'</span>, hx_get<span class="op">=</span><span class="st">'/logout'</span>, hx_push_url<span class="op">=</span><span class="st">'true'</span>),</span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">'max-w-2xl mx-auto mt-8'</span></span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the demo server</span></span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Starting demo server..."</span>)</span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Demo app routes:"</span>)</span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"- http://localhost:8000/login - Login page"</span>)</span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"- http://localhost:8000/signup - Signup page"</span>) </span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"- http://localhost:8000/logout - Logout"</span>)</span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"- http://localhost:8000/ - Protected home page"</span>)</span>
+<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Try creating an account and logging in!"</span>)</span>
+<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-63"><a href="#cb16-63" aria-hidden="true" tabindex="-1"></a><span class="co"># Start the server</span></span>
+<span id="cb16-64"><a href="#cb16-64" aria-hidden="true" tabindex="-1"></a>server <span class="op">=</span> JupyUvi(demo_app)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-27" class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remember to stop the server when done:</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>server.stop()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="advanced-customization" class="level2">
+<h2 class="anchored" data-anchor-id="advanced-customization">Advanced Customization</h2>
+<section id="custom-session-management" class="level3">
+<h3 class="anchored" data-anchor-id="custom-session-management">Custom Session Management</h3>
+<div id="cell-29" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use different session keys for different user types</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># login_route(rt, session_key='admin_auth', path='/admin/login')</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># login_route(rt, session_key='user_auth', path='/user/login')</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="multi-tenant-authentication" class="level3">
+<h3 class="anchored" data-anchor-id="multi-tenant-authentication">Multi-tenant Authentication</h3>
+<div id="cell-31" class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> tenant_authenticate(email, password, tenant_id<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Authenticate within a specific tenant."""</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Your multi-tenant logic here</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create tenant-specific login</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="co"># login_route(rt, </span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="co">#     path='/tenant/{tenant_id}/login',</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     authenticate=lambda e, p: tenant_authenticate(e, p, req.path_params['tenant_id'])</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="co"># )</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="oauth-login-form" class="level3">
+<h3 class="anchored" data-anchor-id="oauth-login-form">OAuth Login Form</h3>
+<div id="cell-33" class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> oauth_login_form(error<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs):</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Login form with OAuth options."""</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Card(</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>        H2(<span class="st">'Sign In'</span>),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>        Div(</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>            Button(</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>                UkIcon(<span class="st">'github'</span>), <span class="st">'Continue with GitHub'</span>,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                onclick<span class="op">=</span><span class="st">"window.location.href='/auth/github'"</span>,</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>                cls<span class="op">=</span><span class="st">'w-full mb-2'</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>            Button(</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>                <span class="st">'Continue with Google'</span>, </span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>                onclick<span class="op">=</span><span class="st">"window.location.href='/auth/google'"</span>,</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>                cls<span class="op">=</span><span class="st">'w-full'</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">'mb-4'</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>        DividerSplit(<span class="st">'OR'</span>),</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>        Form(</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Regular email/password form</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>            LabelInput(<span class="st">'Email'</span>,</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>                      name<span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">type</span><span class="op">=</span><span class="st">'email'</span>, </span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>                      required<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>            LabelInput(<span class="st">'Password'</span>,</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>                      name<span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>                      <span class="bu">type</span><span class="op">=</span><span class="st">'password'</span>, </span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>                      required<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>            Alert(error, variant<span class="op">=</span><span class="st">'destructive'</span>) <span class="cf">if</span> error <span class="cf">else</span> <span class="va">None</span>,</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>            Button(<span class="st">'Sign In with Email'</span>, <span class="bu">type</span><span class="op">=</span><span class="st">'submit'</span>, cls<span class="op">=</span><span class="st">'w-full'</span>),</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>            method<span class="op">=</span><span class="st">'post'</span>,</span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>            cls<span class="op">=</span><span class="st">'space-y-4'</span></span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a>        cls<span class="op">=</span><span class="st">'max-w-md mx-auto mt-8'</span></span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Use OAuth-enabled form</span></span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a><span class="co"># login_route(rt, login_form=oauth_login_form)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="testing-auth-routes" class="level2">
+<h2 class="anchored" data-anchor-id="testing-auth-routes">Testing Auth Routes</h2>
+<p>Here’s how to test the auth routes:</p>
+<div id="cell-35" class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test with httpx</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> httpx</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> test_auth_flow(base_url<span class="op">=</span><span class="st">'http://localhost:8000'</span>):</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Test the complete auth flow."""</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> httpx.Client(base_url<span class="op">=</span>base_url, follow_redirects<span class="op">=</span><span class="va">True</span>) <span class="im">as</span> client:</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Test signup</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>        response <span class="op">=</span> client.post(<span class="st">'/signup'</span>, data<span class="op">=</span>{</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>            <span class="st">'name'</span>: <span class="st">'Test User'</span>,</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>            <span class="st">'email'</span>: <span class="st">'test@example.com'</span>,</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>            <span class="st">'password'</span>: <span class="st">'testpass123'</span>,</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">'password_confirm'</span>: <span class="st">'testpass123'</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> response.status_code <span class="op">==</span> <span class="dv">200</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Test login</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>        response <span class="op">=</span> client.post(<span class="st">'/login'</span>, data<span class="op">=</span>{</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>            <span class="st">'email'</span>: <span class="st">'test@example.com'</span>,</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">'password'</span>: <span class="st">'testpass123'</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> response.status_code <span class="op">==</span> <span class="dv">200</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Test protected route</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>        response <span class="op">=</span> client.get(<span class="st">'/'</span>)</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="st">'Welcome'</span> <span class="kw">in</span> response.text</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Test logout</span></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>        response <span class="op">=</span> client.get(<span class="st">'/logout'</span>)</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> response.url.path <span class="op">==</span> <span class="st">'/login'</span></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"All tests passed!"</span>)</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Run tests against your app</span></span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a><span class="co"># test_auth_flow()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-36" class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Uncomment to Visualize the OAuth login form</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Show(oauth_login_form(), height='600px')</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>The auth routes module provides:</p>
+<ol type="1">
+<li><strong>Simple defaults</strong> - Just call <code>login_route(rt)</code> to get started</li>
+<li><strong>Progressive customization</strong> - Override forms, handlers, or paths as needed</li>
+<li><strong>FastHTML patterns</strong> - Uses standard rt() decorator, req/sess parameters, and HTMX</li>
+<li><strong>MonsterUI integration</strong> - Beautiful forms out of the box</li>
+<li><strong>No magic</strong> - All code is explicit and understandable</li>
+</ol>
+<p>The routes handle both regular and HTMX requests, include CSRF protection via POST methods, and integrate seamlessly with FastHTML’s session management.</p>
+<section id="breaking-changes-in-v2.0" class="level3">
+<h3 class="anchored" data-anchor-id="breaking-changes-in-v2.0">Breaking Changes in v2.0</h3>
+<ul>
+<li><strong>Functions now take <code>rt</code> parameter instead of <code>app</code></strong> - This follows FastHTML best practices</li>
+<li>Old: <code>login_route(app)</code></li>
+<li>New: <code>login_route(rt)</code></li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/LotsOfOrg\.github\.io\/ship-kit");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/LotsOfOrg/ship-kit/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
