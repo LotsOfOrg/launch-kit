@@ -97,7 +97,7 @@ Form(
     LabelInput("Password", id="password", type="password"),
     Checkbox("Remember me", id="remember"),
     Button("Sign In", cls=ButtonT.primary),
-    hx_post="/auth/login"
+    hx_post="/login"
 )
 ```
 
@@ -246,7 +246,7 @@ def login():
                               cls=TextPresets.muted_sm)
                         ),
                         Button("Sign In", cls=ButtonT.primary + " w-full"),
-                        hx_post="/auth/login"
+                        hx_post="/login"
                     ),
                     cls="max-w-md"
                 )

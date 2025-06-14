@@ -107,7 +107,7 @@ app, rt = fast_app()  # Standard FastHTML
 # Add auth beforeware
 beforeware = Beforeware(
     user_auth_before,
-    skip=['/auth/login', '/auth/signup', '/static/.*']
+    skip=['/login', '/signup', '/static/.*']
 )
 
 # Add auth routes (optional - build your own if preferred)
@@ -134,7 +134,7 @@ setup_admin_routes(rt, models=[User, Team])
 @rt("/admin/users")
 def get(req, sess):
     if not require_role("admin", req, sess):
-        return RedirectResponse('/auth/login')
+        return RedirectResponse('/login')
     
     admin = AdminPanel()
     return Title("Users"), admin.generate_list_view(User)

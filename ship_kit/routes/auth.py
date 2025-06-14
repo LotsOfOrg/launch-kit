@@ -163,7 +163,7 @@ def signup_route(rt, # FastHTML router instance
                 ),
                 P(
                     "Already have an account? ",
-                    A('Sign in', href='/auth/login', cls='text-primary hover:underline'),
+                    A('Sign in', href='/login', cls='text-primary hover:underline'),
                     cls='text-center text-sm mt-4'
                 ),
                 cls='max-w-md mx-auto mt-8'
@@ -222,8 +222,8 @@ def signup_route(rt, # FastHTML router instance
 
 # %% ../../nbs/01_routes_auth.ipynb 24
 def logout_route(rt, # FastHTML router instance
-                 path='/auth/logout',
-                 redirect_to='/auth/login',
+                 path='/logout',
+                 redirect_to='/login',
                  session_key='auth',
                  before_logout=None):
     """Create a logout route that clears the session.
@@ -232,8 +232,8 @@ def logout_route(rt, # FastHTML router instance
     
     Args:
         rt: FastHTML router instance (from fast_app())
-        path: Route path (default: '/auth/logout')
-        redirect_to: Where to redirect after logout (default: '/auth/login')
+        path: Route path (default: '/logout')
+        redirect_to: Where to redirect after logout (default: '/login')
         session_key: Session key to clear (default: 'auth')
         before_logout: Optional callback function(session) called before logout
     """

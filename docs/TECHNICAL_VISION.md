@@ -69,7 +69,7 @@ app, rt = fast_app()
 # Add beforeware for authentication  
 beforeware = Beforeware(
     user_auth_before,
-    skip=['/auth/login', '/auth/signup', '/static/.*']
+    skip=['/login', '/signup', '/static/.*']
 )
 
 # Add pre-built auth routes (or build your own!)
@@ -83,7 +83,7 @@ def get(req, sess):
     user = sess.get('user')
     if user:
         return Title("Home"), Main(f"Welcome {user['username']}!")
-    return Title("Welcome"), Main("Welcome! Please ", A("login", href="/auth/login"), ".")
+    return Title("Welcome"), Main("Welcome! Please ", A("login", href="/login"), ".")
 ```
 
 ### Adding Admin Panel
@@ -99,7 +99,7 @@ setup_admin_routes(rt, models=[User, Team, Subscription])
 @rt("/custom-admin")
 def get(req, sess):
     if not require_role("admin", req, sess):
-        return RedirectResponse('/auth/login')
+        return RedirectResponse('/login')
     return Title("Admin"), AdminDashboard(
         users=get_all_users(),
         stats=get_admin_stats()
@@ -145,13 +145,13 @@ def setup_auth_routes(rt, login_template=None, signup_template=None, verify_emai
     login_form = login_template or LoginForm
     signup_form = signup_template or SignupForm
     
-    @rt("/auth/login")
+    @rt("/login")
     def get(req, sess):
         return Title("Login"), PageLayout(
             login_form(session=sess)
         )
     
-    @rt("/auth/login", methods=["POST"])
+    @rt("/login", methods=["POST"])
     async def post(req, sess):
         # Transparent login logic you can inspect
         form = await req.form()
@@ -167,11 +167,11 @@ def setup_auth_routes(rt, login_template=None, signup_template=None, verify_emai
         )
     
     # Add other routes similarly...
-    @rt("/auth/logout")
+    @rt("/logout")
     def get(sess):
         sess.pop('auth', None)
         sess.pop('user', None)
-        return RedirectResponse('/auth/login', status_code=303)
+        return RedirectResponse('/login', status_code=303)
 ```
 
 ### 3. Permission Decorators (02_permissions.ipynb)
@@ -199,7 +199,7 @@ def auth_required(func):
     """Decorator for routes requiring authentication (FastHTML style)"""
     def wrapper(req, sess, *args, **kwargs):
         if not sess.get('auth'):
-            return RedirectResponse('/auth/login', status_code=303)
+            return RedirectResponse('/login', status_code=303)
         return func(req, sess, *args, **kwargs)
     return wrapper
 ```
@@ -330,8 +330,8 @@ def LoginForm(errors=None, providers=None, session=None, csrf_input=None):
             errors and Div(*[P(e, cls="error") for e in errors.values()]),
             Button("Login", type="submit", cls="primary"),
             method="POST",
-            action="/auth/login",
-            hx_post="/auth/login",  # HTMX enhancement
+            action="/login",
+            hx_post="/login",  # HTMX enhancement
             hx_target="body"
         ),
         providers and OAuthProviders(providers),
@@ -477,7 +477,7 @@ setup_billing_routes(rt, provider=StripeClient())
 @rt("/")
 def get(req, sess):
     if not sess.get('auth'):
-        return RedirectResponse('/auth/login', status_code=303)
+        return RedirectResponse('/login', status_code=303)
     
     user = sess['user']
     teams = Team.get_user_teams(user['id'])
@@ -497,7 +497,7 @@ def get(req, sess):
 @rt("/settings")
 def get(req, sess):
     if not auth_required(req, sess):
-        return RedirectResponse('/auth/login', status_code=303)
+        return RedirectResponse('/login', status_code=303)
     
     user = sess['user']
     return Title("Settings"), Main(
